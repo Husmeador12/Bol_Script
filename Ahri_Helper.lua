@@ -1,40 +1,5 @@
 -- AUTO AHRI HELPER v1.0 --
 
-
--- / Auto-Update Function / -- 
-
-local Ahri_Autoupdate = true --false for not update
-local UPDATE_SCRIPT_NAME = "Ahri-Helper"
-local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/UglyOldGuy/BoL/master/Katarina%20-%20The%20Sinister%20Blade.lua".."?rand="..math.random(1,10000)
-local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
-local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
-
-function AutoupdaterMsg(msg) print("<font color=\"#FF0000\">"..UPDATE_SCRIPT_NAME..":</font> <font color=\"#FFFFFF\">"..msg..".</font>") end
-if Ahri_Autoupdate then
-	local ServerData = GetWebResult(UPDATE_HOST, UPDATE_PATH)
-	if ServerData then
-		local ServerVersion = string.match(ServerData, "local version = \"%d+.%d+\"")
-		ServerVersion = string.match(ServerVersion and ServerVersion or "", "%d+.%d+")
-		if ServerVersion then
-			ServerVersion = tonumber(ServerVersion)
-			if tonumber(version) < ServerVersion then
-				AutoupdaterMsg("New version available"..ServerVersion)
-				AutoupdaterMsg("Updating, please don't press F9")
-				DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end)	 
-			else
-				AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
-			end
-		end
-	else
-		AutoupdaterMsg("Error downloading version info")
-	end
-end
---[[
---]]
--- / Auto-Update Function / --
-
-
 if myHero.charName ~= "Ahri" then return end
  
 local ts = TargetSelector(TARGET_LESS_CAST,900,DAMAGE_MAGIC,false)
@@ -56,7 +21,7 @@ function OnLoad()
         AhriConfig:permaShow("active")
 				AhriConfig:permaShow("autolevel")
         AhriConfig:permaShow("harras")
-		PrintChat("<font color=\"#81BEF7\">Ahri Helper: </font><font color=\"#00FF00\">v"..version.." by <font color=\"#FF0000\">Jaguare19</font> loaded.</font>")
+		PrintChat("<font color=\"#81BEF7\">Ahri Helper: </font><font color=\"#00FF00\">v1.0 by <font color=\"#FF0000\">Husmeador</font> loaded.</font>")
 end
  
 function OnTick()
