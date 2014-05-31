@@ -1,7 +1,7 @@
 if myHero.charName ~= "Ahri" then return end
 
 --[[       ------------------------------------------       ]]--
---[[		AUTO AHRI HELPER v1.1 by Husmeador12			]]--
+--[[		AUTO AHRI HELPER v1.2 by Husmeador12			]]--
 --[[       ------------------------------------------       ]]--
 
 --[[
@@ -11,6 +11,7 @@ if myHero.charName ~= "Ahri" then return end
 							  - Extra Drawing circles
 						1.2
 							  - Harras
+							  -	Auto update (AOI)
 							  
 						
 		Credits & Mentions:
@@ -18,37 +19,65 @@ if myHero.charName ~= "Ahri" then return end
 						
 
 ]]--
-local version = "1.1"
-local TESTVERSION = false
+-- Auto Update
+local AUTOUPDATE = true --change to false to disable auto update
+local SCRIPT_NAME = "Ahri_Helper"
+local MAJORVERSION = 1.2
+local SUBVERSION = 1
+local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
-local AUTOUPDATE = true
+local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/Ahri_Helper.lua"
+local UPDATE_TEMP_FILE = SCRIPT_PATH.."AhriHelperUpdateTemp.txt"
+local UPDATE_CHANGE_LOG = "Added Auto Update feature."
 
-local UPDATE_HOST = "raw.github.com"
-local UPDATE_PATH = "/Husmeador12/Bol_Script/blob/master/Ahri_Helper.lua".."?rand="..math.random(1,10000)
-local UPDATE_FILE_PATH = SCRIPT_PATH.."Ahri_Helper.lua"
-local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
+-- Update functions
+function Update()
+	file = io.open(UPDATE_TEMP_FILE, "rb")
+	
+	if file ~= nil then
+		content = file:read("*all")
+		file:close()
+		os.remove(UPDATE_TEMP_FILE)
+		
+		if content then		
+			local update_MAJORVERSION = string.match(string.match(content, "local MAJORVERSION = %d+"), "%d+")
+			local update_SUBVERSION = string.match(string.match(content, "local SUBVERSION = %d+"), "%d+")
+			local update_VERSION = tostring(update_MAJORVERSION) .. "." .. tostring(update_SUBVERSION)
+			
+			update_MAJORVERSION = tonumber(string.format("%d", update_MAJORVERSION ))
+			update_SUBVERSION = tonumber(string.format("%d", update_SUBVERSION ))
+			
+			if (update_MAJORVERSION ~= nil and update_SUBVERSION ~= nil) and (update_MAJORVERSION > MAJORVERSION or (update_MAJORVERSION == MAJORVERSION and update_SUBVERSION > SUBVERSION) ) and content:find("--EOS--") then
+				file = io.open(PATH, "w")
+				
+				if file then
+					file:write(content)
+					file:flush()
+					file:close()
+					PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">Successfully updated to v" .. update_VERSION .. "! Please reload this script.</font>")
+					PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">Update Notes: " .. UPDATE_CHANGE_LOG .. "</font>")
+				else
+					PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#FF0000\">Update to version v" .. update_VERSION .. " failed.</font>")
+				end
+			elseif (update_MAJORVERSION ~= nil and update_SUBVERSION ~= nil) and (update_MAJORVERSION == MAJORVERSION and update_SUBVERSION == SUBVERSION) then
+				PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">No updates found, latest version is installed.</font>")
+			elseif (update_MAJORVERSION ~= nil and update_SUBVERSION ~= nil) then
+				PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">A newer version of this script is already installed. Update v"..update_VERSION.." was not downloaded.</font>")
+			end
+		end
+	end
+end
 
-function AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>Ahri_Helper:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
-if AUTOUPDATE then
-local ServerData = GetWebResult(UPDATE_HOST, "/Husmeador12/Bol_Script/blob/master/Ahri_Helper.version")
-if ServerData then
-ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
-if ServerVersion then
-if tonumber(version) < ServerVersion then
-AutoupdaterMsg("New version available"..ServerVersion)
-AutoupdaterMsg("Updating, please don't press F9")
-DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
-else
-AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
-end
-end
-else
-AutoupdaterMsg("Error downloading version info")
-end
-end
+
+
 
 
  function OnLoad()	
+	if AUTOUPDATE then
+		DownloadFile(URL, UPDATE_TEMP_FILE, Update)
+    end
+	
 		Variables()
 		Menu()
 		PrintChat("<font color=\"#81BEF7\">Ahri Helper </font><font color=\"#00FF00\">v."..version.." by <font color=\"#FF0000\">Husmeador</font> loaded.</font>")
@@ -261,3 +290,4 @@ function Harras()
         end
  
 end
+
