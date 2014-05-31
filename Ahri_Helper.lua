@@ -22,8 +22,8 @@ if myHero.charName ~= "Ahri" then return end
 -- Auto Update
 local AUTOUPDATE = true --change to false to disable auto update
 local SCRIPT_NAME = "Ahri_Helper"
-local MAJORVERSION = 1.2
-local SUBVERSION = 1
+local MAJORVERSION = 1
+local SUBVERSION = 2
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
