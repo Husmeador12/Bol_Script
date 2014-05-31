@@ -80,7 +80,7 @@ end
 	
 		Variables()
 		Menu()
-		PrintChat("<font color=\"#81BEF7\">Ahri Helper </font><font color=\"#00FF00\">v."..version.." by <font color=\"#FF0000\">Husmeador</font> loaded.</font>")
+		PrintChat("<font color=\"#81BEF7\">Ahri Helper </font><font color=\"#00FF00\">v."..MAJORVERSION.." by <font color=\"#FF0000\">Husmeador</font> loaded.</font>")
 end
 
 -- On Draw Function --
