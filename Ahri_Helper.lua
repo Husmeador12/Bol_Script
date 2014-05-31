@@ -18,10 +18,10 @@ if myHero.charName ~= "Ahri" then return end
 						
 
 ]]--
-local version = "1.2"
+local version = "1.1"
 local TESTVERSION = false
 
-local AUTOUPDATE = false
+local AUTOUPDATE = true
 
 local UPDATE_HOST = "raw.github.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/blob/master/Ahri_Helper.lua".."?rand="..math.random(1,10000)
@@ -261,4 +261,3 @@ function Harras()
         end
  
 end
-
