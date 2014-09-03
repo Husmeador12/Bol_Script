@@ -27,7 +27,6 @@ buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y =
 lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
 
-
 --[[ Auto Update ]]--
 
 local SCRIPT_NAME = "iARAM"
@@ -36,7 +35,7 @@ local SUBVERSION = 1
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
-local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/Ahri_Helper.lua"
+local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
 local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
 local UPDATE_CHANGE_LOG = "Added champion: Braum, Gnar, Yasuo, Jinx and Vel´koz.."
 
