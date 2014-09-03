@@ -27,7 +27,9 @@ buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y =
 lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
 
---[[ Auto Update ]]--
+
+
+--[[ Auto Update Globals]]--
 
 local SCRIPT_NAME = "iARAM"
 local MAJORVERSION = 1
@@ -78,7 +80,7 @@ function Update()
 end
 
 
---[[ Atack, his build and defining champion class ]]--
+--[[ his build and defining champion class ]]--
 do
 	myHero = GetMyHero()
 	PrintChat("<font color=\"#81BEF7\">iARAM:</font> <font color=\"#00FF00\"> version: "..MAJORVERSION.."."..SUBVERSION.." </font>")
@@ -218,6 +220,7 @@ end
 		if AutomaticChat then
 			AutoChat()
 		end
+		attackMinions()
 end
 
 --[[ OnTick Function ]]--
@@ -490,11 +493,15 @@ function buyItems()
 end
 end
 
-
+--[[ Attack Minions ]]--
 function attackMinions()
 
-
-end
+		if ValidTarget(minion) and minion ~= nil then
+				CastQ(minion)
+				CastW(minion)
+				CastE(minion)
+		end		 
+	end
 
 
 function getTrueRange()
@@ -711,7 +718,6 @@ function Menu()
 		
 end
 
-
 --[[ Lagfree Circles by barasia, vadash and viseversa ]]---
 function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
     radius = radius or 300
@@ -725,10 +731,10 @@ function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
     end
     DrawLines2(points, width or 1, color or 4294967295)
 end
+
 function round(num) 
 	if num >= 0 then return math.floor(num+.5) else return math.ceil(num-.5) end
 end
-
 
 function DrawCircle2(x, y, z, radius, color)
     local vPos1 = Vector(x, y, z)
