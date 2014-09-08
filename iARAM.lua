@@ -49,6 +49,58 @@ function Update()
 		content = file:read("*all")
 		file:close()
 		os.remove(UPDATE_TEMP_FILE)
+		--[[       ------------------------------------------       ]]--
+--[[		         iARAM v1.0.1 by Husmeador12     		]]--
+--[[       ------------------------------------------       ]]--
+
+
+--[[
+		Changelog:
+        --Repaired adcs: Gangplank
+		--Added champion: Braum, Gnar, Yasuo, Jinx and Vel´koz.
+		--Added chat colors 
+		--Added Menu
+		--Add auto chat: gl and hf
+		--Added chat info
+		Credits & Mentions:
+			-barasia
+]]--
+
+--[[ SETTINGS ]]--
+local HotKey = 115 --F4 = 115, F6 = 117 default
+local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
+local AUTOUPDATE = false --change to false to disable auto update
+
+--[[ GLOBALS [Do Not Change] ]]--
+local switcher = true
+local abilitySequence
+local qOff, wOff, eOff, rOff = 0,0,0,0
+buyIndex = 1
+shoplist = {}
+buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
+lastsixpos = {0,0,0,0,0,0,0,0,0,0}
+
+
+--[[ Auto Update Globals]]--
+
+local SCRIPT_NAME = "iARAM"
+local MAJORVERSION = 1
+local SUBVERSION = 1
+local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
+
+local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
+local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
+local UPDATE_CHANGE_LOG = "Added champion: Braum, Gnar, Yasuo, Jinx and Vel´koz.."
+
+--[[ Update functions ]]--
+function Update()
+	file = io.open(UPDATE_TEMP_FILE, "rb")
+	
+	if file ~= nil then
+		content = file:read("*all")
+		file:close()
+		os.remove(UPDATE_TEMP_FILE)
 		
 		if content then		
 			local update_MAJORVERSION = string.match(string.match(content, "local MAJORVERSION = %d+"), "%d+")
@@ -215,12 +267,14 @@ end
 	if AUTOUPDATE then
 		DownloadFile(URL, UPDATE_TEMP_FILE, Update)
     end
+		
 		LevelSequence()
 		Menu()
 		if AutomaticChat then
 			AutoChat()
 		end
 		attackMinions()
+		 OnWndMsg() 
 end
 
 --[[ OnTick Function ]]--
@@ -709,7 +763,7 @@ function Menu()
 		iARAM.drawing:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
 		iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
 		iARAM:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
-		iARAM:addParam("follow", "Active bot", SCRIPT_PARAM_ONKEYTOGGLE, true, 115)
+		iARAM:addParam("follow", "Active bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", " >> edited by Husmeador12", SCRIPT_PARAM_INFO, "")
@@ -769,5 +823,19 @@ function AutoChat()
 		if os.clock() then
 			SendChat("Gl and hf")
 		end
+end
 
+---------[[ Activated/disabled Script ]]---------
+
+function OnWndMsg(msg, keycode)
+	if keycode == HotKey and msg == KEY_DOWN then
+        if switcher == true then
+            switcher = false
+			PrintChat("<font color='#FF0000'>Script disabled </font>")
+        else
+            switcher = true
+			PrintChat("<font color='#00FF00'>Script enabled </font>")
+        end
+    end
+	
 end
