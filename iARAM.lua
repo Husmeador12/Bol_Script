@@ -16,7 +16,7 @@
 
 --[[ SETTINGS ]]--
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
-local AUTOUPDATE = false --change to false to disable auto update
+local AUTOUPDATE = true --change to false to disable auto update
 
 --[[ GLOBALS [Do Not Change] ]]--
 local abilitySequence
