@@ -1,75 +1,23 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v1.0.1 by Husmeador12     		]]--
+--[[		         iARAM v1.2 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
 --[[
 		Changelog:
-        --Repaired adcs: Gangplank
-		--Added champion: Braum, Gnar, Yasuo, Jinx and Vel´koz.
-		--Added chat colors 
-		--Added Menu
-		--Add auto chat: gl and hf
+		--Add Azir and Zilean
+		
 		Credits & Mentions:
 			-barasia
-]]--
-
---[[ SETTINGS ]]--
-local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
-local AUTOUPDATE = true --change to false to disable auto update
-
---[[ GLOBALS [Do Not Change] ]]--
-local abilitySequence
-local qOff, wOff, eOff, rOff = 0,0,0,0
-buyIndex = 1
-shoplist = {}
-buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
-lastsixpos = {0,0,0,0,0,0,0,0,0,0}
-
-
-
-
---[[ Auto Update Globals]]--
-
-local SCRIPT_NAME = "iARAM"
-local MAJORVERSION = 1
-local SUBVERSION = 1
-local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
-
-local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
-local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
-local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "Added champion: Braum, Gnar, Yasuo, Jinx and Vel´koz.."
-
---[[ Update functions ]]--
-function Update()
-	file = io.open(UPDATE_TEMP_FILE, "rb")
-	
-	if file ~= nil then
-		content = file:read("*all")
-		file:close()
-		os.remove(UPDATE_TEMP_FILE)
-		--[[       ------------------------------------------       ]]--
---[[		         iARAM v1.0.1 by Husmeador12     		]]--
---[[       ------------------------------------------       ]]--
-
-
---[[
-		Changelog:
-        --Repaired adcs: Gangplank
-		--Added champion: Braum, Gnar, Yasuo, Jinx and Vel´koz.
-		--Added chat colors 
-		--Added Menu
-		--Add auto chat: gl and hf
-		--Added chat info
-		Credits & Mentions:
-			-barasia
+			-One
 ]]--
 
 --[[ SETTINGS ]]--
 local HotKey = 115 --F4 = 115, F6 = 117 default
-local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
+local AutomaticChat = false --If is in true mode, then it will say "gl and hf" when the game starts.
+local AutoWard = true
 local AUTOUPDATE = false --change to false to disable auto update
+
 
 --[[ GLOBALS [Do Not Change] ]]--
 local switcher = true
@@ -80,18 +28,35 @@ shoplist = {}
 buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
 lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
+-- 3340,--ward trinket
+local wardRange = 600 --Ward range is 600.
+local scriptActive = true
+local wardTimer = 0
+local wardSlot = nil
+local wardMatrix = {}
+local wardDetectedFlag = {}
+local lastWard = 0
+wardMatrix[1] = {10000,11578,10012,8924,7916,11369,6185,4911,4025,2579,4031,2788}
+wardMatrix[2] = {2868,3452,4842,5461,4595,6885,9856,8878,9621,10943,11519,7611}
+wardMatrix[3] = {}
+for i = 1, 12 do
+--Ward present nearby ?
+wardMatrix[3][i] = false
+wardDetectedFlag[i] = false
+end
+
 
 --[[ Auto Update Globals]]--
 
 local SCRIPT_NAME = "iARAM"
 local MAJORVERSION = 1
-local SUBVERSION = 1
+local SUBVERSION = 3
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
 local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "Added champion: Braum, Gnar, Yasuo, Jinx and Vel´koz.."
+local UPDATE_CHANGE_LOG = "Added champ: Azir"
 
 --[[ Update functions ]]--
 function Update()
@@ -143,7 +108,7 @@ do
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","KogMaw","Lucian","MissFortune","Quinn","Sivir","Thresh","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","ChoGath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
-	mages = {"Ahri","Anivia","Annie","Brand","Cassiopeia","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilian","Zyra"}
+	mages = {"Ahri","Anivia","Annie","Azir","Brand","Cassiopeia","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
 	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","Wukong","Zed","Yasuo"}
 	fighters = {"Aatrox","Fiora","Jax","Jayce","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
@@ -232,6 +197,7 @@ do
 		ranged = 1
 	end
 	--[[ ItemsList ]]--
+	
 	if heroType == 1 then
 		shopList = {3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
 	end
@@ -259,26 +225,32 @@ do
 	if heroType == 9 or heroType == 10 then 
 		shopList = {3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
 	end
+	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
 end
 
 
 --[[ On Load Function ]]--
- function OnLoad()	
-	if AUTOUPDATE then
+ function OnLoad()
+ 
+		if AUTOUPDATE then
 		DownloadFile(URL, UPDATE_TEMP_FILE, Update)
-    end
-		
-		LevelSequence()
-		Menu()
+		end
 		if AutomaticChat then
 			AutoChat()
 		end
+		
+		LevelSequence()
+		Menu()
 		attackMinions()
-		 OnWndMsg() 
+		OnWndMsg()
+		if AutoWard then
+			wardUpdate()
+		end
 end
 
 --[[ OnTick Function ]]--
 function OnTick()
+	Count()
 	Follow()
 	LFC()
 end
@@ -534,22 +506,21 @@ end
 --[[ AutoBuyItems ]]--
 function buyItems()
  if iARAM.autobuy then
-	if shopList[buyIndex] ~= 0 then
-		local itemval = shopList[buyIndex]
-		BuyItem(itemval)
-		if GetInventorySlotItem(shopList[buyIndex]) ~= nil then
-			--Last Buy successful
-			buyIndex = buyIndex + 1
-			buyItems()
+		if InFountain() or player.dead or shopList[buyIndex] ~= 0 then
+			local itemval = shopList[buyIndex]
+			BuyItem(itemval)
+				if GetInventorySlotItem(shopList[buyIndex]) ~= nil then
+					--Last Buy successful
+					buyIndex = buyIndex + 1
+					buyItems()
+				end
+			
 		end
-		
 	end
-end
 end
 
 --[[ Attack Minions ]]--
 function attackMinions()
-
 		if ValidTarget(minion) and minion ~= nil then
 				CastQ(minion)
 				CastW(minion)
@@ -562,6 +533,7 @@ function getTrueRange()
     return myHero.range + GetDistance(myHero.minBBox)+100
 end
 
+
 --[[ Level Sequence ]]--
 function LevelSequence()
     local champ = player.charName
@@ -573,6 +545,7 @@ function LevelSequence()
     elseif champ == "Anivia" then       abilitySequence = { 1, 3, 1, 3, 3, 4, 3, 2, 3, 2, 4, 1, 1, 1, 2, 4, 2, 2, }
     elseif champ == "Annie" then        abilitySequence = { 2, 1, 1, 3, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
     elseif champ == "Ashe" then         abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, }
+	elseif champ == "Azir" then         abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, }
     elseif champ == "Blitzcrank" then   abilitySequence = { 1, 3, 2, 3, 2, 4, 3, 2, 3, 2, 4, 3, 2, 1, 1, 4, 1, 1, }
     elseif champ == "Brand" then        abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
 	elseif champ == "Braum" then        abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
@@ -703,6 +676,7 @@ function getChampTable()
         Anivia       = { projSpeed = 1.05, aaParticles = {"cryo_BasicAttack_mis", "cryo_BasicAttack_tar"}, aaSpellName = "aniviabasicattack", startAttackSpeed = "0.625",  },
         Annie        = { projSpeed = 1.0, aaParticles = {"AnnieBasicAttack_tar", "AnnieBasicAttack_tar_frost", "AnnieBasicAttack2_mis", "AnnieBasicAttack3_mis"}, aaSpellName = "anniebasicattack", startAttackSpeed = "0.579",  },
         Ashe         = { projSpeed = 2.0, aaParticles = {"bowmaster_frostShot_mis", "bowmasterbasicattack_mis"}, aaSpellName = "ashebasicattack", startAttackSpeed = "0.658" },
+		Azir         = { projSpeed = 1.6, aaParticles = {"Azir_BasicAttack_mis", "Azir_BasicAttack_tar"}, aaSpellName = "Azirbasicattack", startAttackSpeed = "0.668",  },
         Brand        = { projSpeed = 1.975, aaParticles = {"BrandBasicAttack_cas", "BrandBasicAttack_Frost_tar", "BrandBasicAttack_mis", "BrandBasicAttack_tar", "BrandCritAttack_mis", "BrandCritAttack_tar", "BrandCritAttack_tar"}, aaSpellName = "brandbasicattack", startAttackSpeed = "0.625" },
 		Caitlyn      = { projSpeed = 2.5, aaParticles = {"caitlyn_basicAttack_cas", "caitlyn_headshot_tar", "caitlyn_mis_04"}, aaSpellName = "caitlynbasicattack", startAttackSpeed = "0.668" },
         Cassiopeia   = { projSpeed = 1.22, aaParticles = {"CassBasicAttack_mis"}, aaSpellName = "cassiopeiabasicattack", startAttackSpeed = "0.644" },
@@ -818,16 +792,21 @@ MenuTextSize = 18
 	tempSetupDrawY = tempSetupDrawY + 0.03
 
 end
+
 ---------[[ Auto Good luck and have fun ]]---------
 function AutoChat()
+		--if os.clock() > os.clock() + 200 then
 		if os.clock() then
-			SendChat("Gl and hf")
+			SendChat("c´mon guys")
 		end
+
 end
 
----------[[ Activated/disabled Script ]]---------
 
+
+---------[[ Activated/disabled Script ]]---------
 function OnWndMsg(msg, keycode)
+
 	if keycode == HotKey and msg == KEY_DOWN then
         if switcher == true then
             switcher = false
@@ -837,5 +816,71 @@ function OnWndMsg(msg, keycode)
 			PrintChat("<font color='#00FF00'>Script enabled </font>")
         end
     end
+	
+end
+
+
+
+--[[
+Ikita's Auto Ward 1.0 for BoL Studio
+Sight Wards
+
+Trinket use added by One™.
+
+]]
+
+--[[ Code ]]
+
+function wardUpdate()
+	for i = 1, 12 do
+	wardDetectedFlag[i] = false
+	end
+		for k = 1, objManager.maxObjects do
+		local object = objManager:GetObject(k)
+		if object ~= nil and (string.find(object.name, "Ward") ~= nil or string.find(object.name, "Wriggle") ~= nil) then
+		for i = 1, 12 do
+		if math.sqrt((wardMatrix[1][i] - object.x)*(wardMatrix[1][i] - object.x) + (wardMatrix[2][i] - object.z)*(wardMatrix[2][i] - object.z)) < 1100 then
+		wardDetectedFlag[i] = true
+		wardMatrix[3][i] = true
+		end
+	end
+end
+for i = 1, 12 do
+		if wardDetectedFlag[i] == false then
+		wardMatrix[3][i] = false
+		end
+	end
+end
+wardTimer = GetTickCount()
+end
+
+function Count()
+
+	if GetTickCount() - wardTimer > 10000 then
+		wardUpdate()
+	end	
+
+	if (myHero:CanUseSpell(ITEM_7) == READY and myHero:getItem(ITEM_7).id == 3340) then
+	wardSlot = GetInventorySlotItem(3340)
+	elseif (myHero:CanUseSpell(ITEM_7) == READY and myHero:getItem(ITEM_7).id == 3350) then
+	wardSlot = GetInventorySlotItem(3350)
+	elseif GetInventorySlotItem(2044) ~= nil then
+	wardSlot = GetInventorySlotItem(2044)
+	elseif GetInventorySlotItem(2043) ~= nil then
+	wardSlot = GetInventorySlotItem(2043)
+	else
+	wardSlot = nil
+end
+
+for i = 1, 12 do
+	if wardSlot ~= nil and GetTickCount() - lastWard > 2000 then
+		if math.sqrt((wardMatrix[1][i] - player.x)*(wardMatrix[1][i] - player.x) + (wardMatrix[2][i] - player.z)*(wardMatrix[2][i] - player.z)) < 600 and wardMatrix[3][i] == false then
+		CastSpell( wardSlot, wardMatrix[1][i], wardMatrix[2][i] )
+		lastWard = GetTickCount()
+		wardMatrix[3][i] = true
+		break
+		end
+		end
+	end
 	
 end
