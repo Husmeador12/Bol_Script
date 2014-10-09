@@ -1,22 +1,23 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v1.2 by Husmeador12  	   		]]--
+--[[		         iARAM v1.5 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
 --[[
 		Changelog:
-		--Add Azir and Zilean
+		--Add new Sion how fighter
 		
 		Credits & Mentions:
 			-barasia
 			-One
 ]]--
 
+
 --[[ SETTINGS ]]--
 local HotKey = 115 --F4 = 115, F6 = 117 default
-local AutomaticChat = false --If is in true mode, then it will say "gl and hf" when the game starts.
+local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
-local AUTOUPDATE = false --change to false to disable auto update
+local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
@@ -50,13 +51,13 @@ end
 
 local SCRIPT_NAME = "iARAM"
 local MAJORVERSION = 1
-local SUBVERSION = 3
+local SUBVERSION = 5
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
 local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "Added champ: Azir"
+local UPDATE_CHANGE_LOG = "Added new Sion"
 
 --[[ Update functions ]]--
 function Update()
@@ -228,6 +229,21 @@ do
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
 end
 
+--[[ Checks Function ]]--
+function Checks()
+
+	Ignite = { name = "summonerdot", range = 600, slot = nil }
+	Ignite.ready = (Ignite.slot ~= nil and myHero:CanUseSpell(Ignite.slot) == READY)
+	if myHero:GetSpellData(SUMMONER_1).name:find(Ignite.name) then
+		Ignite.slot = SUMMONER_1
+	elseif myHero:GetSpellData(SUMMONER_2).name:find(Ignite.name) then
+		Ignite.slot = SUMMONER_2
+	end
+	
+	
+end
+
+
 
 --[[ On Load Function ]]--
  function OnLoad()
@@ -238,7 +254,7 @@ end
 		if AutomaticChat then
 			AutoChat()
 		end
-		
+
 		LevelSequence()
 		Menu()
 		attackMinions()
@@ -250,9 +266,12 @@ end
 
 --[[ OnTick Function ]]--
 function OnTick()
+	--[[AutoIgnite() ]]--
 	Count()
 	Follow()
 	LFC()
+	Checks()
+
 end
 
 --[[ Follow Function and attack ]]--
@@ -521,12 +540,28 @@ end
 
 --[[ Attack Minions ]]--
 function attackMinions()
-		if ValidTarget(minion) and minion ~= nil then
-				CastQ(minion)
-				CastW(minion)
-				CastE(minion)
-		end		 
+	SkillQ = { name = "Orb of Deception", range = 840, delay = 0.25, speed = 1600, width = 90, ready = false }
+	SkillW = { name = "Fox-Fire", range = 800, delay = nil, speed = nil, width = nil, ready = false }
+	SkillE = { name = "Charm", range = 975, delay = 0.25, speed = 1500, width = 100, ready = false }
+	SkillR = { name = "Spirit Rush", range = 550, delay = nil, speed = nil, width = nil, ready = false }
+	
+	enemyMinions = minionManager(MINION_ENEMY, SkillE.range, myHero, MINION_SORT_HEALTH_ASC)
+	enemyMinions:update()
+
+	
+		for i, minion in pairs(enemyMinions.objects) do
+			if ValidTarget(minion) and minion ~= nil then
+				if GetDistance(minion) <= SkillQ.range and SkillQ.ready then
+							CastSpell(_Q)
+					end
+				end
+				if GetDistance(minion) <= SkillW.range and SkillW.ready then
+					
+					CastSpell(_W)
+				end
+			end		 
 	end
+
 
 
 function getTrueRange()
@@ -793,15 +828,6 @@ MenuTextSize = 18
 
 end
 
----------[[ Auto Good luck and have fun ]]---------
-function AutoChat()
-		--if os.clock() > os.clock() + 200 then
-		if os.clock() then
-			SendChat("c´mon guys")
-		end
-
-end
-
 
 
 ---------[[ Activated/disabled Script ]]---------
@@ -883,4 +909,36 @@ for i = 1, 12 do
 		end
 	end
 	
+end
+--[[
+function AutoIgnite(unit)
+	
+	if ValidTarget(unit, Ignite.range) and unit.health <= 50 + (20 * myHero.level) then
+		
+		if Ignite.ready then
+			CastSpell(Ignite.slot, unit)
+		end
+	end
+end
+]]--
+
+---------[[ Auto Good luck and have fun ]]---------
+function AutoChat()
+		
+	if GetInGameTimer() < 15 then
+		DelayAction(function()
+			SendChat("Good luck and have fun!")
+		end, 15-GetInGameTimer())
+	end
+	
+	if GetInGameTimer() < 333 then
+		DelayAction(function()
+			SendChat("c´mon guys")
+		end, 333-GetInGameTimer()) --5:35
+	end
+	
+	if GetGame().isOver then
+		PrintChat("<font color='#FF0000'>gg biiiiiiiiiiiiiibch </font>");
+	end
+
 end
