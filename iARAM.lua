@@ -12,9 +12,9 @@
 
 --[[ SETTINGS ]]--
 local HotKey = 115 --F4 = 115, F6 = 117 default
-local AutomaticChat = false --If is in true mode, then it will say "gl and hf" when the game starts.
+local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
-local AUTOUPDATE = false --change to false to disable auto update
+local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
