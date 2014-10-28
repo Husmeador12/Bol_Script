@@ -1,12 +1,9 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v1.5 by Husmeador12  	   		]]--
+--[[		         iARAM v1.8 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
 --[[
-		Changelog:
-		--Add new Sion how fighter
-		
 		Credits & Mentions:
 			-barasia
 			-One
@@ -15,9 +12,9 @@
 
 --[[ SETTINGS ]]--
 local HotKey = 115 --F4 = 115, F6 = 117 default
-local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
+local AutomaticChat = false --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
-local AUTOUPDATE = true --change to false to disable auto update
+local AUTOUPDATE = false --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
@@ -31,7 +28,6 @@ lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
 -- 3340,--ward trinket
 local wardRange = 600 --Ward range is 600.
-local scriptActive = true
 local wardTimer = 0
 local wardSlot = nil
 local wardMatrix = {}
@@ -51,13 +47,13 @@ end
 
 local SCRIPT_NAME = "iARAM"
 local MAJORVERSION = 1
-local SUBVERSION = 5
+local SUBVERSION = 8
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
 local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "Added new Sion"
+local UPDATE_CHANGE_LOG = "Repaired MasterYi"
 
 --[[ Update functions ]]--
 function Update()
@@ -112,7 +108,7 @@ do
 	mages = {"Ahri","Anivia","Annie","Azir","Brand","Cassiopeia","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
 	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","Wukong","Zed","Yasuo"}
-	fighters = {"Aatrox","Fiora","Jax","Jayce","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
+	fighters = {"Aatrox","Fiora","Jax","Jayce","MasterYi","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
 	apcs = {"Elise","FiddleSticks","Kennen","Mordekaiser","Rumble","Vladimir"}
 	
 	
@@ -772,7 +768,7 @@ function Menu()
 		iARAM.drawing:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
 		iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
 		iARAM:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
-		iARAM:addParam("follow", "Active bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
+		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", " >> edited by Husmeador12", SCRIPT_PARAM_INFO, "")
@@ -851,7 +847,7 @@ end
 Ikita's Auto Ward 1.0 for BoL Studio
 Sight Wards
 
-Trinket use added by One™.
+Trinket use added by One?.
 
 ]]
 
