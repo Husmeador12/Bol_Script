@@ -1,5 +1,5 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v1.8 by Husmeador12  	   		]]--
+--[[		         iARAM v1.9 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
@@ -47,13 +47,13 @@ end
 
 local SCRIPT_NAME = "iARAM"
 local MAJORVERSION = 1
-local SUBVERSION = 8
+local SUBVERSION = 9
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
 local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "Repaired MasterYi"
+local UPDATE_CHANGE_LOG = "Added random phrases and auto buy ward in Summoners Rift"
 
 --[[ Update functions ]]--
 function Update()
@@ -79,15 +79,15 @@ function Update()
 					file:write(content)
 					file:flush()
 					file:close()
-					PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">Successfully updated to v" .. update_VERSION .. "! Please reload this script.</font>")
-					PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">Update Notes: " .. UPDATE_CHANGE_LOG .. "</font>")
+					print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">Successfully updated to v" .. update_VERSION .. "! Please reload this script.</font>")
+					print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">Update Notes: " .. UPDATE_CHANGE_LOG .. "</font>")
 				else
-					PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#FF0000\">Update to version v" .. update_VERSION .. " failed.</font>")
+					print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#FF0000\">Update to version v" .. update_VERSION .. " failed.</font>")
 				end
 			elseif (update_MAJORVERSION ~= nil and update_SUBVERSION ~= nil) and (update_MAJORVERSION == MAJORVERSION and update_SUBVERSION == SUBVERSION) then
-				PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">No updates found, latest version is installed.</font>")
+				print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">No updates found, latest version is installed.</font>")
 			elseif (update_MAJORVERSION ~= nil and update_SUBVERSION ~= nil) then
-				PrintChat("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">A newer version of this script is already installed. Update v"..update_VERSION.." was not downloaded.</font>")
+				print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">A newer version of this script is already installed. Update v"..update_VERSION.." was not downloaded.</font>")
 			end
 		end
 	end
@@ -115,7 +115,6 @@ do
 	heroType = nil
 	
 	for i,nam in pairs(adcs) do 
-		
 		if nam == myHero.charName then
 			heroType = 1
 		end
@@ -196,31 +195,31 @@ do
 	--[[ ItemsList ]]--
 	
 	if heroType == 1 then
-		shopList = {3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
+		shopList = {3340 or 3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
 	end
 	if heroType == 2 then
-		shopList = {3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
+		shopList = {3340 or 3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
 	end
 	if heroType == 3 then
-		shopList = {3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
+		shopList = {3340 or 3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
 	end
 	if heroType == 4 then
-		shopList = {1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
+		shopList = {3340 or 1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
 	end
 	if heroType == 5 then
-		shopList = {3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
+		shopList = {3340 or 3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
 	end
 	if heroType == 6 then
-		shopList = {3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
+		shopList = {3340 or 3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
 	end
 	if heroType == 7 then 
-		shopList = {3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
+		shopList = {3340 or 3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
 	end
 	if heroType == 8 then 
-		shopList = {3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
+		shopList = {3340 or 3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
 	end
 	if heroType == 9 or heroType == 10 then 
-		shopList = {3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
+		shopList = {3340 or 3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
 	end
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
 end
@@ -239,8 +238,6 @@ function Checks()
 	
 end
 
-
-
 --[[ On Load Function ]]--
  function OnLoad()
  
@@ -258,6 +255,7 @@ end
 		if AutoWard then
 			wardUpdate()
 		end
+		
 end
 
 --[[ OnTick Function ]]--
@@ -411,6 +409,8 @@ function Follow()
 		end
 	end
 	--/LEVELUP
+	
+	
 end
 
 --[[ On Draw Function ]]--
@@ -536,10 +536,10 @@ end
 
 --[[ Attack Minions ]]--
 function attackMinions()
-	SkillQ = { name = "Orb of Deception", range = 840, delay = 0.25, speed = 1600, width = 90, ready = false }
-	SkillW = { name = "Fox-Fire", range = 800, delay = nil, speed = nil, width = nil, ready = false }
-	SkillE = { name = "Charm", range = 975, delay = 0.25, speed = 1500, width = 100, ready = false }
-	SkillR = { name = "Spirit Rush", range = 550, delay = nil, speed = nil, width = nil, ready = false }
+	SkillQ = { range = 840, delay = 0.25, speed = 1600, width = 90, ready = false }
+	SkillW = { range = 800, delay = nil, speed = nil, width = nil, ready = false }
+	SkillE = { range = 975, delay = 0.25, speed = 1500, width = 100, ready = false }
+	SkillR = { range = 550, delay = nil, speed = nil, width = nil, ready = false }
 	
 	enemyMinions = minionManager(MINION_ENEMY, SkillE.range, myHero, MINION_SORT_HEALTH_ASC)
 	enemyMinions:update()
@@ -557,7 +557,6 @@ function attackMinions()
 				end
 			end		 
 	end
-
 
 
 function getTrueRange()
@@ -920,21 +919,28 @@ end
 
 ---------[[ Auto Good luck and have fun ]]---------
 function AutoChat()
-		
+Phrases1 = {"Good luck and have fun!", "gl hf", "gl hf :D", "Good luck have fun", "Good luck and have fun guys", "gl hf guys!", "gl and have fun", "good luck and hf"} 
+Phrases2 = {"c´mon guys", "we can do it", "This is my team of win", "It doesnt matter", "let´s go", "team work OP" } 
 	if GetInGameTimer() < 15 then
 		DelayAction(function()
-			SendChat("Good luck and have fun!")
-		end, 15-GetInGameTimer())
+			SendChat(Phrases1[math.random(#Phrases1)])
+		end, 15-GetInGameTimer()) --0:17
 	end
 	
 	if GetInGameTimer() < 333 then
 		DelayAction(function()
-			SendChat("c´mon guys")
+			SendChat(Phrases2[math.random(#Phrases2)])
 		end, 333-GetInGameTimer()) --5:35
 	end
 	
-	if GetGame().isOver then
-		PrintChat("<font color='#FF0000'>gg biiiiiiiiiiiiiibch </font>");
+	if GetInGameTimer() < 360 then
+		DelayAction(function()
+			SendChat(Phrases2[math.random(#Phrases2)])
+		end, 360-GetInGameTimer()) --5:35
 	end
-
+	
+	if GetGame().isOver then 
+        SendChat("gg wp")
+		QuitGame(10)
+    end
 end
