@@ -1,5 +1,5 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v1.9 by Husmeador12  	   		]]--
+--[[		         iARAM v2.0 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
@@ -46,14 +46,14 @@ end
 --[[ Auto Update Globals]]--
 
 local SCRIPT_NAME = "iARAM"
-local MAJORVERSION = 1
-local SUBVERSION = 9
+local MAJORVERSION = 2
+local SUBVERSION = 0
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
 local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "Added random phrases and auto buy ward in Summoners Rift"
+local UPDATE_CHANGE_LOG = "Repaired Autobuy, added Kalista"
 
 --[[ Update functions ]]--
 function Update()
@@ -103,7 +103,7 @@ do
 	ranged = 0
 	assassins = {"Akali","Diana","Evelynn","Fizz","Katarina","Nidalee"}
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Volibear","Yorick"}
-	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","KogMaw","Lucian","MissFortune","Quinn","Sivir","Thresh","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
+	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Thresh","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","ChoGath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
 	mages = {"Ahri","Anivia","Annie","Azir","Brand","Cassiopeia","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
@@ -195,32 +195,33 @@ do
 	--[[ ItemsList ]]--
 	
 	if heroType == 1 then
-		shopList = {3340 or 3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
+		shopList = {3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
 	end
 	if heroType == 2 then
-		shopList = {3340 or 3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
+		shopList = {3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
 	end
 	if heroType == 3 then
-		shopList = {3340 or 3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
+		shopList = {3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
 	end
 	if heroType == 4 then
-		shopList = {3340 or 1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
+		shopList = {1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
 	end
 	if heroType == 5 then
-		shopList = {3340 or 3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
+		shopList = {3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
 	end
 	if heroType == 6 then
-		shopList = {3340 or 3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
+		shopList = {3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
 	end
 	if heroType == 7 then 
-		shopList = {3340 or 3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
+		shopList = {3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
 	end
 	if heroType == 8 then 
-		shopList = {3340 or 3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
+		shopList = {3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
 	end
 	if heroType == 9 or heroType == 10 then 
-		shopList = {3340 or 3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
+		shopList = {3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
 	end
+	--yellow ward 3340
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
 end
 
@@ -607,6 +608,7 @@ function LevelSequence()
     elseif champ == "Jax" then          abilitySequence = { 3, 2, 1, 2, 2, 4, 2, 3, 2, 3, 4, 1, 3, 1, 1, 4, 3, 1, }
     elseif champ == "Jayce" then        abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, } rOff = -1
 	elseif champ == "Jinx" then         abilitySequence = { 3, 1, 3, 2, 3, 4, 3, 2, 3, 2, 1, 2, 2, 1, 1, 1, 4, 4, }
+	elseif champ == "Kalista" then      abilitySequence = { 1, 3, 2, 1, 1, 4, 1, 1, 3, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Karma" then        abilitySequence = { 1, 3, 1, 2, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 2, 2, 2, 2, }
     elseif champ == "Karthus" then      abilitySequence = { 1, 3, 2, 1, 1, 4, 1, 1, 3, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Kassadin" then     abilitySequence = { 1, 2, 1, 3, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
@@ -719,7 +721,8 @@ function getChampTable()
 		Heimerdinger = { projSpeed = 1.4, aaParticles = {"heimerdinger_basicAttack_mis", "heimerdinger_basicAttack_tar"}, aaSpellName = "heimerdingerbasicAttack", startAttackSpeed = "0.625" },
         Janna        = { projSpeed = 1.2, aaParticles = {"JannaBasicAttack_mis", "JannaBasicAttack_tar", "JannaBasicAttackFrost_tar"}, aaSpellName = "jannabasicattack", startAttackSpeed = "0.625" },
         Jayce        = { projSpeed = 2.2, aaParticles = {"Jayce_Range_Basic_mis", "Jayce_Range_Basic_Crit"}, aaSpellName = "jaycebasicattack", startAttackSpeed = "0.658",  },
-        Karma        = { projSpeed = nil, aaParticles = {"karma_basicAttack_cas", "karma_basicAttack_mis", "karma_crit_mis"}, aaSpellName = "karmabasicattack", startAttackSpeed = "0.658",  },
+        Kalista      = { projSpeed = 1.6, aaParticles = {"Kalista_BasicAttack_mis", "Kalista_BasicAttack_tar"}, aaSpellName = "Kalistabasicattack", startAttackSpeed = "0.668",  },
+		Karma        = { projSpeed = nil, aaParticles = {"karma_basicAttack_cas", "karma_basicAttack_mis", "karma_crit_mis"}, aaSpellName = "karmabasicattack", startAttackSpeed = "0.658",  },
         Karthus      = { projSpeed = 1.25, aaParticles = {"LichBasicAttack_cas", "LichBasicAttack_glow", "LichBasicAttack_mis", "LichBasicAttack_tar"}, aaSpellName = "karthusbasicattack", startAttackSpeed = "0.625" },
         Kayle        = { projSpeed = 1.8, aaParticles = {"RighteousFury_nova"}, aaSpellName = "KayleBasicAttack", startAttackSpeed = "0.638",  }, -- Kayle doesn't have a particle when auto attacking without E buff..
         Kennen       = { projSpeed = 1.35, aaParticles = {"KennenBasicAttack_mis"}, aaSpellName = "kennenbasicattack", startAttackSpeed = "0.690" },
@@ -919,11 +922,12 @@ end
 
 ---------[[ Auto Good luck and have fun ]]---------
 function AutoChat()
-Phrases1 = {"Good luck and have fun!", "gl hf", "gl hf :D", "Good luck have fun", "Good luck and have fun guys", "gl hf guys!", "gl and have fun", "good luck and hf"} 
-Phrases2 = {"c´mon guys", "we can do it", "This is my team of win", "It doesnt matter", "let´s go", "team work OP" } 
+Text1 = {"Good luck and have fun", "gl hf", "gl hf", "Good luck have fun", "Good luck and have fun guys", "gl hf guys", "gl and have fun", "good luck and hf" } 
+Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt matter", "let´s go", "team work is OP" }
+
 	if GetInGameTimer() < 15 then
 		DelayAction(function()
-			SendChat(Phrases1[math.random(#Phrases1)])
+			SendChat(Text1[math.random(#Text1)])
 		end, 15-GetInGameTimer()) --0:17
 	end
 	
@@ -933,14 +937,21 @@ Phrases2 = {"c´mon guys", "we can do it", "This is my team of win", "It doesnt 
 		end, 333-GetInGameTimer()) --5:35
 	end
 	
-	if GetInGameTimer() < 360 then
+	--[[ if GetInGameTimer() < 360 then
 		DelayAction(function()
 			SendChat(Phrases2[math.random(#Phrases2)])
-		end, 360-GetInGameTimer()) --5:35
+		end, 360-GetInGameTimer()) --6:02
+	end ]]--
+	
+	if GetInGameTimer() < 460 then
+		DelayAction(function()
+			SendChat(Phrases2[math.random(#Phrases2)])
+		end, 460-GetInGameTimer()) --7:40
 	end
 	
 	if GetGame().isOver then 
         SendChat("gg wp")
 		QuitGame(10)
     end
+	
 end
