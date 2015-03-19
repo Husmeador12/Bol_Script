@@ -1,5 +1,5 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v2.0 by Husmeador12  	   		]]--
+--[[		         iARAM v2.1 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
@@ -47,13 +47,13 @@ end
 
 local SCRIPT_NAME = "iARAM"
 local MAJORVERSION = 2
-local SUBVERSION = 0
+local SUBVERSION = 1
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
 local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "Repaired Autobuy, added Kalista"
+local UPDATE_CHANGE_LOG = "Added Bard as a mage."
 
 --[[ Update functions ]]--
 function Update()
@@ -105,7 +105,7 @@ do
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Thresh","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","ChoGath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
-	mages = {"Ahri","Anivia","Annie","Azir","Brand","Cassiopeia","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
+	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
 	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","Wukong","Zed","Yasuo"}
 	fighters = {"Aatrox","Fiora","Jax","Jayce","MasterYi","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
@@ -579,6 +579,7 @@ function LevelSequence()
 	elseif champ == "Azir" then         abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, }
     elseif champ == "Blitzcrank" then   abilitySequence = { 1, 3, 2, 3, 2, 4, 3, 2, 3, 2, 4, 3, 2, 1, 1, 4, 1, 1, }
     elseif champ == "Brand" then        abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
+    elseif champ == "Bard" then         abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
 	elseif champ == "Braum" then        abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
     elseif champ == "Caitlyn" then      abilitySequence = { 2, 1, 1, 3, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Cassiopeia" then   abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
@@ -710,6 +711,7 @@ function getChampTable()
         Ashe         = { projSpeed = 2.0, aaParticles = {"bowmaster_frostShot_mis", "bowmasterbasicattack_mis"}, aaSpellName = "ashebasicattack", startAttackSpeed = "0.658" },
 		Azir         = { projSpeed = 1.6, aaParticles = {"Azir_BasicAttack_mis", "Azir_BasicAttack_tar"}, aaSpellName = "Azirbasicattack", startAttackSpeed = "0.668",  },
         Brand        = { projSpeed = 1.975, aaParticles = {"BrandBasicAttack_cas", "BrandBasicAttack_Frost_tar", "BrandBasicAttack_mis", "BrandBasicAttack_tar", "BrandCritAttack_mis", "BrandCritAttack_tar", "BrandCritAttack_tar"}, aaSpellName = "brandbasicattack", startAttackSpeed = "0.625" },
+	Bard         = { projSpeed = 1.0, aaParticles = {"BardBasicAttack_tar", "BardBasicAttack_tar_frost", "BardBasicAttack2_mis", "BardBasicAttack3_mis"}, aaSpellName = "Bardbasicattack", startAttackSpeed = "0.579",  },        
 		Caitlyn      = { projSpeed = 2.5, aaParticles = {"caitlyn_basicAttack_cas", "caitlyn_headshot_tar", "caitlyn_mis_04"}, aaSpellName = "caitlynbasicattack", startAttackSpeed = "0.668" },
         Cassiopeia   = { projSpeed = 1.22, aaParticles = {"CassBasicAttack_mis"}, aaSpellName = "cassiopeiabasicattack", startAttackSpeed = "0.644" },
         Corki        = { projSpeed = 2.0, aaParticles = {"corki_basicAttack_mis", "Corki_crit_mis"}, aaSpellName = "CorkiBasicAttack", startAttackSpeed = "0.658" },
