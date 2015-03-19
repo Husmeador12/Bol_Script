@@ -1,7 +1,7 @@
-Bol_Script by Husmeador12
+Bol_Scripts
 ==========
-I did these script only for Bol Studio.
+I´m working as a unofficial scripture. do not expect that I will do an awesome script. >.<
 
-See you later.
+See you later!
 
 Husmeador
