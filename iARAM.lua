@@ -14,7 +14,7 @@
 local HotKey = 115 --F4 = 115, F6 = 117 default
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
-local AUTOUPDATE = false--change to false to disable auto update
+             --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
@@ -43,51 +43,46 @@ wardDetectedFlag[i] = false
 end
 
 
+
 --[[ Auto Update Globals]]--
 
-local SCRIPT_NAME = "iARAM"
-local MAJORVERSION = 2
-local SUBVERSION = 2
-local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
+local version = "2.2"
+local AutoUpdate = true
+local SELF = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua?"..math.random(100)
+local UPDATE_TMP_FILE = LIB_PATH.."iARAMTmp.txt"
+local versionmessage = "<font color=\"#81BEF7\" >Changelog: Trying</font>"
 
-local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
-local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
-local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "I´m having problems with the autoupdate. Sorry :("
-
---[[ Update functions ]]--
 function Update()
-	file = io.open(UPDATE_TEMP_FILE, "rb")
-	
+	DownloadFile(URL, UPDATE_TMP_FILE, UpdateCallback)
+end
+
+function UpdateCallback()
+	file = io.open(UPDATE_TMP_FILE, "rb")
 	if file ~= nil then
 		content = file:read("*all")
 		file:close()
-		os.remove(UPDATE_TEMP_FILE)
-		
-		if content then		
-			local update_MAJORVERSION = string.match(string.match(content, "local MAJORVERSION = %d+"), "%d+")
-			local update_SUBVERSION = string.match(string.match(content, "local SUBVERSION = %d+"), "%d+")
-			local update_VERSION = tostring(update_MAJORVERSION) .. "." .. tostring(update_SUBVERSION)
-			
-			update_MAJORVERSION = tonumber(string.format("%d", update_MAJORVERSION ))
-			update_SUBVERSION = tonumber(string.format("%d", update_SUBVERSION ))
-			
-			if (update_MAJORVERSION ~= nil and update_SUBVERSION ~= nil) and (update_MAJORVERSION > MAJORVERSION or (update_MAJORVERSION == MAJORVERSION and update_SUBVERSION > SUBVERSION) ) and content:find("--EOS--") then
-				file = io.open(PATH, "w")
-				
-				if file then
-					file:write(content)
-					file:flush()
-					file:close()
-					print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">Successfully updated to v" .. update_VERSION .. "! Please reload this script.</font>")
-					print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">Update Notes: " .. UPDATE_CHANGE_LOG .. "</font>")
-				else
-					print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#FF0000\">Update to version v" .. update_VERSION .. " failed.</font>")
-				end
-			elseif (update_MAJORVERSION ~= nil and update_SUBVERSION ~= nil) and (update_MAJORVERSION == MAJORVERSION and update_SUBVERSION == SUBVERSION) then
-				print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">No updates found, latest version is installed.</font>")
-			elseif (update_MAJORVERSION ~= nil and update_SUBVERSION ~= nil) then
-				print("<font color=\"#81BEF7\">" .. SCRIPT_NAME .. ": </font> <font color=\"#00FF00\">A newer version of this script is already installed. Update v"..update_VERSION.." was not downloaded.</font>")
+		os.remove(UPDATE_TMP_FILE)
+		if content then
+			tmp, sstart = string.find(content, "local version = \"")
+			if sstart then
+				send, tmp = string.find(content, "\"", sstart+1)
+			end
+			if send then
+				Version = tonumber(string.sub(content, sstart+1, send-1))
+			end
+			if (Version ~= nil) and (Version > tonumber(version)) and content:find("--EOS--") then
+				file = io.open(SELF, "w")
+			if file then
+				file:write(content)
+				file:flush()
+				file:close()
+				PrintChat("<font color=\"#81BEF7\" >UnifiedSoraka:</font> <font color=\"#00FF00\">Successfully updated to: v"..Version..". Please reload the script with F9.</font>")
+			else
+				PrintChat("<font color=\"#81BEF7\" >UnifiedSoraka:</font> <font color=\"#FF0000\">Error updating to new version (v"..Version..")</font>")
+			end
+			elseif (Version ~= nil) and (Version == tonumber(version)) then
+				PrintChat("<font color=\"#81BEF7\" >UnifiedSoraka:</font> <font color=\"#00FF00\">No updates found, latest version: v"..Version.." </font>")
 			end
 		end
 	end
