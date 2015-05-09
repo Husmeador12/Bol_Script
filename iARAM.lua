@@ -14,7 +14,7 @@
 local HotKey = 115 --F4 = 115, F6 = 117 default
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
-             --change to false to disable auto update
+local AutoUpdate = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
@@ -46,8 +46,7 @@ end
 
 --[[ Auto Update Globals]]--
 
-local version = "2.2"
-local AutoUpdate = true
+local version = "2.1"
 local SELF = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua?"..math.random(100)
 local UPDATE_TMP_FILE = LIB_PATH.."iARAMTmp.txt"
@@ -77,12 +76,12 @@ function UpdateCallback()
 				file:write(content)
 				file:flush()
 				file:close()
-				PrintChat("<font color=\"#81BEF7\" >UnifiedSoraka:</font> <font color=\"#00FF00\">Successfully updated to: v"..Version..". Please reload the script with F9.</font>")
+				PrintChat("<font color=\"#81BEF7\" >iARAM:</font> <font color=\"#00FF00\">Successfully updated to: v"..Version..". Please reload the script with F9.</font>")
 			else
-				PrintChat("<font color=\"#81BEF7\" >UnifiedSoraka:</font> <font color=\"#FF0000\">Error updating to new version (v"..Version..")</font>")
+				PrintChat("<font color=\"#81BEF7\" >iARAM:</font> <font color=\"#FF0000\">Error updating to new version (v"..Version..")</font>")
 			end
 			elseif (Version ~= nil) and (Version == tonumber(version)) then
-				PrintChat("<font color=\"#81BEF7\" >UnifiedSoraka:</font> <font color=\"#00FF00\">No updates found, latest version: v"..Version.." </font>")
+				PrintChat("<font color=\"#81BEF7\" >iARAM:</font> <font color=\"#00FF00\">No updates found, latest version: v"..Version.." </font>")
 			end
 		end
 	end
@@ -92,7 +91,7 @@ end
 --[[ his build and defining champion class ]]--
 do
 	myHero = GetMyHero()
-	PrintChat("<font color=\"#81BEF7\">iARAM:</font> <font color=\"#00FF00\"> version: "..MAJORVERSION.."."..SUBVERSION.." </font>")
+	PrintChat("<font color=\"#81BEF7\">iARAM:</font> <font color=\"#00FF00\"> version: "..version.." </font>")
 	Target = nil
 	spawnpos  = { x = myHero.x, z = myHero.z}
 	ranged = 0
@@ -771,7 +770,7 @@ function Menu()
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", " >> edited by Husmeador12", SCRIPT_PARAM_INFO, "")
-		iARAM:addParam("info2", " >> Version "..MAJORVERSION.."."..SUBVERSION.."", SCRIPT_PARAM_INFO, "")
+		iARAM:addParam("info2", " >> Version "..version.."", SCRIPT_PARAM_INFO, "")
 		
 		
 end
