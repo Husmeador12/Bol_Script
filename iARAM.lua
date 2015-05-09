@@ -1,5 +1,5 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v2.1 by Husmeador12  	   		]]--
+--[[		         iARAM v2.2 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
@@ -14,7 +14,7 @@
 local HotKey = 115 --F4 = 115, F6 = 117 default
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
-local AUTOUPDATE = true --change to false to disable auto update
+local AUTOUPDATE = false--change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
@@ -47,13 +47,13 @@ end
 
 local SCRIPT_NAME = "iARAM"
 local MAJORVERSION = 2
-local SUBVERSION = 1
+local SUBVERSION = 2
 local VERSION = tostring(MAJORVERSION) .. "." .. tostring(SUBVERSION) --neat style of version
 
 local PATH =  SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua"
 local UPDATE_TEMP_FILE = SCRIPT_PATH.."iARAMUpdateTemp.txt"
-local UPDATE_CHANGE_LOG = "Added Bard as a mage."
+local UPDATE_CHANGE_LOG = "I´m having problems with the autoupdate. Sorry :("
 
 --[[ Update functions ]]--
 function Update()
