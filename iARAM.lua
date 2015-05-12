@@ -1,5 +1,5 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v2.2 by Husmeador12  	   		]]--
+--[[		         iARAM v2.3 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
@@ -14,7 +14,8 @@
 local HotKey = 115 --F4 = 115, F6 = 117 default
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
-local AutoUpdate = true --change to false to disable auto update
+local AUTOUPDATE = true --change to false to disable auto update
+ 
 
 
 --[[ GLOBALS [Do Not Change] ]]--
@@ -45,45 +46,28 @@ end
 
 
 --[[ Auto Update Globals]]--
+local version = "2.3"
+local UPDATE_HOST = "raw.github.com"
+local UPDATE_PATH = "Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
+local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-local version = "2.1"
-local SELF = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
-local URL = "https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/iARAM.lua?"..math.random(100)
-local UPDATE_TMP_FILE = LIB_PATH.."iARAMTmp.txt"
-local versionmessage = "<font color=\"#81BEF7\" >Changelog: Trying</font>"
-
-function Update()
-	DownloadFile(URL, UPDATE_TMP_FILE, UpdateCallback)
-end
-
-function UpdateCallback()
-	file = io.open(UPDATE_TMP_FILE, "rb")
-	if file ~= nil then
-		content = file:read("*all")
-		file:close()
-		os.remove(UPDATE_TMP_FILE)
-		if content then
-			tmp, sstart = string.find(content, "local version = \"")
-			if sstart then
-				send, tmp = string.find(content, "\"", sstart+1)
-			end
-			if send then
-				Version = tonumber(string.sub(content, sstart+1, send-1))
-			end
-			if (Version ~= nil) and (Version > tonumber(version)) and content:find("--EOS--") then
-				file = io.open(SELF, "w")
-			if file then
-				file:write(content)
-				file:flush()
-				file:close()
-				PrintChat("<font color=\"#81BEF7\" >iARAM:</font> <font color=\"#00FF00\">Successfully updated to: v"..Version..". Please reload the script with F9.</font>")
+function _AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>iARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+if AUTOUPDATE then
+	local ServerData = GetWebResult(UPDATE_HOST, "/Husmeador12/Bol_Script/master/version/iARAM.version")
+	if ServerData then
+		ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
+		if ServerVersion then
+			if tonumber(version) < ServerVersion then
+				_AutoupdaterMsg("New version available "..ServerVersion)
+				_AutoupdaterMsg("Updating, please don't press F9")
+				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
 			else
-				PrintChat("<font color=\"#81BEF7\" >iARAM:</font> <font color=\"#FF0000\">Error updating to new version (v"..Version..")</font>")
-			end
-			elseif (Version ~= nil) and (Version == tonumber(version)) then
-				PrintChat("<font color=\"#81BEF7\" >iARAM:</font> <font color=\"#00FF00\">No updates found, latest version: v"..Version.." </font>")
+				_AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
 			end
 		end
+	else
+		_AutoupdaterMsg("Error downloading version info")
 	end
 end
 
@@ -222,23 +206,17 @@ end
 --[[ Checks Function ]]--
 function Checks()
 
-	Ignite = { name = "summonerdot", range = 600, slot = nil }
-	Ignite.ready = (Ignite.slot ~= nil and myHero:CanUseSpell(Ignite.slot) == READY)
-	if myHero:GetSpellData(SUMMONER_1).name:find(Ignite.name) then
-		Ignite.slot = SUMMONER_1
-	elseif myHero:GetSpellData(SUMMONER_2).name:find(Ignite.name) then
-		Ignite.slot = SUMMONER_2
-	end
-	
+--|> Ignite Slot
+	ignite = myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") and SUMMONER_1 or myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") and SUMMONER_2 or nil
 	
 end
 
 --[[ On Load Function ]]--
  function OnLoad()
  
-		if AUTOUPDATE then
-		DownloadFile(URL, UPDATE_TEMP_FILE, Update)
-		end
+		--if AUTOUPDATE then
+		--_AutoupdaterMsg()
+		--end
 		if AutomaticChat then
 			AutoChat()
 		end
@@ -255,7 +233,8 @@ end
 
 --[[ OnTick Function ]]--
 function OnTick()
-	--[[AutoIgnite() ]]--
+
+	--AutoIgnite()
 	Count()
 	Follow()
 	LFC()
@@ -822,8 +801,6 @@ MenuTextSize = 18
 
 end
 
-
-
 ---------[[ Activated/disabled Script ]]---------
 function OnWndMsg(msg, keycode)
 
@@ -838,8 +815,6 @@ function OnWndMsg(msg, keycode)
     end
 	
 end
-
-
 
 --[[
 Ikita's Auto Ward 1.0 for BoL Studio
@@ -904,17 +879,18 @@ for i = 1, 12 do
 	end
 	
 end
---[[
-function AutoIgnite(unit)
-	
-	if ValidTarget(unit, Ignite.range) and unit.health <= 50 + (20 * myHero.level) then
-		
-		if Ignite.ready then
-			CastSpell(Ignite.slot, unit)
+
+---------[[ Auto Ignite ]]---------
+--[[function AutoIgnite()
+		if myHero:CanUseSpell(ignite) == READY then
+			for i, enemy in ipairs(GetEnemyHeroes()) do
+				if ValidTarget(enemy, 600) and enemy.health <= getDmg('IGNITE', enemy, myHero) then
+					CastSpell(ignite, enemy)
+				end
+			end
 		end
 	end
-end
-]]--
+	]]--
 
 ---------[[ Auto Good luck and have fun ]]---------
 function AutoChat()
