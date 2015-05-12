@@ -47,7 +47,7 @@ end
 
 --[[ Auto Update Globals]]--
 local version = "2.3"
-local UPDATE_HOST = "raw.github.com"
+local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
