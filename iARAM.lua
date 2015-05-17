@@ -1,5 +1,5 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v2.3 by Husmeador12  	   		]]--
+--[[		         iARAM v2.5 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
@@ -15,10 +15,14 @@ local HotKey = 115 --F4 = 115, F6 = 117 default
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
 local AUTOUPDATE = true --change to false to disable auto update
+local version = "2.5"
  
 
 
 --[[ GLOBALS [Do Not Change] ]]--
+require 'VPrediction'
+
+lastCast = 0
 local switcher = true
 local abilitySequence
 local qOff, wOff, eOff, rOff = 0,0,0,0
@@ -46,7 +50,8 @@ end
 
 
 --[[ Auto Update Globals]]--
-local version = "2.3"
+
+local UPDATE_CHANGE_LOG = "Added autoignite."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -64,6 +69,7 @@ if AUTOUPDATE then
 				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
 			else
 				_AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
+				_AutoupdaterMsg("<font color=\"#00FF00\">Update Notes: " .. UPDATE_CHANGE_LOG .. "</font>")
 			end
 		end
 	else
@@ -214,15 +220,13 @@ end
 --[[ On Load Function ]]--
  function OnLoad()
  
-		--if AUTOUPDATE then
-		--_AutoupdaterMsg()
-		--end
+		Menu()
 		if AutomaticChat then
 			AutoChat()
 		end
 
 		LevelSequence()
-		Menu()
+		
 		attackMinions()
 		OnWndMsg()
 		if AutoWard then
@@ -239,6 +243,17 @@ function OnTick()
 	Follow()
 	LFC()
 	Checks()
+	
+--|> Poro Shouter	
+	Target = getTarget()
+	if ARAM and (myHero:CanUseSpell(ARAM) == READY) then 
+		ARAMRdy = true
+	else
+		ARAMRdy = false
+	end
+	if iARAM.comboKey then
+		shootARAM(Target)
+	end
 
 end
 
@@ -395,8 +410,10 @@ end
 
 function RangeCircles()
 	if iARAM.drawing.drawcircles and not myHero.dead then
+		
 		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
 		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))
+		DrawCircle3D(myHero.x, myHero.y, myHero.z, iARAM.range, 2, ARGB(100, 0, 0, 255))
 		for i,buff in pairs(buffs) do 
 			if buff.current == 1 then
 				DrawCircle(buff.pos.x,buff.pos.y,buff.pos.z,150,RGB(0,0,255))
@@ -746,10 +763,19 @@ function Menu()
 		iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
 		iARAM:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
 		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
+		
+		ARAM = ARAMSlot()
+		iARAM:addParam("comboKey", "Auto Shoot", SCRIPT_PARAM_ONOFF, true) 
+		iARAM:addParam("range", "Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
+		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
+		iARAM:addTS(TargetSelector)
+		vPred = VPrediction()
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", " >> edited by Husmeador12", SCRIPT_PARAM_INFO, "")
 		iARAM:addParam("info2", " >> Version "..version.."", SCRIPT_PARAM_INFO, "")
+		
+		
 		
 		
 end
@@ -926,4 +952,52 @@ Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt 
 		QuitGame(10)
     end
 	
+end
+
+
+
+
+
+---------[[ Poro shouter function ]]---------
+
+function getTarget()
+	TargetSelector:update()	
+	if TargetSelector.target and not TargetSelector.target.dead and TargetSelector.target.type == myHero.type then
+		return TargetSelector.target
+	else
+		return nil
+	end
+end
+
+function ARAMSlot()
+	if myHero:GetSpellData(SUMMONER_1).name:find("summonersnowball") then
+		return SUMMONER_1
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonersnowball") then
+		return SUMMONER_2
+	else
+		return nil
+	end
+end
+
+function hit()
+	if myHero:GetSpellData(SUMMONER_1).name:find("snowballfollowupcast") then
+		return true
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("snowballfollowupcast") then
+		return true
+	else
+		return false
+	end
+end
+
+function shootARAM(unit)
+	if lastCast > os.clock() - 10 then return end
+	
+	if  ValidTarget(unit, iARAM.range + 50) and ARAMRdy then
+		local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(Target, .25, 75, iARAM.range, 1200, myHero, true)
+		if CastPosition and Hitchance >= 2 then
+			d = CastPosition
+			CastSpell(ARAM, CastPosition.x, CastPosition.z)
+			lastCast = os.clock()
+		end
+	end
 end
