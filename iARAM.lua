@@ -1,5 +1,5 @@
 --[[       ------------------------------------------       ]]--
---[[		         iARAM v2.5 by Husmeador12  	   		]]--
+--[[		         iARAM v2.6 by Husmeador12  	   		]]--
 --[[       ------------------------------------------       ]]--
 
 
@@ -15,13 +15,16 @@ local HotKey = 115 --F4 = 115, F6 = 117 default
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AutoWard = true
 local AUTOUPDATE = true --change to false to disable auto update
-local version = "2.5"
+
  
 
 
 --[[ GLOBALS [Do Not Change] ]]--
+local version = "2.6"
+local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
+local range = myHero.range
+local ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, range, DAMAGE_PHYSICAL, false)
 require 'VPrediction'
-
 lastCast = 0
 local switcher = true
 local abilitySequence
@@ -51,7 +54,7 @@ end
 
 --[[ Auto Update Globals]]--
 
-local UPDATE_CHANGE_LOG = "Added autoignite."
+local UPDATE_CHANGE_LOG = "Fixed autofarm, autoignite, AutoAttack champions"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -69,7 +72,7 @@ if AUTOUPDATE then
 				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
 			else
 				_AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
-				_AutoupdaterMsg("<font color=\"#00FF00\">Update Notes: " .. UPDATE_CHANGE_LOG .. "</font>")
+				_AutoupdaterMsg("Update Notes: " .. UPDATE_CHANGE_LOG .. "")
 			end
 		end
 	else
@@ -78,10 +81,9 @@ if AUTOUPDATE then
 end
 
 
---[[ his build and defining champion class ]]--
+--[[ Build and defining Champion Class ]]--
 do
 	myHero = GetMyHero()
-	PrintChat("<font color=\"#81BEF7\">iARAM:</font> <font color=\"#00FF00\"> version: "..version.." </font>")
 	Target = nil
 	spawnpos  = { x = myHero.x, z = myHero.z}
 	ranged = 0
@@ -149,28 +151,28 @@ do
 		heroType = 10
 	end
 	if heroType ~= 10 then
-		PrintChat("<font color=\"#81BEF7\">Hero Items Loaded</font>")
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Items Loaded</font>")
 	end
 	if heroType == 1 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#00FF00\">ADC</font>" )
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#00FF00\">ADC</font>" )
 	elseif heroType == 2 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#FF8000\">ADTANK</font>" )
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#FF8000\">ADTANK</font>" )
 	elseif heroType == 3 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#FF00FF\">APTANK</font>" )
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#FF00FF\">APTANK</font>" )
 	elseif heroType == 4 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#A9F5F2\">Hybrid</font>" )	
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#A9F5F2\">Hybrid</font>" )	
 	elseif heroType == 5 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#8A084B\">BRUISER</font>" )	
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#8A084B\">BRUISER</font>" )	
 	elseif heroType == 6 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#FF0000\">ASSASINS</font>" )	
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#FF0000\">ASSASINS</font>" )	
 	elseif heroType == 7 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#0040FF\">MAGE</font>" )	
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#0040FF\">MAGE</font>" )	
 	elseif heroType == 8 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#80FF00\">APC</font>" )	
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#80FF00\">APC</font>" )	
 	elseif heroType == 9 then
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#FFFF00\">FIGHTER</font>")	
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#FFFF00\">FIGHTER</font>")	
 	else
-		PrintChat("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#BDBDBD\">UNKOWN</font>" )
+		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#BDBDBD\">UNKOWN</font>" )
 	end
 	
 	if myHero.range > 400 then
@@ -213,24 +215,34 @@ end
 function Checks()
 
 --|> Ignite Slot
-	ignite = myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") and SUMMONER_1 or myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") and SUMMONER_2 or nil
+	if myHero:GetSpellData(SUMMONER_1).name:find("summonerDot") then
+		ignite = SUMMONER_1
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerDot") then
+		ignite = SUMMONER_2
+	end
 	
+end
+
+--[[ On Draw Function ]]--
+function OnDraw()
+	AirText()
+	RangeCircles()
 end
 
 --[[ On Load Function ]]--
  function OnLoad()
  
+		OnProcessSpell()
+		timeToShoot()
+		heroCanMove()
 		Menu()
-		if AutomaticChat then
-			AutoChat()
-		end
-
 		LevelSequence()
-		
-		attackMinions()
 		OnWndMsg()
 		if AutoWard then
 			wardUpdate()
+		end
+		if AutomaticChat then
+			AutoChat()
 		end
 		
 end
@@ -238,26 +250,18 @@ end
 --[[ OnTick Function ]]--
 function OnTick()
 
-	--AutoIgnite()
+	AutoIgnite()
+	AutotatackChamp()
+	AutoFarm()
 	Count()
 	Follow()
 	LFC()
 	Checks()
-	
---|> Poro Shouter	
-	Target = getTarget()
-	if ARAM and (myHero:CanUseSpell(ARAM) == READY) then 
-		ARAMRdy = true
-	else
-		ARAMRdy = false
-	end
-	if iARAM.comboKey then
-		shootARAM(Target)
-	end
+	PoroCheck()
 
 end
 
---[[ Follow Function and attack ]]--
+--[[ Follow Function ]]--
 function Follow()
 	if iARAM.follow and not myHero.dead then
 		stance = 0
@@ -288,7 +292,7 @@ function Follow()
 				if myHero:GetSpellData(_W).range > GetDistance(Target) then
 					CastSpell(_W, Target)
 					attacksuccess =1
-					PrintFloatText(Target,0,"Casting spell to".. Target.charName)
+										
 				end
 				if myHero:GetSpellData(_Q).range > GetDistance(Target) then
 					CastSpell(_Q, Target)
@@ -399,27 +403,18 @@ function Follow()
 	end
 	--/LEVELUP
 	
-	
 end
 
---[[ On Draw Function ]]--
-function OnDraw()
-	AirText()
-	RangeCircles()
-end
 
 function RangeCircles()
+
 	if iARAM.drawing.drawcircles and not myHero.dead then
-		
 		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
 		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))
-		DrawCircle3D(myHero.x, myHero.y, myHero.z, iARAM.range, 2, ARGB(100, 0, 0, 255))
-		for i,buff in pairs(buffs) do 
-			if buff.current == 1 then
-				DrawCircle(buff.pos.x,buff.pos.y,buff.pos.z,150,RGB(0,0,255))
-			end
-		end
+		DrawCircle(myHero.x, myHero.y, myHero.z, iARAM.range, 2, RGB(0,255,0))
+		
 	end
+	
 end
 
 
@@ -492,9 +487,6 @@ function frontally()
 	return target
 end
 
-function getlowMinionHp()
-	
-end
 
 function followHero()
 	local target =nil
@@ -524,30 +516,6 @@ function buyItems()
 		end
 	end
 end
-
---[[ Attack Minions ]]--
-function attackMinions()
-	SkillQ = { range = 840, delay = 0.25, speed = 1600, width = 90, ready = false }
-	SkillW = { range = 800, delay = nil, speed = nil, width = nil, ready = false }
-	SkillE = { range = 975, delay = 0.25, speed = 1500, width = 100, ready = false }
-	SkillR = { range = 550, delay = nil, speed = nil, width = nil, ready = false }
-	
-	enemyMinions = minionManager(MINION_ENEMY, SkillE.range, myHero, MINION_SORT_HEALTH_ASC)
-	enemyMinions:update()
-
-	
-		for i, minion in pairs(enemyMinions.objects) do
-			if ValidTarget(minion) and minion ~= nil then
-				if GetDistance(minion) <= SkillQ.range and SkillQ.ready then
-							CastSpell(_Q)
-					end
-				end
-				if GetDistance(minion) <= SkillW.range and SkillW.ready then
-					
-					CastSpell(_W)
-				end
-			end		 
-	end
 
 
 function getTrueRange()
@@ -684,7 +652,7 @@ function LevelSequence()
     else PrintChat(string.format(" >> AutoLevelSpell  disabled for %s", champ))
     end
     if abilitySequence and #abilitySequence == 18 then
-		PrintChat("<font color=\"#81BEF7\">AutoLevelSpell loaded!</font>")
+		_AutoupdaterMsg("<font color=\"#81BEF7\">AutoLevelSpell loaded!</font>")
     else
         PrintChat(" >> AutoLevel Error")
         OnTick = function() end
@@ -770,6 +738,12 @@ function Menu()
 		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
 		iARAM:addTS(TargetSelector)
 		vPred = VPrediction()
+		
+
+		iARAM:addParam("farm", "last hit farm", SCRIPT_PARAM_ONOFF, true)	
+		iARAM:addParam("key", "AutoAtack champs", SCRIPT_PARAM_ONOFF, true)	
+		iARAM:addParam("draw", "Draw AA-Range", SCRIPT_PARAM_ONOFF, false)
+		iARAM:addParam("target", "Draw Circle on target", SCRIPT_PARAM_ONOFF, false)
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", " >> edited by Husmeador12", SCRIPT_PARAM_INFO, "")
@@ -907,16 +881,18 @@ for i = 1, 12 do
 end
 
 ---------[[ Auto Ignite ]]---------
---[[function AutoIgnite()
-		if myHero:CanUseSpell(ignite) == READY then
-			for i, enemy in ipairs(GetEnemyHeroes()) do
-				if ValidTarget(enemy, 600) and enemy.health <= getDmg('IGNITE', enemy, myHero) then
-					CastSpell(ignite, enemy)
+function AutoIgnite()
+iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
+	iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
+	if ValidTarget(Target) then
+		if Target.health <= iDmg and GetDistance(Target) <= 600 then
+				if iReady then
+					CastSpell(ignite, Target)
 				end
 			end
 		end
 	end
-	]]--
+
 
 ---------[[ Auto Good luck and have fun ]]---------
 function AutoChat()
@@ -955,10 +931,22 @@ Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt 
 end
 
 
-
-
-
 ---------[[ Poro shouter function ]]---------
+
+function PoroCheck()
+
+
+	Target = getTarget()
+	if ARAM and (myHero:CanUseSpell(ARAM) == READY) then 
+		ARAMRdy = true
+	else
+		ARAMRdy = false
+	end
+	if iARAM.comboKey then
+		shootARAM(Target)
+	end
+
+end
 
 function getTarget()
 	TargetSelector:update()	
@@ -1001,3 +989,73 @@ function shootARAM(unit)
 		end
 	end
 end
+
+
+
+-----[[ AutoFarm and harras ]]------
+
+function AutotatackChamp()
+
+	range = myHero.range + myHero.boundingRadius - 3
+	ts.range = range
+	ts:update()
+	if not iARAM.key then return end
+	local myTarget = ts.target
+	if myTarget ~=	nil then		
+		if timeToShoot() then
+			myHero:Attack(myTarget)
+			elseif heroCanMove() then
+			
+		end
+
+	end
+end
+
+
+function AutoFarm()
+
+	enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
+    enemyMinions:update()
+	local player = GetMyHero()
+	local tick = 0
+	local delay = 400
+	local myTarget = ts.target
+  
+	
+  if iARAM.farm then
+    for index, minion in pairs(enemyMinions.objects) do
+      if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
+        local dmg = getDmg("AD", minion, myHero)
+        if dmg > minion.health then
+          myHero:Attack(minion)
+          tick = GetTickCount()
+        end
+      end
+    end
+  end
+end
+
+
+function heroCanMove()
+	return (GetTickCount() + GetLatency()/2 > lastAttack + lastWindUpTime + 20)
+end 
+ 
+function timeToShoot()
+	return (GetTickCount() + GetLatency()/2 > lastAttack + lastAttackCD)
+end 
+
+
+function OnProcessSpell(object, spell)
+	if object == myHero then
+		if spell.name:lower():find("attack") then
+			lastAttack = GetTickCount() - GetLatency()/2
+			lastWindUpTime = spell.windUpTime*1000
+			lastAttackCD = spell.animationTime*1000
+		end 
+	end
+end
+
+
+
+
+
