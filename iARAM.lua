@@ -1,14 +1,31 @@
---[[       ------------------------------------------       ]]--
---[[		         iARAM v2.6 by Husmeador12  	   		]]--
---[[       ------------------------------------------       ]]--
+--[[
+────────────────────────────────────────────────────────────────────────────────────
+─██████████─██████████████─████████████████───██████████████─██████──────────██████─
+─██░░░░░░██─██░░░░░░░░░░██─██░░░░░░░░░░░░██───██░░░░░░░░░░██─██░░██████████████░░██─
+─████░░████─██░░██████░░██─██░░████████░░██───██░░██████░░██─██░░░░░░░░░░░░░░░░░░██─
+───██░░██───██░░██──██░░██─██░░██────██░░██───██░░██──██░░██─██░░██████░░██████░░██─
+───██░░██───██░░██████░░██─██░░████████░░██───██░░██████░░██─██░░██──██░░██──██░░██─
+───██░░██───██░░░░░░░░░░██─██░░░░░░░░░░░░██───██░░░░░░░░░░██─██░░██──██░░██──██░░██─
+───██░░██───██░░██████░░██─██░░██████░░████───██░░██████░░██─██░░██──██████──██░░██─
+───██░░██───██░░██──██░░██─██░░██──██░░██─────██░░██──██░░██─██░░██──────────██░░██─
+─████░░████─██░░██──██░░██─██░░██──██░░██████─██░░██──██░░██─██░░██──────────██░░██─
+─██░░░░░░██─██░░██──██░░██─██░░██──██░░░░░░██─██░░██──██░░██─██░░██──────────██░░██─
+─██████████─██████──██████─██████──██████████─██████──██████─██████──────────██████─
+────────────────────────────────────────────────────────────────────────────────────
+]]--
 
 
 --[[
 		Credits & Mentions:
-			-barasia
+			-Barasia
 			-One
+			-Husky
 ]]--
 
+--[[
+
+		-> Broked auto-buy.
+]]--
 
 --[[ SETTINGS ]]--
 local HotKey = 115 --F4 = 115, F6 = 117 default
@@ -20,41 +37,35 @@ local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "2.6"
+local version = "2.7"
+
+--Attack and farm globals
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local range = myHero.range
 local ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, range, DAMAGE_PHYSICAL, false)
 require 'VPrediction'
-lastCast = 0
+local lastCast = 0
+
+--Chat
 local switcher = true
+
+--Main Script
 local abilitySequence
 local qOff, wOff, eOff, rOff = 0,0,0,0
-buyIndex = 1
-shoplist = {}
-buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
-lastsixpos = {0,0,0,0,0,0,0,0,0,0}
+local buyIndex = 1
+local shoplist = {}
+local buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
+local lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
--- 3340,--ward trinket
-local wardRange = 600 --Ward range is 600.
-local wardTimer = 0
-local wardSlot = nil
-local wardMatrix = {}
-local wardDetectedFlag = {}
-local lastWard = 0
-wardMatrix[1] = {10000,11578,10012,8924,7916,11369,6185,4911,4025,2579,4031,2788}
-wardMatrix[2] = {2868,3452,4842,5461,4595,6885,9856,8878,9621,10943,11519,7611}
-wardMatrix[3] = {}
-for i = 1, 12 do
---Ward present nearby ?
-wardMatrix[3][i] = false
-wardDetectedFlag[i] = false
-end
+--!> Ignite
+iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
+iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
 
 
 
 --[[ Auto Update Globals]]--
 
-local UPDATE_CHANGE_LOG = "Fixed autofarm, autoignite, AutoAttack champions"
+local UPDATE_CHANGE_LOG = "Fixed ReckSai, Auto ward, added Ekko"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -73,6 +84,7 @@ if AUTOUPDATE then
 			else
 				_AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
 				_AutoupdaterMsg("Update Notes: " .. UPDATE_CHANGE_LOG .. "")
+				_AutoupdaterMsg(" >> Perfect Ward v0.1 patched for 5.5")
 			end
 		end
 	else
@@ -91,9 +103,9 @@ do
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Thresh","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","ChoGath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
-	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
+	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
-	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","Wukong","Zed","Yasuo"}
+	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","RekSai","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","Wukong","Zed","Yasuo"}
 	fighters = {"Aatrox","Fiora","Jax","Jayce","MasterYi","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
 	apcs = {"Elise","FiddleSticks","Kennen","Mordekaiser","Rumble","Vladimir"}
 	
@@ -215,9 +227,9 @@ end
 function Checks()
 
 --|> Ignite Slot
-	if myHero:GetSpellData(SUMMONER_1).name:find("summonerDot") then
+	if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then
 		ignite = SUMMONER_1
-	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerDot") then
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then
 		ignite = SUMMONER_2
 	end
 	
@@ -227,6 +239,7 @@ end
 function OnDraw()
 	AirText()
 	RangeCircles()
+	
 end
 
 --[[ On Load Function ]]--
@@ -238,9 +251,9 @@ end
 		Menu()
 		LevelSequence()
 		OnWndMsg()
-		if AutoWard then
-			wardUpdate()
-		end
+		--if AutoWard then
+		--	wardUpdate()
+		--end
 		if AutomaticChat then
 			AutoChat()
 		end
@@ -253,11 +266,14 @@ function OnTick()
 	AutoIgnite()
 	AutotatackChamp()
 	AutoFarm()
-	Count()
 	Follow()
 	LFC()
 	Checks()
 	PoroCheck()
+	
+	
+--|> Ward
+	
 
 end
 
@@ -411,7 +427,6 @@ function RangeCircles()
 	if iARAM.drawing.drawcircles and not myHero.dead then
 		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
 		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))
-		DrawCircle(myHero.x, myHero.y, myHero.z, iARAM.range, 2, RGB(0,255,0))
 		
 	end
 	
@@ -547,6 +562,7 @@ function LevelSequence()
     elseif champ == "Diana" then        abilitySequence = { 2, 1, 2, 3, 1, 4, 1, 1, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
     elseif champ == "DrMundo" then      abilitySequence = { 2, 1, 3, 2, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
     elseif champ == "Draven" then       abilitySequence = { 1, 3, 2, 1, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
+	elseif champ == "Ekko" then      	abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Elise" then        abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, } rOff = -1
     elseif champ == "Evelynn" then      abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Ezreal" then       abilitySequence = { 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, }
@@ -603,6 +619,7 @@ function LevelSequence()
     elseif champ == "Poppy" then        abilitySequence = { 3, 2, 1, 1, 1, 4, 1, 2, 1, 2, 2, 2, 3, 3, 3, 3, 4, 4, }
     elseif champ == "Quinn" then        abilitySequence = { 3, 1, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Rammus" then       abilitySequence = { 1, 2, 3, 3, 3, 4, 3, 2, 3, 2, 4, 2, 2, 1, 1, 4, 1, 1, }
+	elseif champ == "RekSai" then       abilitySequence = { 2, 1, 3, 1, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
     elseif champ == "Renekton" then     abilitySequence = { 2, 1, 3, 1, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
     elseif champ == "Rengar" then       abilitySequence = { 1, 3, 2, 1, 1, 4, 2, 1, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
     elseif champ == "Riven" then        abilitySequence = { 1, 2, 3, 2, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
@@ -649,18 +666,18 @@ function LevelSequence()
     elseif champ == "Ziggs" then        abilitySequence = { 1, 2, 3, 1, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Zilean" then       abilitySequence = { 1, 2, 1, 3, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
     elseif champ == "Zyra" then         abilitySequence = { 3, 2, 1, 1, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
-    else PrintChat(string.format(" >> AutoLevelSpell  disabled for %s", champ))
+    else _AutoupdaterMsg(string.format(" >> AutoLevelSpell  disabled for %s", champ))
     end
     if abilitySequence and #abilitySequence == 18 then
 		_AutoupdaterMsg("<font color=\"#81BEF7\">AutoLevelSpell loaded!</font>")
     else
-        PrintChat(" >> AutoLevel Error")
+        _AutoupdaterMsg(" >> AutoLevel Error")
         OnTick = function() end
         return
     end
 end
 
-
+--[[ Attack Distance ]]-- 
 function getChampTable() 
     return {                                                   
         Ahri         = { projSpeed = 1.6, aaParticles = {"Ahri_BasicAttack_mis", "Ahri_BasicAttack_tar"}, aaSpellName = "ahribasicattack", startAttackSpeed = "0.668",  },
@@ -669,7 +686,7 @@ function getChampTable()
         Ashe         = { projSpeed = 2.0, aaParticles = {"bowmaster_frostShot_mis", "bowmasterbasicattack_mis"}, aaSpellName = "ashebasicattack", startAttackSpeed = "0.658" },
 		Azir         = { projSpeed = 1.6, aaParticles = {"Azir_BasicAttack_mis", "Azir_BasicAttack_tar"}, aaSpellName = "Azirbasicattack", startAttackSpeed = "0.668",  },
         Brand        = { projSpeed = 1.975, aaParticles = {"BrandBasicAttack_cas", "BrandBasicAttack_Frost_tar", "BrandBasicAttack_mis", "BrandBasicAttack_tar", "BrandCritAttack_mis", "BrandCritAttack_tar", "BrandCritAttack_tar"}, aaSpellName = "brandbasicattack", startAttackSpeed = "0.625" },
-	Bard         = { projSpeed = 1.0, aaParticles = {"BardBasicAttack_tar", "BardBasicAttack_tar_frost", "BardBasicAttack2_mis", "BardBasicAttack3_mis"}, aaSpellName = "Bardbasicattack", startAttackSpeed = "0.579",  },        
+		Bard         = { projSpeed = 1.0, aaParticles = {"BardBasicAttack_tar", "BardBasicAttack_tar_frost", "BardBasicAttack2_mis", "BardBasicAttack3_mis"}, aaSpellName = "Bardbasicattack", startAttackSpeed = "0.579",  },        
 		Caitlyn      = { projSpeed = 2.5, aaParticles = {"caitlyn_basicAttack_cas", "caitlyn_headshot_tar", "caitlyn_mis_04"}, aaSpellName = "caitlynbasicattack", startAttackSpeed = "0.668" },
         Cassiopeia   = { projSpeed = 1.22, aaParticles = {"CassBasicAttack_mis"}, aaSpellName = "cassiopeiabasicattack", startAttackSpeed = "0.644" },
         Corki        = { projSpeed = 2.0, aaParticles = {"corki_basicAttack_mis", "Corki_crit_mis"}, aaSpellName = "CorkiBasicAttack", startAttackSpeed = "0.658" },
@@ -733,8 +750,8 @@ function Menu()
 		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 		
 		ARAM = ARAMSlot()
-		iARAM:addParam("comboKey", "Auto Shoot", SCRIPT_PARAM_ONOFF, true) 
-		iARAM:addParam("range", "Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
+		iARAM:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
+		iARAM:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
 		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
 		iARAM:addTS(TargetSelector)
 		vPred = VPrediction()
@@ -742,8 +759,6 @@ function Menu()
 
 		iARAM:addParam("farm", "last hit farm", SCRIPT_PARAM_ONOFF, true)	
 		iARAM:addParam("key", "AutoAtack champs", SCRIPT_PARAM_ONOFF, true)	
-		iARAM:addParam("draw", "Draw AA-Range", SCRIPT_PARAM_ONOFF, false)
-		iARAM:addParam("target", "Draw Circle on target", SCRIPT_PARAM_ONOFF, false)
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", " >> edited by Husmeador12", SCRIPT_PARAM_INFO, "")
@@ -807,91 +822,45 @@ function OnWndMsg(msg, keycode)
 	if keycode == HotKey and msg == KEY_DOWN then
         if switcher == true then
             switcher = false
-			PrintChat("<font color='#FF0000'>Script disabled </font>")
+			_AutoupdaterMsg("<font color='#FF0000'>Script disabled </font>")
         else
             switcher = true
-			PrintChat("<font color='#00FF00'>Script enabled </font>")
+			_AutoupdaterMsg("<font color='#00FF00'>Script enabled </font>")
         end
     end
 	
 end
 
+
+
+
+
+
+
 --[[
-Ikita's Auto Ward 1.0 for BoL Studio
-Sight Wards
-
-Trinket use added by One?.
-
-]]
+Auto Ward 1.0 for BoL Studio    ]]
 
 --[[ Code ]]
 
-function wardUpdate()
-	for i = 1, 12 do
-	wardDetectedFlag[i] = false
-	end
-		for k = 1, objManager.maxObjects do
-		local object = objManager:GetObject(k)
-		if object ~= nil and (string.find(object.name, "Ward") ~= nil or string.find(object.name, "Wriggle") ~= nil) then
-		for i = 1, 12 do
-		if math.sqrt((wardMatrix[1][i] - object.x)*(wardMatrix[1][i] - object.x) + (wardMatrix[2][i] - object.z)*(wardMatrix[2][i] - object.z)) < 1100 then
-		wardDetectedFlag[i] = true
-		wardMatrix[3][i] = true
-		end
-	end
-end
-for i = 1, 12 do
-		if wardDetectedFlag[i] == false then
-		wardMatrix[3][i] = false
-		end
-	end
-end
-wardTimer = GetTickCount()
-end
 
-function Count()
 
-	if GetTickCount() - wardTimer > 10000 then
-		wardUpdate()
-	end	
 
-	if (myHero:CanUseSpell(ITEM_7) == READY and myHero:getItem(ITEM_7).id == 3340) then
-	wardSlot = GetInventorySlotItem(3340)
-	elseif (myHero:CanUseSpell(ITEM_7) == READY and myHero:getItem(ITEM_7).id == 3350) then
-	wardSlot = GetInventorySlotItem(3350)
-	elseif GetInventorySlotItem(2044) ~= nil then
-	wardSlot = GetInventorySlotItem(2044)
-	elseif GetInventorySlotItem(2043) ~= nil then
-	wardSlot = GetInventorySlotItem(2043)
-	else
-	wardSlot = nil
-end
 
-for i = 1, 12 do
-	if wardSlot ~= nil and GetTickCount() - lastWard > 2000 then
-		if math.sqrt((wardMatrix[1][i] - player.x)*(wardMatrix[1][i] - player.x) + (wardMatrix[2][i] - player.z)*(wardMatrix[2][i] - player.z)) < 600 and wardMatrix[3][i] == false then
-		CastSpell( wardSlot, wardMatrix[1][i], wardMatrix[2][i] )
-		lastWard = GetTickCount()
-		wardMatrix[3][i] = true
-		break
-		end
-		end
-	end
-	
-end
+
 
 ---------[[ Auto Ignite ]]---------
 function AutoIgnite()
-iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
-	iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
-	if ValidTarget(Target) then
+	
+	if myTarget ~=	nil then		
 		if Target.health <= iDmg and GetDistance(Target) <= 600 then
-				if iReady then
-					CastSpell(ignite, Target)
-				end
+			if iReady then
+				CastSpell(ignite, Target)			
 			end
+
 		end
+	
 	end
+end
 
 
 ---------[[ Auto Good luck and have fun ]]---------
