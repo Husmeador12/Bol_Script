@@ -24,7 +24,9 @@
 
 --[[
 
-		-> Broked auto-buy.
+		──|> Broked auto-buy.
+		──|> Auto ignite, Auto heal doesnt test it.
+		──|> Auto potion outdate.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -37,7 +39,7 @@ local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "2.7"
+local version = "2.8"
 
 --Attack and farm globals
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
@@ -57,6 +59,17 @@ local shoplist = {}
 local buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
 local lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
+---Imrpoving
+
+local EnemyHeroes = GetEnemyHeroes()
+
+--Auto ward
+
+local drawWardSpots      = false
+local wardSlot           = nil
+
+
+
 --!> Ignite
 iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
 iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
@@ -65,7 +78,7 @@ iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
 
 --[[ Auto Update Globals]]--
 
-local UPDATE_CHANGE_LOG = "Fixed ReckSai, Auto ward, added Ekko"
+local UPDATE_CHANGE_LOG = "Fixed switcher, added Auto Zhonya, healh and barrier, Auto-ignite andAutowarder fixed"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -84,7 +97,7 @@ if AUTOUPDATE then
 			else
 				_AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
 				_AutoupdaterMsg("Update Notes: " .. UPDATE_CHANGE_LOG .. "")
-				_AutoupdaterMsg(" >> Perfect Ward v0.1 patched for 5.5")
+				_AutoupdaterMsg("Perfect Ward v2.0 patched for 5.10")
 			end
 		end
 	else
@@ -227,10 +240,26 @@ end
 function Checks()
 
 --|> Ignite Slot
-	if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then
-		ignite = SUMMONER_1
-	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then
-		ignite = SUMMONER_2
+	if myHero:GetSpellData(SUMMONER_1).name:find(Ignite.name) then
+                    Ignite.slot = SUMMONER_1
+    elseif myHero:GetSpellData(SUMMONER_2).name:find(Ignite.name) then
+                    Ignite.slot = SUMMONER_2
+    end
+     
+    Ignite.ready = (Ignite.slot ~= nil and myHero:CanUseSpell(Ignite.slot) == READY)
+	
+	--|> Healh Slot
+	if SUMMONER_1 == 4 then
+		HL_slot = SUMMONER_1
+	elseif SUMMONER_2 == 4 then
+		HL_slot = SUMMONER_2
+	end
+	
+	--|> Barrier Slot
+	if SUMMONER_1 == 5 then
+		BR_slot = SUMMONER_1	
+	elseif SUMMONER_2 == 5 then
+		BR_slot = SUMMONER_2
 	end
 	
 end
@@ -239,6 +268,13 @@ end
 function OnDraw()
 	AirText()
 	RangeCircles()
+	--Autoward
+	AutoWarderDraw()
+	DebugCursorPos()
+	
+	FloatText()
+	
+	
 	
 end
 
@@ -258,6 +294,8 @@ end
 			AutoChat()
 		end
 		
+		
+		ChampionFloatText()
 end
 
 --[[ OnTick Function ]]--
@@ -271,8 +309,13 @@ function OnTick()
 	Checks()
 	PoroCheck()
 	
+	--|> Zhonya
+	Zhonya()
+	getHealthPercent(unit)
 	
---|> Ward
+
+	
+	--|> Ward
 	
 
 end
@@ -283,7 +326,8 @@ function Follow()
 		stance = 0
 		if Allies() >=  2 then
 			stance = 1
-			PrintFloatText(myHero, 0, "TF mode")
+			DrawText("TF mode", 15, myHero.pos.x - 35, myHero.pos.y + 20, ARGB(255, 0, 255, 0))
+			
 		else
 			stance = 0
 			PrintFloatText(myHero, 0, "Alone mode")
@@ -300,7 +344,7 @@ function Follow()
 		end
 		
 		Allie = followHero()
-		--attacks
+		--Attacks Champs
 		if Target ~= nil then
 		  myHero:Attack(Target)
 			if stance == 1  then
@@ -313,6 +357,7 @@ function Follow()
 				if myHero:GetSpellData(_Q).range > GetDistance(Target) then
 					CastSpell(_Q, Target)
 					attacksuccess =1 
+					
 					PrintFloatText(Target,0,"Casting spell to".. Target.charName)
 				end
 				if myHero:GetSpellData(_E).range > GetDistance(Target) then
@@ -323,7 +368,8 @@ function Follow()
 				if myHero:GetSpellData(_R).range > GetDistance(Target) then
 					CastSpell(_R, Target)
 					attacksuccess =1
-					PrintFloatText(Target,0,"Casting spell to".. Target.charName)
+					PrintFloatText("Casting spell to".. Target.charName)
+				
 				end
 				if GetDistance(Target) < getTrueRange() then
 					myHero:Attack(Target)
@@ -347,6 +393,13 @@ function Follow()
 				--alone
 			elseif stance == 3 then
 				--low health
+				if HL_slot ~= nil and player:CanUseSpell(HL_slot) == READY then
+					CastSpell(HL_slot)
+				end
+				if BR_slot ~= nil and player:CanUseSpell(BR_slot) == READY then
+					CastSpell(BR_slot)
+				end
+				
 				for i,buff in pairs(buffs) do 
 					if buff.current ==1 then
 						if GetDistance(spawnpos,findClosestEnemy()) > GetDistance(spawnpos,buff.pos) then 
@@ -355,7 +408,7 @@ function Follow()
 						end
 					end
 				end
-				--low health
+				--/low health
 			end
 			allytofollow = followHero()
 			if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350  then
@@ -501,7 +554,6 @@ function frontally()
 	end
 	return target
 end
-
 
 function followHero()
 	local target =nil
@@ -740,10 +792,17 @@ end
 
 --[[ Menu Function ]]-- 
 function Menu()
-       iARAM = scriptConfig(""..myHero.charName.." Bot", "iARAM BOT")
+       iARAM = scriptConfig("iARAM: "..myHero.charName.." Bot", "iARAM BOT")
+	   
+	   
+	   --[[ AutoWard Menu ]]--
+		iARAM:addSubMenu("Config Autoguard", "AutoWard")
+		iARAM.AutoWard:addParam("AutoWardEnable", "Autoward Enabled", SCRIPT_PARAM_ONOFF, true)
+		iARAM.AutoWard:addParam("AutoWardDraw", "Autoward Draw Circles", SCRIPT_PARAM_ONOFF, false)
+		iARAM.AutoWard:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
 
 		--[[ Drawing menu ]]--
-		iARAM:addSubMenu("["..myHero.charName.." - Drawing Settings]", "drawing")
+		iARAM:addSubMenu("Drawing Settings", "drawing")
 		iARAM.drawing:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
 		iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
 		iARAM:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
@@ -756,6 +815,9 @@ function Menu()
 		iARAM:addTS(TargetSelector)
 		vPred = VPrediction()
 		
+		
+		iARAM:addParam("zhonya", "Use Zhonyas", SCRIPT_PARAM_ONOFF, true)
+		iARAM:addParam("zhonyaHP", "Max HP when using Zhonya", SCRIPT_PARAM_SLICE, 25, 0, 100, 0)
 
 		iARAM:addParam("farm", "last hit farm", SCRIPT_PARAM_ONOFF, true)	
 		iARAM:addParam("key", "AutoAtack champs", SCRIPT_PARAM_ONOFF, true)	
@@ -813,12 +875,18 @@ MenuTextSize = 18
 
 	DrawText(""..myHero.charName.." Bot", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
 	tempSetupDrawY = tempSetupDrawY + 0.03
+	
+	--DrawText(" ".. GetUser() .." ", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
+	tempSetupDrawY = tempSetupDrawY + 0.07
 
 end
 
 ---------[[ Activated/disabled Script ]]---------
 function OnWndMsg(msg, keycode)
 
+	--|> AutoWard	
+		AutoWard()
+		
 	if keycode == HotKey and msg == KEY_DOWN then
         if switcher == true then
             switcher = false
@@ -833,25 +901,299 @@ end
 
 
 
-
-
-
-
 --[[
-Auto Ward 1.0 for BoL Studio    ]]
-
---[[ Code ]]
-
+	Perfect Ward, originally by Husky
+]]--     
 
 
 
+local wardSpots = {
+    -- Perfect Wards
+	{x=3261.93, y=60, z=7773.65}, -- BLUE GOLEM
+	{x=7831.46, y=60, z=3501.13}, -- BLUE LIZARD
+	{x=10586.62, y=60, z=3067.93}, -- BLUE TRI BUSH
+	{x=6483.73, y=60, z=4606.57}, -- BLUE PASS BUSH
+	{x=7610.46, y=60, z=5000}, -- BLUE RIVER ENTRANCE
+	{x=4717.09, y=50.83, z=7142.35}, -- BLUE ROUND BUSH
+	{x=4882.86, y=27.83, z=8393.77}, -- BLUE RIVER ROUND BUSH
+	{x=6951.01, y=52.26, z=3040.55}, -- BLUE SPLIT PUSH BUSH
+	{x=5583.74, y=51.43, z=3573.83}, --BlUE RIVER CENTER CLOSE
+
+	{x=11600.35, y=51.73, z=7090.37}, -- RED GOLEM
+	{x=11573.9, y=51.71, z=6457.76}, -- RED GOLEM 2
+	{x=12629.72, y=48.62, z=4908.16}, -- RED TRIBRUSH 2
+	{x=7018.75, y=54.76, z=11362.12}, -- RED LIZARD
+	{x=4232.69, y=47.56, z=11869.25}, -- RED TRI BUSH
+	{x=8198.22, y=49.38, z=10267.89}, -- RED PASS BUSH
+	{x=7202.43, y=53.18, z=9881.83}, -- RED RIVER ENTRANCE
+	{x=10074.63, y=51.74, z=7761.62}, -- RED ROUND BUSH
+	{x=9795.85, y=-12.21, z=6355.15}, -- RED RIVER ROUND BUSH
+	{x=7836.85, y=56.48, z=11906.34}, -- RED SPLIT PUSH BUSH
+
+	{x=10546.35, y=-60, z=5019.06}, -- DRAGON
+	{x=9344.95, y=-64.07, z=5703.43}, -- DRAGON BUSH
+	{x=4334.98, y=-60.42, z=9714.54}, -- BARON
+	{x=5363.31, y=-62.70, z=9157.05}, -- BARON BUSH
+
+	--{x=12731.25, y=50.32, z=9132.66}, -- RED BOT T2
+	--{x=8036.52, y=45.19, z=12882.94}, -- RED TOP T2
+	{x=9757.9, y=50.73, z=8768.25}, -- RED MID T1
+
+	{x=4749.79, y=53.59, z=5890.76}, -- BLUE MID T1
+	{x=5983.58, y=52.99, z=1547.98}, -- BLUE BOT T2
+	{x=1213.70, y=58.77, z=5324.73}, -- BLUE TOP T2
+
+	{x=6523.58, y=60, z=6743.31}, -- BLUE MIDLANE
+	{x=8223.67, y=60, z=8110.15}, -- RED MIDLANE
+	{x=9736.8, y=51.98, z=6916.26}, -- RED MID PATH
+	{x=2222.31, y=53.2, z=9964.1}, -- BLUE TRI TOP
+	{x=8523.9, y=51.24, z=4707.76}, -- DRAGON PASS BUSH
+	{x=6323.9, y=53.62, z=10157.76} -- NASHOR PASS BUSH
+
+}
+
+local safeWardSpots = {
+
+	{    -- RED MID -> SOLO BUSH
+		magneticSpot = {x=9223, y=52.95, z=7525.34},
+		clickPosition = {x=9603.52, y=54.71, z=7872.23},
+		wardPosition = {x=9873.90, y=51.52, z=7957.76},
+		movePosition = {x=9223, y=52.95, z=7525.34}
+	},
+	{    -- RED MID FROM TOWER -> SOLO BUSH
+		magneticSpot =  {x=9127.66, y=53.76, z=8337.72},
+		clickPosition = {x=9624.05, y=72.46, z=8122.68},
+		wardPosition =  {x=9873.90, y=51.52, z=7957.76},
+		movePosition  = {x=9127.66, y=53.76, z=8337.72}
+	},
+	{    -- BLUE MID -> SOLO BUSH
+		magneticSpot =  {x=5667.73, y=51.65, z=7360.45},
+		clickPosition = {x=5148.87, y=50.41, z=7205.80},
+		wardPosition =  {x=4923.90, y=50.64, z=7107.76},
+		movePosition  = {x=5667.73, y=51.65, z=7360.45}
+	},
+	{    -- BLUE MID FROM TOWER -> SOLO BUSH
+		magneticSpot =  {x=5621.65, y=52.81, z=6452.61},
+		clickPosition = {x=5255.46, y=50.44, z=6866.24},
+		wardPosition =  {x=4923.90, y=50.64, z=7107.76},
+		movePosition  = {x=5621.65, y=52.81, z=6452.61}
+	},
+	{    -- NASHOR -> TRI BUSH
+		magneticSpot =  {x=4724, y=-71.24, z=10856},
+		clickPosition = {x=4627.26, y=-71.24, z=11311.69},
+		wardPosition =  {x=4473.9, y=51.4, z=11457.76},
+		movePosition  = {x=4724, y=-71.24, z=10856}
+	},
+	{    -- BLUE TOP -> SOLO BUSH
+		magneticSpot  = {x=2824, y=54.33, z=10356},
+		clickPosition = {x=3078.62, y=54.33, z=10868.39},
+		wardPosition  = {x=3078.62, y=-67.95, z=10868.39},
+		movePosition  = {x=2824, y=54.33, z=10356}
+	},
+	{ -- BLUE MID -> ROUND BUSH
+		magneticSpot  = {x=5474, y=51.67, z=7906},
+		clickPosition = {x=5132.65, y=51.67, z=8373.2},
+		wardPosition  = {x=5123.9, y=-21.23, z=8457.76},
+		movePosition  = {x=5474, y=51.67, z=7906}
+	},
+	{ -- BLUE MID -> RIVER LANE BUSH
+		magneticSpot  = {x=5874, y=51.65, z=7656},
+		clickPosition = {x=6202.24, y=51.65, z=8132.12},
+		wardPosition  = {x=6202.24, y=-67.39, z=8132.12},
+		movePosition  = {x=5874, y=51.65, z=7656}
+	},
+	{ -- BLUE LIZARD -> DRAGON PASS BUSH
+		magneticSpot  = {x=8022, y=53.72, z=4258},
+		clickPosition = {x=8400.68, y=53.72, z=4657.41},
+		wardPosition  = {x=8523.9, y=51.24, z=4707.76},
+		movePosition  = {x=8022, y=53.72, z=4258}
+	},
+	{ -- RED MID -> ROUND BUSH
+		magneticSpot  = {x=9372, y=52.63, z=7008},
+		clickPosition = {x=9703.5, y=52.63, z=6589.9},
+		wardPosition  = {x=9823.9, y=23.47, z=6507.76},
+		movePosition  = {x=9372, y=52.63, z=7008}
+	},
+	{ -- RED MID -> RIVER ROUND BUSH // Inconsistent Placement
+		magneticSpot  = {x=9072, y=53.04, z=7158},
+		clickPosition = {x=8705.95, y=53.04, z=6819.1},
+		wardPosition  = {x=8718.88, y=95.75, z=6764.86},
+		movePosition  = {x=9072, y=53.04, z=7158}
+	},
+	{ -- RED BOTTOM -> SOLO BUSH
+		magneticSpot  = {x=12422, y=51.73, z=4508},
+		clickPosition = {x=12353.94, y=51.73, z=4031.58},
+		wardPosition  = {x=12023.9, y=-66.25, z=3757.76},
+		movePosition  = {x=12422, y=51.73, z=4508}
+	},
+	{ -- RED LIZARD -> NASHOR PASS BUSH -- FIXED FOR MORE VISIBLE AREA
+		magneticSpot  = {x=6824, y=56, z=10656},
+		clickPosition = {x=6484.47, y=53.5, z=10309.94},
+		wardPosition  = {x=6323.9, y=53.62, z=10157.76},
+		movePosition  = {x=6824, y=56, z=10656}
+	},
+	{ -- BLUE GOLEM -> BLUE LIZARD
+		magneticSpot  = {x=8272,    y=51.13, z=2908},
+		clickPosition = {x=8163.7056, y=51.13, z=3436.0476},
+		wardPosition  = {x=8163.71, y=51.6628, z=3436.05},
+		movePosition  = {x=8272,    y=51.13, z=2908}
+	},
+	{ -- RED GOLEM -> RED LIZARD
+		magneticSpot  = {x=6574, y=56.48, z=12006},
+		clickPosition = {x=6678.08, y=56.48, z=11477.83},
+		wardPosition  = {x=6678.08, y=53.85, z=11477.83},
+		movePosition  = {x=6574, y=56.48, z=12006}
+	},
+	{ -- BLUE TOP SIDE BRUSH
+		magneticSpot  = {x=1774, y=52.84, z=10756},
+		clickPosition = {x=2302.36, y=52.84, z=10874.22},
+		wardPosition  = {x=2773.9, y=-71.24, z=11307.76},
+		movePosition  = {x=1774, y=52.84, z=10756}
+	},
+	{ -- MID LANE DEATH BRUSH
+		magneticSpot  = {x=5874, y=-70.12, z=8306},
+		clickPosition = {x=5332.9, y=-70.12, z=8275.21},
+		wardPosition  = {x=5123.9, y=-21.23, z=8457.76},
+		movePosition  = {x=5874, y=-70.12, z=8306}
+	},
+	{ -- MID LANE DEATH BRUSH RIGHT SIDE
+		magneticSpot  = {x=9022, y=-71.24, z=6558},
+		clickPosition = {x=9540.43, y=-71.24, z=6657.68},
+		wardPosition  = {x=9773.9, y=9.56, z=6457.76},
+		movePosition  = {x=9022, y=-71.24, z=6558}
+	},
+	{ -- BLUE INNER TURRET JUNGLE
+		magneticSpot  = {x=6874, y=50.52, z=1708},
+		clickPosition = {x=6849.11, y=50.52, z=2252.01},
+		wardPosition  = {x=6723.9, y=52.17, z=2507.76},
+		movePosition  = {x=6874, y=50.52, z=1708}
+	},
+	{ -- RED INNER TURRET JUNGLE
+		magneticSpot  = {x=8122, y=52.84, z=13206},
+		clickPosition = {x=8128.53, y=52.84, z=12658.41},
+		wardPosition  = {x=8323.9, y=56.48, z=12457.76},
+		movePosition  = {x=8122, y=52.84, z=13206}
+	}
+}
+
+local wardItems = {
+    { id = 2043, spellName = "VisionWard",     		range = 1450, duration = 180000},
+    { id = 2044, spellName = "SightWard",      		range = 1450, duration = 180000},
+	{ id = 2045, spellName = "RubySightstone",  		range = 1450, duration = 180000},
+    { id = 2049, spellName = "Sightstone",  		range = 1450, duration = 180000},
+    { id = 2050, spellName = "ItemMiniWard",   		range = 1450, duration = 60000},
+    { id = 3154, spellName = "WriggleLantern", 		range = 1450, duration = 180000},
+    { id = 3160, spellName = "FeralFlare",	   		range = 1450, duration = 180000},
+	{ id = 3340, spellName = "WardingTotem(Trinket)",   range = 1450, duration = 180000},
+    { id = 3350, spellName = "YellowTrinketUpgrade", range = 1450, duration = 180000}, 
+	{ id = 3361, spellName = "TrinketTotemLvl3", 	range = 1450, duration = 180000},--added
+	{ id = 3362, spellName = "TrinketTotemLvl3B", 	range = 1450, duration = 180000},--added
+
+}
+
+
+
+-- Code ------------------------------------------------------------------------
+
+
+function AutoWard()
+
+   if iARAM.AutoWard.AutoWardEnable then
+	wardSlot = ITEM_7
+ 
+        local item = myHero:getInventorySlot(wardSlot)
+         for i,wardItems in pairs(wardItems) do
+                    if item == wardItems.id and myHero:CanUseSpell(wardSlot) == READY then
+                        drawWardSpots = true
+                        return
+                    end
+                end
+           
+        for i,wardSpot in pairs(wardSpots) do
+            if GetDistance(wardSpot, myHeroPos) <= 250  then
+                CastSpell(wardSlot, wardSpot.x, wardSpot.z)
+                return
+            end
+        end
+    end
+end
+
+
+
+function AutoWarderDraw()
+
+    if iARAM.AutoWard.AutoWardDraw then
+        for i, wardSpot in pairs(wardSpots) do
+            local wardColor = (GetDistance(wardSpot, myHeroPos) <= 250) and ARGB(255,0,255,0) or ARGB(255,0,255,0)
+
+            local x, y, onScreen = get2DFrom3D(wardSpot.x, wardSpot.y, wardSpot.z)
+            if onScreen then
+                DrawCircle(wardSpot.x, wardSpot.y, wardSpot.z, 31, wardColor)
+                DrawCircle(wardSpot.x, wardSpot.y, wardSpot.z, 32, wardColor)
+                DrawCircle(wardSpot.x, wardSpot.y, wardSpot.z, 250, wardColor)
+            end
+        end
+
+        for i,wardSpot in pairs(safeWardSpots) do
+            local wardColor  = (GetDistance(wardSpot.magneticSpot, myHeroPos) <= 100) and ARGB(255,0,255,0) or ARGB(255,0,255,0)
+            local arrowColor = (GetDistance(wardSpot.magneticSpot, myHeroPos) <= 100) and ARGB(255,0,255,0) or ARGB(255,0,255,0)
+
+            local x, y, onScreen = get2DFrom3D(wardSpot.magneticSpot.x, wardSpot.magneticSpot.y, wardSpot.magneticSpot.z)
+            if onScreen then
+                DrawCircle(wardSpot.wardPosition.x, wardSpot.wardPosition.y, wardSpot.wardPosition.z, 31, wardColor)
+                DrawCircle(wardSpot.wardPosition.x, wardSpot.wardPosition.y, wardSpot.wardPosition.z, 32, wardColor)
+
+                DrawCircle(wardSpot.magneticSpot.x, wardSpot.magneticSpot.y, wardSpot.magneticSpot.z, 99, wardColor)
+                DrawCircle(wardSpot.magneticSpot.x, wardSpot.magneticSpot.y, wardSpot.magneticSpot.z, 100, wardColor)
+
+                local magneticWardSpotVector = Vector(wardSpot.magneticSpot.x, wardSpot.magneticSpot.y, wardSpot.magneticSpot.z)
+                local wardPositionVector = Vector(wardSpot.wardPosition.x, wardSpot.wardPosition.y, wardSpot.wardPosition.z)
+                local directionVector = (wardPositionVector-magneticWardSpotVector):normalized()
+                local line1Start = magneticWardSpotVector + directionVector:perpendicular() * 98
+                local line1End = wardPositionVector + directionVector:perpendicular() * 31
+                local line2Start = magneticWardSpotVector + directionVector:perpendicular2() * 98
+                local line2End = wardPositionVector + directionVector:perpendicular2() * 31
+
+                DrawLine3D(line1Start.x,line1Start.y,line1Start.z, line1End.x,line1End.y,line1End.z,1,arrowColor)
+                DrawLine3D(line2Start.x,line2Start.y,line2Start.z, line2End.x,line2End.y,line2End.z,1,arrowColor)
+
+                
+            end
+        end
+    end
+
+    
+end
+
+function get2DFrom3D(x, y, z)
+    local pos = WorldToScreen(D3DXVECTOR3(x, y, z))
+    return pos.x, pos.y, OnScreen(pos.x, pos.y)
+end
+
+function DebugCursorPos()
+	if iARAM.AutoWard.debug then
+		DrawText("Cursor Pos: X = ".. string.format("%.2f", mousePos.x) .." Y = ".. string.format("%.2f", mousePos.y) .." Z = ".. string.format("%.2f", mousePos.z), 21, 5, 140, 0xFFFFFFFF)
+		local target = GetTarget()
+		for i,wardItem in pairs(wardItems) do
+			if target ~= nil and target.name == wardItem.spellName then
+				DrawText("Target Pos: X = ".. string.format("%.2f", target.x) .." Y = ".. string.format("%.2f", target.y) .." Z = ".. string.format("%.2f", target.z), 21, 5, 160, 0xFFFFFFFF)
+			end
+		end
+	end
+end
 
 
 
 ---------[[ Auto Ignite ]]---------
 function AutoIgnite()
-	
-	if myTarget ~=	nil then		
+	Ignite = { name = "summonerdot", range = 600, slot = nil }
+	if ValidTarget(unit, Ignite.range) and unit.health <= getDmg("IGNITE", unit, myHero) then
+               if Ignite.ready then
+                   CastSpell(Ignite.slot, unit)
+               end
+    end
+			
+--[[	if myTarget ~=	nil then		
 		if Target.health <= iDmg and GetDistance(Target) <= 600 then
 			if iReady then
 				CastSpell(ignite, Target)			
@@ -859,7 +1201,7 @@ function AutoIgnite()
 
 		end
 	
-	end
+	end]]--
 end
 
 
@@ -964,44 +1306,47 @@ end
 -----[[ AutoFarm and harras ]]------
 
 function AutotatackChamp()
-
+	
 	range = myHero.range + myHero.boundingRadius - 3
 	ts.range = range
 	ts:update()
-	if not iARAM.key then return end
-	local myTarget = ts.target
-	if myTarget ~=	nil then		
-		if timeToShoot() then
-			myHero:Attack(myTarget)
-			elseif heroCanMove() then
-			
-		end
+	if iARAM.follow then
+		if not iARAM.key then return end
+		local myTarget = ts.target
+		if myTarget ~=	nil then		
+			if timeToShoot() then
+				myHero:Attack(myTarget)
+				elseif heroCanMove() then
+				
+			end
 
+		end
 	end
 end
 
 
 function AutoFarm()
-
-	enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
-    enemyMinions:update()
-	local player = GetMyHero()
-	local tick = 0
-	local delay = 400
-	local myTarget = ts.target
-  
-	
-  if iARAM.farm then
-    for index, minion in pairs(enemyMinions.objects) do
-      if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
-        local dmg = getDmg("AD", minion, myHero)
-        if dmg > minion.health then
-          myHero:Attack(minion)
-          tick = GetTickCount()
-        end
-      end
-    end
-  end
+	if iARAM.follow then
+		enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
+		enemyMinions:update()
+		local player = GetMyHero()
+		local tick = 0
+		local delay = 400
+		local myTarget = ts.target
+	  
+		
+		  if iARAM.farm then
+			for index, minion in pairs(enemyMinions.objects) do
+			  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
+				local dmg = getDmg("AD", minion, myHero)
+				if dmg > minion.health then
+				  myHero:Attack(minion)
+				  tick = GetTickCount()
+				end
+			  end
+			end
+		  end
+	end
 end
 
 
@@ -1025,6 +1370,51 @@ function OnProcessSpell(object, spell)
 end
 
 
+-----[[ Zhonya ]]------
+
+function Zhonya()
+	if iARAM.zhonya and getHealthPercent(myHero) < iARAM.zhonyaHP then 
+		for slot = ITEM_1, ITEM_7 do
+			if myHero:GetSpellData(slot).name == "ZhonyasHourglass" then
+				CastSpell(slot)
+			end
+		end
+	end
+end
+
+function getHealthPercent(unit)
+    local obj = unit or myHero
+    return (obj.health / obj.maxHealth) * 100
+end
 
 
+
+
+
+function ChampionFloatText()
+ChampionCount = 0
+    ChampionTable = {}
+ 
+    for i = 1, heroManager.iCount do
+        local champ = heroManager:GetHero(i)
+               
+        if champ.team ~= player.team then
+            ChampionCount = ChampionCount + 1
+            ChampionTable[ChampionCount] = { player = champ, indicatorText = "", damageGettingText = "", ultAlert = false, ready = true}
+        end
+    end
+end
+
+function FloatText()                                                                                                
+                   
+        for i = 1, ChampionCount do
+				local Champion = ChampionTable[i].player
+				local barPos = WorldToScreen(D3DXVECTOR3(Champion.x, Champion.y, Champion.z))
+		
+				--DrawText("Text", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
+			
+			
+        end
+                
+ end
 
