@@ -24,7 +24,7 @@
 
 --[[
 
-		──|> Broked auto-buy.
+		──|> Fixed auto-buy.
 		──|> Auto ignite, Auto heal doesnt test it.
 		──|> Auto potion outdate.
 ]]--
@@ -32,24 +32,40 @@
 --[[ SETTINGS ]]--
 local HotKey = 115 --F4 = 115, F6 = 117 default
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
-local AutoWard = true
 local AUTOUPDATE = true --change to false to disable auto update
-
- 
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "2.8"
+local version = "2.9"
 
 --Attack and farm globals
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local range = myHero.range
 local ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, range, DAMAGE_PHYSICAL, false)
 require 'VPrediction'
-local lastCast = 0
+
 
 --Chat
 local switcher = true
+
+--Buyer
+local lastSay = 0
+local lastCast = 0
+local lastCast1 = 0
+local lastCast2 = 0
+local lastCast3 = 0
+local lastCast4 = 0
+local lastCast5 = 0
+local lastCast6 = 0
+local lastCast7 = 0
+local lastCast8 = 0
+local lastCast9 = 0
+local lastCast10 = 0
+local lastCast11 = 0
+local lastCast12 = 0
+local lastCast13 = 0
+local lastCast14 = 0
+local lastCast15 = 0
 
 --Main Script
 local abilitySequence
@@ -59,9 +75,8 @@ local shoplist = {}
 local buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
 local lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
----Imrpoving
+--FloatDrawingtext
 
-local EnemyHeroes = GetEnemyHeroes()
 
 --Auto ward
 
@@ -69,22 +84,22 @@ local drawWardSpots      = false
 local wardSlot           = nil
 
 
-
 --!> Ignite
-iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
-iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
+local iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
+local iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
 
 
 
 --[[ Auto Update Globals]]--
 
-local UPDATE_CHANGE_LOG = "Fixed switcher, added Auto Zhonya, healh and barrier, Auto-ignite andAutowarder fixed"
+local UPDATE_CHANGE_LOG = "Fixed Chogath and Wukong"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
-function _AutoupdaterMsg(msg) print("<font color=\"#6699ff\"><b>iARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+
+function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
 	local ServerData = GetWebResult(UPDATE_HOST, "/Husmeador12/Bol_Script/master/version/iARAM.version")
 	if ServerData then
@@ -96,8 +111,7 @@ if AUTOUPDATE then
 				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") end) end, 3)
 			else
 				_AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
-				_AutoupdaterMsg("Update Notes: " .. UPDATE_CHANGE_LOG .. "")
-				_AutoupdaterMsg("Perfect Ward v2.0 patched for 5.10")
+				_AutoupdaterMsg("<font color=\"#81BEF7\">Update Notes: </font>".. UPDATE_CHANGE_LOG .."")
 			end
 		end
 	else
@@ -115,10 +129,10 @@ do
 	assassins = {"Akali","Diana","Evelynn","Fizz","Katarina","Nidalee"}
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Thresh","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
-	aptanks = {"Alistar","Amumu","Blitzcrank","ChoGath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
+	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
 	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
-	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","RekSai","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","Wukong","Zed","Yasuo"}
+	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","RekSai","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","MonkeyKing","Zed","Yasuo"}
 	fighters = {"Aatrox","Fiora","Jax","Jayce","MasterYi","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
 	apcs = {"Elise","FiddleSticks","Kennen","Mordekaiser","Rumble","Vladimir"}
 	
@@ -176,7 +190,7 @@ do
 		heroType = 10
 	end
 	if heroType ~= 10 then
-		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Items Loaded</font>")
+	--	_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Items Loaded</font>")
 	end
 	if heroType == 1 then
 		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#00FF00\">ADC</font>" )
@@ -203,8 +217,39 @@ do
 	if myHero.range > 400 then
 		ranged = 1
 	end
+	
+	
 	--[[ ItemsList ]]--
 	
+	if heroType == 1 then --ADC
+		shopList = {1038,3072,1038,3031,1038,3139,1038,3508}
+	end
+	if heroType == 2 then --ADTANK
+		shopList = {3083,3155,3156,3068,3211,3102,3075}
+	end
+	if heroType == 3 then --APTANK
+		shopList = {3083,1058,3089,1058,3157,1058,3285,3001}
+	end
+	if heroType == 4 then --HYBRID
+		shopList = {3101,3115,3136,3151,1058,3089,3100}
+	end
+	if heroType == 5 then --BRUISER
+		shopList = {3211,3102,3075,1038,3072,3044,3071}
+	end
+	if heroType == 6 then --ASSASSIN
+		shopList = {3211,3065,3190,3075,3068}
+	end
+	if heroType == 7 then --MAGE
+		shopList = {3165,1058,3089,1058,3157,1058,3285}
+	end
+	if heroType == 8 then  --APC
+		shopList = {3165,1058,3089,1058,3157,1058,3285}
+	end
+	if heroType == 9 or heroType == 10 then --FIGHTER and OTHERS
+		shopList = {3211,3065,3190,3075,3068}
+	end
+	startTime = GetTickCount()
+	--[[
 	if heroType == 1 then
 		shopList = {3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
 	end
@@ -234,6 +279,7 @@ do
 	end
 	--yellow ward 3340
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
+	]]--
 end
 
 --[[ Checks Function ]]--
@@ -271,11 +317,8 @@ function OnDraw()
 	--Autoward
 	AutoWarderDraw()
 	DebugCursorPos()
-	
-	FloatText()
-	
-	
-	
+
+
 end
 
 --[[ On Load Function ]]--
@@ -287,15 +330,15 @@ end
 		Menu()
 		LevelSequence()
 		OnWndMsg()
-		--if AutoWard then
-		--	wardUpdate()
-		--end
 		if AutomaticChat then
 			AutoChat()
 		end
 		
+		--getRandomAlly()
 		
-		ChampionFloatText()
+		--potions
+
+		
 end
 
 --[[ OnTick Function ]]--
@@ -304,7 +347,7 @@ function OnTick()
 	AutoIgnite()
 	AutotatackChamp()
 	AutoFarm()
-	Follow()
+	Follow()	
 	LFC()
 	Checks()
 	PoroCheck()
@@ -326,16 +369,34 @@ function Follow()
 		stance = 0
 		if Allies() >=  2 then
 			stance = 1
-			DrawText("TF mode", 15, myHero.pos.x - 35, myHero.pos.y + 20, ARGB(255, 0, 255, 0))
+			--if lastCast > os.clock() - 0.5 then return end
+			--_AutoupdaterMsg("TF mode")
+			--lastCast = os.clock()
+			--_FloatTextMsg("TF mode")
+			--DrawText("TF mode", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
 			
 		else
 			stance = 0
-			PrintFloatText(myHero, 0, "Alone mode")
+			--if lastCast > os.clock() - 10 then return end
+			--_AutoupdaterMsg("Alone mode")
+			--lastCast = os.clock()
+			
+			--_FloatTextMsg("Alone mode")
+			--local Note = "Alone mode"
+			--DrawText("Alone mode", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
+			
+			
 		end
 		val = myHero.maxHealth/myHero.health
 		if  val > 3 and GetDistance(findClosestEnemy()) > 300 then
 			stance = 3
-			PrintFloatText(myHero, 0, "Low Health mode")
+			--if lastCast > os.clock() - 10 then return end
+			--_AutoupdaterMsg("Low Health mode")
+			--lastCast = os.clock()
+			
+			--_FloatTextMsg("Lox Health mode")
+			--DrawText("Low Health mode", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
+			--PrintFloatText(myHero, 0, "Low Health mode")
 		end
 		if findLowHp() ~= 0 then
 			Target = findLowHp()
@@ -358,17 +419,19 @@ function Follow()
 					CastSpell(_Q, Target)
 					attacksuccess =1 
 					
-					PrintFloatText(Target,0,"Casting spell to".. Target.charName)
+					--PrintFloatText(Target,0,"Casting spell to".. Target.charName)
 				end
 				if myHero:GetSpellData(_E).range > GetDistance(Target) then
 					CastSpell(_E, Target)
 					attacksuccess = 1
-					PrintFloatText(Target,0,"Casting spell to".. Target.charName)
+				
+					--PrintFloatText(Target,0,"Casting spell to".. Target.charName)
 				end
 				if myHero:GetSpellData(_R).range > GetDistance(Target) then
 					CastSpell(_R, Target)
 					attacksuccess =1
-					PrintFloatText("Casting spell to".. Target.charName)
+					--DrawText("Casting spell to".. Target.charName, 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
+				
 				
 				end
 				if GetDistance(Target) < getTrueRange() then
@@ -393,12 +456,14 @@ function Follow()
 				--alone
 			elseif stance == 3 then
 				--low health
+				--[[
 				if HL_slot ~= nil and player:CanUseSpell(HL_slot) == READY then
 					CastSpell(HL_slot)
 				end
 				if BR_slot ~= nil and player:CanUseSpell(BR_slot) == READY then
 					CastSpell(BR_slot)
 				end
+				
 				
 				for i,buff in pairs(buffs) do 
 					if buff.current ==1 then
@@ -408,11 +473,12 @@ function Follow()
 						end
 					end
 				end
+				]]--
 				--/low health
 			end
 			allytofollow = followHero()
 			if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350  then
-				PrintFloatText(allytofollow, 0, "Following")
+				--PrintFloatText(allytofollow, 0, "Following")
 				distance1 = math.random(250,300)
 				distance2 = math.random(250,300)
 				neg1 = 1 
@@ -433,7 +499,7 @@ function Follow()
 		buyItems()
 	end
 	buyItems()
-	--
+	--[[
 	for i =1, objManager.maxObjects do
 		local object = objManager:getObject(i)
 		if object ~= nil and object.name == "HA_AP_HealthRelic4.1.1" then 
@@ -457,7 +523,7 @@ function Follow()
 			buffs[1].current=0 
 		end
 	end
-	--
+	]]--
 	--LEVELUP
 	local qL, wL, eL, rL = player:GetSpellData(_Q).level + qOff, player:GetSpellData(_W).level + wOff, player:GetSpellData(_E).level + eOff, player:GetSpellData(_R).level + rOff
 	if qL + wL + eL + rL < player.level then
@@ -475,15 +541,7 @@ function Follow()
 end
 
 
-function RangeCircles()
 
-	if iARAM.drawing.drawcircles and not myHero.dead then
-		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
-		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))
-		
-	end
-	
-end
 
 
 function findClosestEnemy()
@@ -568,7 +626,80 @@ function followHero()
 	return target
 end
 
+
 --[[ AutoBuyItems ]]--
+function buyItems()
+	if iARAM.autobuy then
+		if InFountain() or player.dead then	
+		
+		
+			--[[ Basic Items ]]--	
+			
+			if GetInGameTimer() < 10 then
+				DelayAction(function()
+				
+						BuyItem(3340)
+						BuyItem(2003)
+						BuyItem(2003)
+						BuyItem(1001)
+					if lastCast1 > os.clock() - 10 then return end
+						_AutoupdaterMsg("Buying Bots, Trinket and Potions")
+					lastCast1 = os.clock()
+				end, 10-GetInGameTimer()) --0:12
+			
+			
+			--[[ Mage Items ]]--
+			
+			elseif GetInGameTimer() < 15 and heroType == 7 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying Fiendish Codex (Mage)")
+					BuyItem(3108)
+					--BuyItem(1052) --Amplifying Tome
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			
+			
+			--[[ APTank Items ]]--
+			
+			elseif GetInGameTimer() < 330 and heroType == 3 or heroType == 2 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying Tank bots (Tank)")
+					BuyItem(3047) --bots tank
+					lastCast3 = os.clock()
+				end, 330-GetInGameTimer()) --5:17
+			
+			
+			
+			--[[ ADC Items ]]--
+			elseif GetInGameTimer() < 490 and heroType == 1 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying Berserker's Greaves (ADC)")
+					BuyItem(3006) --Berserker's Greaves
+					lastCast4 = os.clock()
+				end, 490-GetInGameTimer()) --8:09
+				
+			elseif GetInGameTimer() < 590 and heroType == 1 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying (ADC)")
+					BuyItem(3144) 
+					lastCast5 = os.clock()
+				end, 590-GetInGameTimer()) --9:83
+				
+				
+				
+			end
+					
+		end
+
+	end
+end
+--[[ 
+Outdate	
 function buyItems()
  if iARAM.autobuy then
 		if InFountain() or player.dead or shopList[buyIndex] ~= 0 then
@@ -583,6 +714,7 @@ function buyItems()
 		end
 	end
 end
+]]--
 
 
 function getTrueRange()
@@ -604,7 +736,7 @@ function LevelSequence()
 	elseif champ == "Azir" then         abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, }
     elseif champ == "Blitzcrank" then   abilitySequence = { 1, 3, 2, 3, 2, 4, 3, 2, 3, 2, 4, 3, 2, 1, 1, 4, 1, 1, }
     elseif champ == "Brand" then        abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
-    elseif champ == "Bard" then         abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
+    elseif champ == "Bard" then         abilitySequence = { 2, 1, 3, 2, 2, 4, 1, 2, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, }
 	elseif champ == "Braum" then        abilitySequence = { 2, 3, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, 1, 1, 4, 1, 1, }
     elseif champ == "Caitlyn" then      abilitySequence = { 2, 1, 1, 3, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Cassiopeia" then   abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
@@ -712,7 +844,7 @@ function LevelSequence()
     elseif champ == "Xerath" then       abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
     elseif champ == "XinZhao" then      abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, }
     elseif champ == "Yorick" then       abilitySequence = { 2, 3, 1, 3, 3, 4, 3, 2, 3, 1, 4, 2, 1, 2, 1, 4, 2, 1, }
-	elseif champ == "Yasuo" then        abilitySequence = { 3, 2, 1, 1, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
+	elseif champ == "Yasuo" then        abilitySequence = { 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Zac" then          abilitySequence = { 1, 2, 3, 1, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Zed" then          abilitySequence = { 1, 2, 3, 1, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
     elseif champ == "Ziggs" then        abilitySequence = { 1, 2, 3, 1, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }
@@ -721,7 +853,7 @@ function LevelSequence()
     else _AutoupdaterMsg(string.format(" >> AutoLevelSpell  disabled for %s", champ))
     end
     if abilitySequence and #abilitySequence == 18 then
-		_AutoupdaterMsg("<font color=\"#81BEF7\">AutoLevelSpell loaded!</font>")
+		--_AutoupdaterMsg("<font color=\"#81BEF7\">AutoLevelSpell loaded!</font>")
     else
         _AutoupdaterMsg(" >> AutoLevel Error")
         OnTick = function() end
@@ -805,22 +937,40 @@ function Menu()
 		iARAM:addSubMenu("Drawing Settings", "drawing")
 		iARAM.drawing:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
 		iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
-		iARAM:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
-		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 		
+		--[[ AutoPots menu ]]--
+		iARAM:addSubMenu("Auto Pot Settings", "autoPots")
+		iARAM.autoPots:addParam("useAutoPots", "Use Auto Pots", SCRIPT_PARAM_ONOFF, true)
+		iARAM.autoPots:addParam("useHealthPots", "Use Health Pots", SCRIPT_PARAM_ONOFF, true)
+		iARAM.autoPots:addParam("useManaPots", "Use Mana Pots", SCRIPT_PARAM_ONOFF, true)
+		iARAM.autoPots:addParam("useFlask", "Use Flask", SCRIPT_PARAM_ONOFF, true)
+		iARAM.autoPots:addParam("useBiscuit", "Use Biscuit", SCRIPT_PARAM_ONOFF, true)
+		iARAM.autoPots:addParam("minHealthPercent", "Min Health Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
+		iARAM.autoPots:addParam("HealhLost", "Health Lost Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
+		iARAM.autoPots:addParam("minManaPercent", "Min Mana Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
+		iARAM.autoPots:addParam("minHealthFlaskPercent", "Min Flask Health Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
+		iARAM.autoPots:addParam("minManaFlaskPercent", "Min Flask Mana Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
+		
+		--[[ PoroShoter menu ]]--
 		ARAM = ARAMSlot()
-		iARAM:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
-		iARAM:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
-		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
-		iARAM:addTS(TargetSelector)
 		vPred = VPrediction()
+		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
+		iARAM:addSubMenu("PoroShotter Settings", "PoroShot")
+		iARAM.PoroShot:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
+		iARAM.PoroShot:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
+		iARAM.PoroShot:addTS(TargetSelector)
 		
-		
+		--Zhonya
 		iARAM:addParam("zhonya", "Use Zhonyas", SCRIPT_PARAM_ONOFF, true)
 		iARAM:addParam("zhonyaHP", "Max HP when using Zhonya", SCRIPT_PARAM_SLICE, 25, 0, 100, 0)
 
+		--Attack
 		iARAM:addParam("farm", "last hit farm", SCRIPT_PARAM_ONOFF, true)	
-		iARAM:addParam("key", "AutoAtack champs", SCRIPT_PARAM_ONOFF, true)	
+		iARAM:addParam("key", "AutoAtack champs", SCRIPT_PARAM_ONOFF, true)
+
+		--Main Script
+		iARAM:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
+		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", " >> edited by Husmeador12", SCRIPT_PARAM_INFO, "")
@@ -832,6 +982,14 @@ function Menu()
 end
 
 --[[ Lagfree Circles by barasia, vadash and viseversa ]]---
+
+function RangeCircles()
+	if iARAM.drawing.drawcircles and not myHero.dead then
+		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
+		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))	
+	end
+end
+
 function DrawCircleNextLvl(x, y, z, radius, width, color, chordlength)
     radius = radius or 300
 		quality = math.max(8,round(180/math.deg((math.asin((chordlength/(2*radius)))))))
@@ -904,8 +1062,6 @@ end
 --[[
 	Perfect Ward, originally by Husky
 ]]--     
-
-
 
 local wardSpots = {
     -- Perfect Wards
@@ -1095,7 +1251,6 @@ local wardItems = {
 
 -- Code ------------------------------------------------------------------------
 
-
 function AutoWard()
 
    if iARAM.AutoWard.AutoWardEnable then
@@ -1117,8 +1272,6 @@ function AutoWard()
         end
     end
 end
-
-
 
 function AutoWarderDraw()
 
@@ -1253,7 +1406,7 @@ function PoroCheck()
 	else
 		ARAMRdy = false
 	end
-	if iARAM.comboKey then
+	if iARAM.PoroShot.comboKey then
 		shootARAM(Target)
 	end
 
@@ -1291,7 +1444,7 @@ end
 function shootARAM(unit)
 	if lastCast > os.clock() - 10 then return end
 	
-	if  ValidTarget(unit, iARAM.range + 50) and ARAMRdy then
+	if  ValidTarget(unit, iARAM.PoroShot.range + 50) and ARAMRdy then
 		local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(Target, .25, 75, iARAM.range, 1200, myHero, true)
 		if CastPosition and Hitchance >= 2 then
 			d = CastPosition
@@ -1316,14 +1469,15 @@ function AutotatackChamp()
 		if myTarget ~=	nil then		
 			if timeToShoot() then
 				myHero:Attack(myTarget)
+				AttackChampion = true
 				elseif heroCanMove() then
+				AttackChampion = false
 				
 			end
 
 		end
 	end
 end
-
 
 function AutoFarm()
 	if iARAM.follow then
@@ -1342,13 +1496,15 @@ function AutoFarm()
 				if dmg > minion.health then
 				  myHero:Attack(minion)
 				  tick = GetTickCount()
+				  AttackMinion = true
+				  else
+				  AttackMinion = false
 				end
 			  end
 			end
 		  end
 	end
 end
-
 
 function heroCanMove()
 	return (GetTickCount() + GetLatency()/2 > lastAttack + lastWindUpTime + 20)
@@ -1357,7 +1513,6 @@ end
 function timeToShoot()
 	return (GetTickCount() + GetLatency()/2 > lastAttack + lastAttackCD)
 end 
-
 
 function OnProcessSpell(object, spell)
 	if object == myHero then
@@ -1405,16 +1560,22 @@ ChampionCount = 0
     end
 end
 
-function FloatText()                                                                                                
-                   
-        for i = 1, ChampionCount do
-				local Champion = ChampionTable[i].player
-				local barPos = WorldToScreen(D3DXVECTOR3(Champion.x, Champion.y, Champion.z))
-		
-				--DrawText("Text", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
-			
-			
-        end
-                
- end
+
+function _FloatTextMsg(msg) 
+
+	local barPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
+	DrawText(" "..msg.." ", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
+
+end
+
+
+
+--Follow repaired
+
+
+
+
+ --Potions
+ 
+
 
