@@ -20,13 +20,14 @@
 			-Barasia
 			-One
 			-Husky
+			-Dekland
 ]]--
 
 --[[
 
-		──|> Fixed auto-buy.
-		──|> Auto ignite, Auto heal doesnt test it.
-		──|> Auto potion outdate.
+		──|> Error with stance: low health
+		──|> Auto ignite, Auto heal doesn´t test it.
+		──|> Auto potion Casts Multiple potions
 ]]--
 
 --[[ SETTINGS ]]--
@@ -36,7 +37,7 @@ local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "2.9"
+local version = "3.0"
 
 --Attack and farm globals
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
@@ -75,7 +76,13 @@ local shoplist = {}
 local buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
 local lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
---FloatDrawingtext
+--Autopotions
+
+
+
+local _b = false
+local ab = true
+local db = {br0l4nds = true, corearmies = true}
 
 
 --Auto ward
@@ -92,7 +99,7 @@ local iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
 
 --[[ Auto Update Globals]]--
 
-local UPDATE_CHANGE_LOG = "Fixed Chogath and Wukong"
+local UPDATE_CHANGE_LOG = "Temporal fix for Autobuy and for AutoPotions"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -317,13 +324,13 @@ function OnDraw()
 	--Autoward
 	AutoWarderDraw()
 	DebugCursorPos()
-
+	
 
 end
 
 --[[ On Load Function ]]--
  function OnLoad()
- 
+		
 		OnProcessSpell()
 		timeToShoot()
 		heroCanMove()
@@ -333,12 +340,20 @@ end
 		if AutomaticChat then
 			AutoChat()
 		end
+	
+		AutoWard()
+	
 		
-		--getRandomAlly()
-		
-		--potions
+		--Autopotions
+		LoadTables()
+		LoadVariables()
 
 		
+end
+
+--[[ On Unload Function ]]--
+function OnUnload()
+	print ("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">disabled.</font>")
 end
 
 --[[ OnTick Function ]]--
@@ -350,7 +365,11 @@ function OnTick()
 	Follow()	
 	LFC()
 	Checks()
-	PoroCheck()
+	
+	--|> Poro Shouter
+	
+		PoroCheck()
+	
 	
 	--|> Zhonya
 	Zhonya()
@@ -358,7 +377,12 @@ function OnTick()
 	
 
 	
-	--|> Ward
+	--|> AutoPotions
+	if not myHero.dead then
+
+		Consumables()
+		
+	end
 	
 
 end
@@ -387,9 +411,9 @@ function Follow()
 			
 			
 		end
-		val = myHero.maxHealth/myHero.health
-		if  val > 3 and GetDistance(findClosestEnemy()) > 300 then
-			stance = 3
+		--val = myHero.maxHealth/myHero.health
+		--if  val > 3 and GetDistance(findClosestEnemy()) > 300 then
+			--stance = 3
 			--if lastCast > os.clock() - 10 then return end
 			--_AutoupdaterMsg("Low Health mode")
 			--lastCast = os.clock()
@@ -397,7 +421,7 @@ function Follow()
 			--_FloatTextMsg("Lox Health mode")
 			--DrawText("Low Health mode", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
 			--PrintFloatText(myHero, 0, "Low Health mode")
-		end
+		--end
 		if findLowHp() ~= 0 then
 			Target = findLowHp()
 			else
@@ -454,7 +478,7 @@ function Follow()
 				end
 			elseif stance == 0 then
 				--alone
-			elseif stance == 3 then
+			--elseif stance == 3 then
 				--low health
 				--[[
 				if HL_slot ~= nil and player:CanUseSpell(HL_slot) == READY then
@@ -540,10 +564,6 @@ function Follow()
 	
 end
 
-
-
-
-
 function findClosestEnemy()
     local closestEnemy = nil
     local currentEnemy = nil
@@ -557,7 +577,7 @@ function findClosestEnemy()
             end
         end
     end
-	PrintFloatText(closestEnemy, 0, "Enemy!")
+	--PrintFloatText(closestEnemy, 0, "Enemy!")
 	return closestEnemy
 end
 
@@ -626,18 +646,14 @@ function followHero()
 	return target
 end
 
-
 --[[ AutoBuyItems ]]--
 function buyItems()
 	if iARAM.autobuy then
 		if InFountain() or player.dead then	
-		
-		
+	
 			--[[ Basic Items ]]--	
-			
 			if GetInGameTimer() < 10 then
 				DelayAction(function()
-				
 						BuyItem(3340)
 						BuyItem(2003)
 						BuyItem(2003)
@@ -648,32 +664,9 @@ function buyItems()
 				end, 10-GetInGameTimer()) --0:12
 			
 			
-			--[[ Mage Items ]]--
-			
-			elseif GetInGameTimer() < 15 and heroType == 7 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying Fiendish Codex (Mage)")
-					BuyItem(3108)
-					--BuyItem(1052) --Amplifying Tome
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			
-			
-			--[[ APTank Items ]]--
-			
-			elseif GetInGameTimer() < 330 and heroType == 3 or heroType == 2 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying Tank bots (Tank)")
-					BuyItem(3047) --bots tank
-					lastCast3 = os.clock()
-				end, 330-GetInGameTimer()) --5:17
-			
-			
 			
 			--[[ ADC Items ]]--
+			--shopList = {1038,3072,1038,3031,1038,3139,1038,3508}
 			elseif GetInGameTimer() < 490 and heroType == 1 then
 				DelayAction(function()
 				if lastCast4 > os.clock() - 10 then return end
@@ -685,17 +678,403 @@ function buyItems()
 			elseif GetInGameTimer() < 590 and heroType == 1 then
 				DelayAction(function()
 				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying (ADC)")
+					_AutoupdaterMsg("Buying item(ADC)")
 					BuyItem(3144) 
 					lastCast5 = os.clock()
 				end, 590-GetInGameTimer()) --9:83
 				
+			
+			elseif GetInGameTimer() < 1000 and heroType == 1 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (ADC)")
+					BuyItem(3031)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 1 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (ADC)")
+					BuyItem(3139)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 1 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (ADC)")
+					BuyItem(3508)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00	
 				
 				
-			end
-					
-		end
+				
+			--[[ ADTank  Items ]]--
+			--shopList = {3083,3155,3156,3068,3211,3102,3075}
+			
+			elseif GetInGameTimer() < 15 and heroType == 2 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (ADTank)")
+					BuyItem(3083)
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			elseif GetInGameTimer() < 600 and heroType == 2 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (ADTank)")
+					BuyItem(3155)
+					lastCast3 = os.clock()
+			end, 600-GetInGameTimer()) --
+			
+			elseif GetInGameTimer() < 1000 and heroType == 2 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item ()")
+					BuyItem(3156)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 2 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item ()")
+					BuyItem(3068)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 2 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item ()")
+					BuyItem(3075)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00
 
+			
+			--[[ APTank Items ]]--
+			--shopList = {3083,1058,3089,1058,3157,1058,3285,3001}
+			
+			elseif GetInGameTimer() < 330 and heroType == 3 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying Tank bots (APTank)")
+					BuyItem(3083) --bots tank
+					lastCast3 = os.clock()
+				end, 330-GetInGameTimer()) --5:17
+			
+			elseif GetInGameTimer() < 15 and heroType == 3 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APTank)")
+					BuyItem(1058)
+					--BuyItem(1052) --Amplifying Tome
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			elseif GetInGameTimer() < 600 and heroType == 3 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APTank)")
+					BuyItem(3089)
+					lastCast3 = os.clock()
+			end, 600-GetInGameTimer()) --
+			
+			elseif GetInGameTimer() < 1000 and heroType == 3 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APTank)")
+					BuyItem(3157)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 3 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APTank)")
+					BuyItem(3285)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 3 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APTank)")
+					BuyItem(3001)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00
+			
+			
+			--[[ HYBRID Items ]]--
+			--shopList = {3101,3115,3136,3151,1058,3089,3100}
+			
+			elseif GetInGameTimer() < 15 and heroType == 4 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (HYBRID)")
+					BuyItem(3101)
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			elseif GetInGameTimer() < 600 and heroType == 4 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (HYBRID)")
+					BuyItem(3115)
+					lastCast3 = os.clock()
+			end, 600-GetInGameTimer()) --
+			
+			elseif GetInGameTimer() < 1000 and heroType == 4 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (HYBRID)")
+					BuyItem(3136)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 4 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (HYBRID)")
+					BuyItem(3151)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 4 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (HYBRID)")
+					BuyItem(3100)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00
+			
+			
+			--[[ BRUISER Items ]]--
+			--shopList = {3211,3102,3075,1038,3072,3044,3071}
+			
+			elseif GetInGameTimer() < 15 and heroType == 5 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (BRUISER)")
+					BuyItem(3211)
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			elseif GetInGameTimer() < 600 and heroType == 5 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (BRUISER)")
+					BuyItem(3102)
+					lastCast3 = os.clock()
+			end, 600-GetInGameTimer()) --
+			
+			elseif GetInGameTimer() < 1000 and heroType == 5 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (BRUISER)")
+					BuyItem(3075)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 5 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (BRUISER)")
+					BuyItem(3072)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 5 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (BRUISER)")
+					BuyItem(3044)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00
+			
+			
+			
+			
+			--[[ Assasin Items ]]--
+			--shopList = {3211,3065,3190,3075,3068}
+			
+			elseif GetInGameTimer() < 15 and heroType == 6 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Assasin)")
+					BuyItem(3211)
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			elseif GetInGameTimer() < 600 and heroType == 6 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Assasin)")
+					BuyItem(3065)
+					lastCast3 = os.clock()
+			end, 600-GetInGameTimer()) --
+			
+			elseif GetInGameTimer() < 1000 and heroType == 6 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Assasin)")
+					BuyItem(3190)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 6 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Assasin)")
+					BuyItem(3075)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 6 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Assasin)")
+					BuyItem(3068)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00
+			
+	
+			--[[ Mage Items ]]--
+			--shopList = {3165,1058,3089,1058,3157,1058,3285}
+			
+			elseif GetInGameTimer() < 15 and heroType == 7 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying Fiendish Codex (Mage)")
+					BuyItem(3108)
+					--BuyItem(1052) --Amplifying Tome
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			elseif GetInGameTimer() < 600 and heroType == 7 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Mage)")
+					BuyItem(1058)
+					lastCast3 = os.clock()
+			end, 600-GetInGameTimer()) --
+			
+			elseif GetInGameTimer() < 1000 and heroType == 7 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Mage)")
+					BuyItem(3089)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 7 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Mage)")
+					BuyItem(3157)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 7 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Mage)")
+					BuyItem(3285)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00
+				
+				
+			--[[ APC Items ]]--
+			--shopList = {3165,1058,3089,1058,3157,1058,3285}
+			
+			elseif GetInGameTimer() < 15 and heroType == 8 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APC)")
+					BuyItem(3165)
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			elseif GetInGameTimer() < 600 and heroType == 8 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APC)")
+					BuyItem(3089)
+					lastCast3 = os.clock()
+			end, 600-GetInGameTimer()) --
+			
+			elseif GetInGameTimer() < 1000 and heroType == 8 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APC)")
+					BuyItem(3157)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 8 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APC)")
+					BuyItem(1058)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 8 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (APC)")
+					BuyItem(3285)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00
+			
+			--[[ Fighter Items ]]--
+			--shopList = {3211,3065,3190,3075,3068}
+			
+			elseif GetInGameTimer() < 15 and heroType == 9 or heroType == 10 then
+				DelayAction(function()
+				if lastCast2 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Fighter)")
+					BuyItem(3211)
+					lastCast2 = os.clock()
+			end, 15-GetInGameTimer()) --0:25
+			
+			elseif GetInGameTimer() < 600 and heroType == 9 or heroType == 10 then
+				DelayAction(function()
+				if lastCast3 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Fighter)")
+					BuyItem(3065)
+					lastCast3 = os.clock()
+			end, 600-GetInGameTimer()) --
+			
+			elseif GetInGameTimer() < 1000 and heroType == 9 or heroType == 10 then
+				DelayAction(function()
+				if lastCast4 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Fighter)")
+					BuyItem(3190)
+					lastCast4 = os.clock()
+			end, 1000-GetInGameTimer()) -- 13.00
+			
+			elseif GetInGameTimer() < 1500 and heroType == 9 or heroType == 10 then
+				DelayAction(function()
+				if lastCast5 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Fighter)")
+					BuyItem(3075)
+					lastCast5 = os.clock()
+			end, 1500-GetInGameTimer()) -- 25.00
+			
+			elseif GetInGameTimer() < 2000 and heroType == 9 or heroType == 10 then
+				DelayAction(function()
+				if lastCast6 > os.clock() - 10 then return end
+					_AutoupdaterMsg("Buying item (Fighter)")
+					BuyItem(3068)
+					lastCast6 = os.clock()
+			end, 2000-GetInGameTimer()) -- 33.00
+			
+			
+			end
+		end
 	end
 end
 --[[ 
@@ -716,11 +1095,9 @@ function buyItems()
 end
 ]]--
 
-
 function getTrueRange()
     return myHero.range + GetDistance(myHero.minBBox)+100
 end
-
 
 --[[ Level Sequence ]]--
 function LevelSequence()
@@ -928,30 +1305,19 @@ function Menu()
 	   
 	   
 	   --[[ AutoWard Menu ]]--
-		iARAM:addSubMenu("Config Autoguard", "AutoWard")
-		iARAM.AutoWard:addParam("AutoWardEnable", "Autoward Enabled", SCRIPT_PARAM_ONOFF, true)
-		iARAM.AutoWard:addParam("AutoWardDraw", "Autoward Draw Circles", SCRIPT_PARAM_ONOFF, false)
-		iARAM.AutoWard:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
-
+	   
+			iARAM:addSubMenu("Config Autoguard", "AutoWard")
+			iARAM.AutoWard:addParam("AutoWardEnable", "Autoward Enabled", SCRIPT_PARAM_ONOFF, true)
+			iARAM.AutoWard:addParam("AutoWardDraw", "Autoward Draw Circles", SCRIPT_PARAM_ONOFF, false)
+			iARAM.AutoWard:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
+		
 		--[[ Drawing menu ]]--
 		iARAM:addSubMenu("Drawing Settings", "drawing")
 		iARAM.drawing:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
 		iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
 		
-		--[[ AutoPots menu ]]--
-		iARAM:addSubMenu("Auto Pot Settings", "autoPots")
-		iARAM.autoPots:addParam("useAutoPots", "Use Auto Pots", SCRIPT_PARAM_ONOFF, true)
-		iARAM.autoPots:addParam("useHealthPots", "Use Health Pots", SCRIPT_PARAM_ONOFF, true)
-		iARAM.autoPots:addParam("useManaPots", "Use Mana Pots", SCRIPT_PARAM_ONOFF, true)
-		iARAM.autoPots:addParam("useFlask", "Use Flask", SCRIPT_PARAM_ONOFF, true)
-		iARAM.autoPots:addParam("useBiscuit", "Use Biscuit", SCRIPT_PARAM_ONOFF, true)
-		iARAM.autoPots:addParam("minHealthPercent", "Min Health Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
-		iARAM.autoPots:addParam("HealhLost", "Health Lost Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
-		iARAM.autoPots:addParam("minManaPercent", "Min Mana Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
-		iARAM.autoPots:addParam("minHealthFlaskPercent", "Min Flask Health Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
-		iARAM.autoPots:addParam("minManaFlaskPercent", "Min Flask Mana Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
-		
 		--[[ PoroShoter menu ]]--
+		
 		ARAM = ARAMSlot()
 		vPred = VPrediction()
 		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
@@ -959,6 +1325,7 @@ function Menu()
 		iARAM.PoroShot:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
 		iARAM.PoroShot:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
 		iARAM.PoroShot:addTS(TargetSelector)
+		
 		
 		--Zhonya
 		iARAM:addParam("zhonya", "Use Zhonyas", SCRIPT_PARAM_ONOFF, true)
@@ -973,8 +1340,8 @@ function Menu()
 		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 
 		-----------------------------------------------------------------------------------------------------
-		iARAM:addParam("info", " >> edited by Husmeador12", SCRIPT_PARAM_INFO, "")
-		iARAM:addParam("info2", " >> Version "..version.."", SCRIPT_PARAM_INFO, "")
+		iARAM:addParam("info", " >> edited by ", SCRIPT_PARAM_INFO, "Husmeador12") 
+		iARAM:addParam("info2", "iARAM Version : ", SCRIPT_PARAM_INFO, version)
 		
 		
 		
@@ -982,7 +1349,6 @@ function Menu()
 end
 
 --[[ Lagfree Circles by barasia, vadash and viseversa ]]---
-
 function RangeCircles()
 	if iARAM.drawing.drawcircles and not myHero.dead then
 		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
@@ -1042,8 +1408,10 @@ end
 ---------[[ Activated/disabled Script ]]---------
 function OnWndMsg(msg, keycode)
 
-	--|> AutoWard	
-		AutoWard()
+	--|> AutoWard
+		if summonersRiftMap then
+			AutoWard()
+		end
 		
 	if keycode == HotKey and msg == KEY_DOWN then
         if switcher == true then
@@ -1275,7 +1643,7 @@ end
 
 function AutoWarderDraw()
 
-    if iARAM.AutoWard.AutoWardDraw then
+    if iARAM.AutoWard.AutoWardDraw and summonersRiftMap then
         for i, wardSpot in pairs(wardSpots) do
             local wardColor = (GetDistance(wardSpot, myHeroPos) <= 250) and ARGB(255,0,255,0) or ARGB(255,0,255,0)
 
@@ -1398,8 +1766,6 @@ end
 ---------[[ Poro shouter function ]]---------
 
 function PoroCheck()
-
-
 	Target = getTarget()
 	if ARAM and (myHero:CanUseSpell(ARAM) == READY) then 
 		ARAMRdy = true
@@ -1542,10 +1908,6 @@ function getHealthPercent(unit)
     return (obj.health / obj.maxHealth) * 100
 end
 
-
-
-
-
 function ChampionFloatText()
 ChampionCount = 0
     ChampionTable = {}
@@ -1560,7 +1922,6 @@ ChampionCount = 0
     end
 end
 
-
 function _FloatTextMsg(msg) 
 
 	local barPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
@@ -1568,14 +1929,139 @@ function _FloatTextMsg(msg)
 
 end
 
+function LoadMapVariables()
+	gameState = GetGame()
+	if gameState.map.shortName then
+		if gameState.map.shortName == "summonerRift" then
+			summonersRiftMap = true
+			--print("summonerRift")
+		else
+			summonersRiftMap = false
+		end
+		
+		if gameState.map.shortName == "crystalScar" then
+			crystalScarMap = true
+			
+		else
+			crystalScarMap = false
+		end
+		
+		if gameState.map.shortName == "howlingAbyss" then
+			howlingAbyssMap = true
+		else
+			howlingAbyssMap = false
+		end
+		
+		if gameState.map.shortName == "twistedTreeline" then
+			twistedTreeLineMap = true
+		else
+			twistedTreeLineMap = false
+		end
+	else
+		summonersRiftMap = true
+	end
+end
 
 
---Follow repaired
+
+-----[[ AutoPotions ]]------
+
+function LoadTables()
+	Slots = 
+	{
+		6,
+		7,
+		8,
+		9,
+		10,
+		11
+	}
+	
+	Items = 
+	{
+		Pots = 
+		{
+			regenerationpotion = 
+			{
+				Name = "regenerationpotion",
+				CastType = "Self"
+			},
+
+			flaskofcrystalwater = 
+			{
+				Name = "flaskofcrystalwater",
+				CastType = "Self"
+			},
+
+			itemcrystalflask = 
+			{
+				Name = "itemcrystalflask",
+				CastType = "Self"
+			}
+		},
+	}
+end
+
+function PotReady(_c)
+	for ac, bc in pairs(Slots) do
+		if Items.Pots[myHero:GetSpellData(bc).name:lower()] and Items.Pots[myHero:GetSpellData(bc).name:lower()].Name == _c then
+			if myHero:CanUseSpell(bc) == 0 then
+				return true
+			else
+				return false
+			end
+		end
+	end
+end
+
+function CastPots(_c)
+	for ac, bc in pairs(Slots) do
+		if Items.Pots[myHero:GetSpellData(bc).name:lower()] and Items.Pots[myHero:GetSpellData(bc).name:lower()].Name == _c and myHero:CanUseSpell(bc) == 0 then
+			CastSpell(bc)
+		end
+	end
+end
+
+function LoadVariables()
+	LoadMapVariables()
+	LoadAutoPotsMenu()
+end
 
 
+function LoadAutoPotsMenu()
+	iARAM:addSubMenu("Auto Pot Settings", "autoPots")
+	iARAM.autoPots:addParam("useAutoPots", "Use Auto Pots", SCRIPT_PARAM_ONOFF, true)
+	iARAM.autoPots:addParam("useHealthPots", "Use Health Pots", SCRIPT_PARAM_ONOFF, true)
+	iARAM.autoPots:addParam("useManaPots", "Use Mana Pots", SCRIPT_PARAM_ONOFF, true)
+	iARAM.autoPots:addParam("useFlask", "Use Flask", SCRIPT_PARAM_ONOFF, true)
+	iARAM.autoPots:addParam("useBiscuit", "Use Biscuit", SCRIPT_PARAM_ONOFF, true)
+	iARAM.autoPots:addParam("minHealthPercent", "Min Health Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
+	iARAM.autoPots:addParam("HealhLost", "Health Lost Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
+	iARAM.autoPots:addParam("minManaPercent", "Min Mana Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
+	iARAM.autoPots:addParam("minHealthFlaskPercent", "Min Flask Health Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
+	iARAM.autoPots:addParam("minManaFlaskPercent", "Min Flask Mana Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
+end
 
-
- --Potions
- 
+function Consumables()
+	if not iARAM.autoPots.useAutoPots then
+		return
+	end
+	
+	if not recalling and not InFountain() and not usingMixedPot then
+		local _c = myHero.health / myHero.maxHealth * 100
+		local ac = myHero.mana / myHero.maxMana * 100
+		if _c <= iARAM.autoPots.minHealthPercent and not usingHealthPot and PotReady("regenerationpotion") then
+			if PotReady("regenerationpotion") then
+				CastPots("regenerationpotion")
+			end
+		elseif _c <= iARAM.autoPots.minHealthFlaskPercent and iARAM.autoPots.useFlask and PotReady("itemcrystalflask") and not usingHealthPot then
+			CastPots("itemcrystalflask")
+		elseif ac <= iARAM.autoPots.minManaPercent and iARAM.autoPots.useManaPots and PotReady("flaskofcrystalwater") and not usingManaPot then
+			CastPots("flaskofcrystalwater")
+		elseif ac <= iARAM.autoPots.minManaFlaskPercent and iARAM.autoPots.useFlask and PotReady("itemcrystalflask") and not usingManaPot then
+			CastPots("itemcrystalflask")
+		end
+	end
+end
 
 
