@@ -37,7 +37,7 @@ local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "3.0"
+local version = "3.1"
 
 --Attack and farm globals
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
@@ -52,41 +52,29 @@ local switcher = true
 --Buyer
 local lastSay = 0
 local lastCast = 0
-local lastCast1 = 0
-local lastCast2 = 0
-local lastCast3 = 0
-local lastCast4 = 0
-local lastCast5 = 0
-local lastCast6 = 0
-local lastCast7 = 0
-local lastCast8 = 0
-local lastCast9 = 0
-local lastCast10 = 0
-local lastCast11 = 0
-local lastCast12 = 0
-local lastCast13 = 0
-local lastCast14 = 0
-local lastCast15 = 0
+
 
 --Main Script
 local abilitySequence
 local qOff, wOff, eOff, rOff = 0,0,0,0
-local buyIndex = 1
+
 local shoplist = {}
 local buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
 local lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
+buyIndex = 1
+startTime = 0
+lastGold = 0
+lastBuy = -50001
+
+
 --Autopotions
-
-
-
 local _b = false
 local ab = true
 local db = {br0l4nds = true, corearmies = true}
 
 
 --Auto ward
-
 local drawWardSpots      = false
 local wardSlot           = nil
 
@@ -99,7 +87,7 @@ local iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
 
 --[[ Auto Update Globals]]--
 
-local UPDATE_CHANGE_LOG = "Temporal fix for Autobuy and for AutoPotions"
+local UPDATE_CHANGE_LOG = "Fixed Autobuy"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -225,7 +213,42 @@ do
 		ranged = 1
 	end
 	
-	
+	itemCosts = {
+                                        [3096]=865,--Nomad's Medallion
+                                        [3801]=600,--Crystalline Bracer
+                                        [1011]=1000,--Giant's Belt
+                                        [3083]=300,--*Warmog's Armor
+                                        [3190]=2800,--Locket of the Iron Solari
+                                        [3075]=2100,--Thornmail
+                                        [3068]=2600,--Sunfire Cape
+                                        [3072]=1950,--*Bloodthirster
+                                        [3069]=1235,--*Talisman of Ascension
+                                        [1038]=1550,--B.F. Sword
+                                        [3031]=2250,--*Infinity Edge
+                                        [3139]=2150,--*Mercurial Scimitar
+                                        [3508]=1650,--*Essence Reaver
+                                        [3155]=1450,--Hexdrinker
+                                        [3156]=1750,--*Maw of Malmortius
+                                        [3082]=1050,--Warden's Mail
+                                        [3110]=1400,--*Frozen Heart
+                                        [3211]=1200,--Spectre's Cowl
+                                        [3065]=1550,--*Spirit Visage
+                                        [3102]=1550,--*Banshee's Veil
+                                        [1058]=1600,--Needlessly Large Rod
+                                        [3089]=1700,--*Rabadon's Deathcap
+                                        [3157]=1700,--*Zhonya's Hourglass
+                                        [3285]=1500,--*Luden's Echo
+                                        [3001]=2440,--Abyssal Scepter
+                                        [3101]=1250,--Stinger
+                                        [3115]=1670,--*Nashor's Tooth
+                                        [3136]=1485,--Haunting Guise
+                                        [3151]=1415,--Liandry's Torment
+                                        [3100]=3000,--Lich Bane
+                                        [3044]=1325,--Phage
+                                        [3071]=1675,--*The Black Cleaver       
+                                        [3165]=2300--Morellonomicon
+                                }
+
 	--[[ ItemsList ]]--
 	
 	if heroType == 1 then --ADC
@@ -256,37 +279,9 @@ do
 		shopList = {3211,3065,3190,3075,3068}
 	end
 	startTime = GetTickCount()
-	--[[
-	if heroType == 1 then
-		shopList = {3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
-	end
-	if heroType == 2 then
-		shopList = {3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
-	end
-	if heroType == 3 then
-		shopList = {3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
-	end
-	if heroType == 4 then
-		shopList = {1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
-	end
-	if heroType == 5 then
-		shopList = {3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
-	end
-	if heroType == 6 then
-		shopList = {3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
-	end
-	if heroType == 7 then 
-		shopList = {3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
-	end
-	if heroType == 8 then 
-		shopList = {3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
-	end
-	if heroType == 9 or heroType == 10 then 
-		shopList = {3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
-	end
 	--yellow ward 3340
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
-	]]--
+	
 end
 
 --[[ Checks Function ]]--
@@ -347,6 +342,8 @@ end
 		--Autopotions
 		LoadTables()
 		LoadVariables()
+		OnRemoveBuff()
+		OnApplyBuff()
 
 		
 end
@@ -477,8 +474,10 @@ function Follow()
 					--Attack Minions
 				end
 			elseif stance == 0 then
+				
 				--alone
-			--elseif stance == 3 then
+			elseif stance == 3 then
+			--myHero:MoveTo(spawnpos.x,spawnpos.z)
 				--low health
 				--[[
 				if HL_slot ~= nil and player:CanUseSpell(HL_slot) == READY then
@@ -649,451 +648,31 @@ end
 --[[ AutoBuyItems ]]--
 function buyItems()
 	if iARAM.autobuy then
-		if InFountain() or player.dead then	
-	
-			--[[ Basic Items ]]--	
-			if GetInGameTimer() < 10 then
-				DelayAction(function()
-						BuyItem(3340)
-						BuyItem(2003)
-						BuyItem(2003)
-						BuyItem(1001)
-					if lastCast1 > os.clock() - 10 then return end
-						_AutoupdaterMsg("Buying Bots, Trinket and Potions")
-					lastCast1 = os.clock()
-				end, 10-GetInGameTimer()) --0:12
-			
-			
-			
-			--[[ ADC Items ]]--
-			--shopList = {1038,3072,1038,3031,1038,3139,1038,3508}
-			elseif GetInGameTimer() < 490 and heroType == 1 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying Berserker's Greaves (ADC)")
-					BuyItem(3006) --Berserker's Greaves
-					lastCast4 = os.clock()
-				end, 490-GetInGameTimer()) --8:09
-				
-			elseif GetInGameTimer() < 590 and heroType == 1 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item(ADC)")
-					BuyItem(3144) 
-					lastCast5 = os.clock()
-				end, 590-GetInGameTimer()) --9:83
-				
-			
-			elseif GetInGameTimer() < 1000 and heroType == 1 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (ADC)")
-					BuyItem(3031)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 1 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (ADC)")
-					BuyItem(3139)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 1 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (ADC)")
-					BuyItem(3508)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00	
-				
-				
-				
-			--[[ ADTank  Items ]]--
-			--shopList = {3083,3155,3156,3068,3211,3102,3075}
-			
-			elseif GetInGameTimer() < 15 and heroType == 2 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (ADTank)")
-					BuyItem(3083)
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			elseif GetInGameTimer() < 600 and heroType == 2 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (ADTank)")
-					BuyItem(3155)
-					lastCast3 = os.clock()
-			end, 600-GetInGameTimer()) --
-			
-			elseif GetInGameTimer() < 1000 and heroType == 2 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item ()")
-					BuyItem(3156)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 2 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item ()")
-					BuyItem(3068)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 2 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item ()")
-					BuyItem(3075)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00
-
-			
-			--[[ APTank Items ]]--
-			--shopList = {3083,1058,3089,1058,3157,1058,3285,3001}
-			
-			elseif GetInGameTimer() < 330 and heroType == 3 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying Tank bots (APTank)")
-					BuyItem(3083) --bots tank
-					lastCast3 = os.clock()
-				end, 330-GetInGameTimer()) --5:17
-			
-			elseif GetInGameTimer() < 15 and heroType == 3 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APTank)")
-					BuyItem(1058)
-					--BuyItem(1052) --Amplifying Tome
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			elseif GetInGameTimer() < 600 and heroType == 3 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APTank)")
-					BuyItem(3089)
-					lastCast3 = os.clock()
-			end, 600-GetInGameTimer()) --
-			
-			elseif GetInGameTimer() < 1000 and heroType == 3 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APTank)")
-					BuyItem(3157)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 3 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APTank)")
-					BuyItem(3285)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 3 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APTank)")
-					BuyItem(3001)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00
-			
-			
-			--[[ HYBRID Items ]]--
-			--shopList = {3101,3115,3136,3151,1058,3089,3100}
-			
-			elseif GetInGameTimer() < 15 and heroType == 4 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (HYBRID)")
-					BuyItem(3101)
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			elseif GetInGameTimer() < 600 and heroType == 4 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (HYBRID)")
-					BuyItem(3115)
-					lastCast3 = os.clock()
-			end, 600-GetInGameTimer()) --
-			
-			elseif GetInGameTimer() < 1000 and heroType == 4 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (HYBRID)")
-					BuyItem(3136)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 4 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (HYBRID)")
-					BuyItem(3151)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 4 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (HYBRID)")
-					BuyItem(3100)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00
-			
-			
-			--[[ BRUISER Items ]]--
-			--shopList = {3211,3102,3075,1038,3072,3044,3071}
-			
-			elseif GetInGameTimer() < 15 and heroType == 5 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (BRUISER)")
-					BuyItem(3211)
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			elseif GetInGameTimer() < 600 and heroType == 5 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (BRUISER)")
-					BuyItem(3102)
-					lastCast3 = os.clock()
-			end, 600-GetInGameTimer()) --
-			
-			elseif GetInGameTimer() < 1000 and heroType == 5 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (BRUISER)")
-					BuyItem(3075)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 5 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (BRUISER)")
-					BuyItem(3072)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 5 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (BRUISER)")
-					BuyItem(3044)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00
-			
-			
-			
-			
-			--[[ Assasin Items ]]--
-			--shopList = {3211,3065,3190,3075,3068}
-			
-			elseif GetInGameTimer() < 15 and heroType == 6 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Assasin)")
-					BuyItem(3211)
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			elseif GetInGameTimer() < 600 and heroType == 6 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Assasin)")
-					BuyItem(3065)
-					lastCast3 = os.clock()
-			end, 600-GetInGameTimer()) --
-			
-			elseif GetInGameTimer() < 1000 and heroType == 6 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Assasin)")
-					BuyItem(3190)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 6 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Assasin)")
-					BuyItem(3075)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 6 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Assasin)")
-					BuyItem(3068)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00
-			
-	
-			--[[ Mage Items ]]--
-			--shopList = {3165,1058,3089,1058,3157,1058,3285}
-			
-			elseif GetInGameTimer() < 15 and heroType == 7 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying Fiendish Codex (Mage)")
-					BuyItem(3108)
-					--BuyItem(1052) --Amplifying Tome
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			elseif GetInGameTimer() < 600 and heroType == 7 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Mage)")
-					BuyItem(1058)
-					lastCast3 = os.clock()
-			end, 600-GetInGameTimer()) --
-			
-			elseif GetInGameTimer() < 1000 and heroType == 7 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Mage)")
-					BuyItem(3089)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 7 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Mage)")
-					BuyItem(3157)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 7 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Mage)")
-					BuyItem(3285)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00
-				
-				
-			--[[ APC Items ]]--
-			--shopList = {3165,1058,3089,1058,3157,1058,3285}
-			
-			elseif GetInGameTimer() < 15 and heroType == 8 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APC)")
-					BuyItem(3165)
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			elseif GetInGameTimer() < 600 and heroType == 8 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APC)")
-					BuyItem(3089)
-					lastCast3 = os.clock()
-			end, 600-GetInGameTimer()) --
-			
-			elseif GetInGameTimer() < 1000 and heroType == 8 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APC)")
-					BuyItem(3157)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 8 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APC)")
-					BuyItem(1058)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 8 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (APC)")
-					BuyItem(3285)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00
-			
-			--[[ Fighter Items ]]--
-			--shopList = {3211,3065,3190,3075,3068}
-			
-			elseif GetInGameTimer() < 15 and heroType == 9 or heroType == 10 then
-				DelayAction(function()
-				if lastCast2 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Fighter)")
-					BuyItem(3211)
-					lastCast2 = os.clock()
-			end, 15-GetInGameTimer()) --0:25
-			
-			elseif GetInGameTimer() < 600 and heroType == 9 or heroType == 10 then
-				DelayAction(function()
-				if lastCast3 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Fighter)")
-					BuyItem(3065)
-					lastCast3 = os.clock()
-			end, 600-GetInGameTimer()) --
-			
-			elseif GetInGameTimer() < 1000 and heroType == 9 or heroType == 10 then
-				DelayAction(function()
-				if lastCast4 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Fighter)")
-					BuyItem(3190)
-					lastCast4 = os.clock()
-			end, 1000-GetInGameTimer()) -- 13.00
-			
-			elseif GetInGameTimer() < 1500 and heroType == 9 or heroType == 10 then
-				DelayAction(function()
-				if lastCast5 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Fighter)")
-					BuyItem(3075)
-					lastCast5 = os.clock()
-			end, 1500-GetInGameTimer()) -- 25.00
-			
-			elseif GetInGameTimer() < 2000 and heroType == 9 or heroType == 10 then
-				DelayAction(function()
-				if lastCast6 > os.clock() - 10 then return end
-					_AutoupdaterMsg("Buying item (Fighter)")
-					BuyItem(3068)
-					lastCast6 = os.clock()
-			end, 2000-GetInGameTimer()) -- 33.00
-			
-			
-			end
-		end
-	end
-end
---[[ 
-Outdate	
-function buyItems()
- if iARAM.autobuy then
-		if InFountain() or player.dead or shopList[buyIndex] ~= 0 then
-			local itemval = shopList[buyIndex]
-			BuyItem(itemval)
-				if GetInventorySlotItem(shopList[buyIndex]) ~= nil then
-					--Last Buy successful
-					buyIndex = buyIndex + 1
-					buyItems()
+		if InFountain() then	
+			 if shopList[buyIndex] ~= 0 then
+						nowTime = GetTickCount()
+						if nowTime - lastBuy > 5000 then
+								currentGold = myHero.gold
+								if (currentGold < lastGold) or ((currentGold ~= lastGold) and (nowTime - lastBuy > 50000)) then
+										local itemval = shopList[buyIndex]
+										if itemval ~= nil then
+												local cost = itemCosts[itemval]
+												if cost ~= nil then
+														if myHero.gold > cost then
+																lastGold = currentGold
+																lastBuy = GetTickCount()
+																BuyItem(itemval)
+																table.remove(shopList, 1)              
+														end
+												end
+										end
+								end
+						end
 				end
-			
 		end
 	end
 end
-]]--
+
 
 function getTrueRange()
     return myHero.range + GetDistance(myHero.minBBox)+100
@@ -2064,4 +1643,35 @@ function Consumables()
 	end
 end
 
+function OnApplyBuff(_c, ac, bc)
+	if not ac then
+		return
+	end
+	if ac and ac.isMe then
+		if bc.name == "ItemCrystalFlask" or bc.name == "ItemMiniRegenPotion" then
+			usingMixedPot = true
+		elseif bc.name == "RegenerationPotion" then
+			usingHealthPot = true
+		elseif bc.name == "FlaskOfCrystalWater" then
+			usingManaPot = true
+		end
+	end
+end
+
+function OnRemoveBuff(_c, ac)
+	if not _c then
+		return
+	end
+	if _c and _c.isMe and (ac.name == "ItemCrystalFlask" or ac.name == "ItemMiniRegenPotion") then
+		usingMixedPot = false
+	end
+	
+	if _c and _c.isMe and ac.name == "RegenerationPotion" then
+		usingHealthPot = false
+	end
+	
+	if _c and _c.isMe and ac.name == "FlaskOfCrystalWater" then
+		usingManaPot = false
+	end
+end
 
