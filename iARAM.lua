@@ -27,7 +27,7 @@
 
 		──|> Error with stance: low health
 		──|> Auto ignite, Auto heal doesn´t test it.
-		──|> Auto potion Casts Multiple potions
+		──|> Auto potion Casts no tested.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -37,63 +37,64 @@ local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "3.1"
+local version = "3.2"
 
---Attack and farm globals
+
+-----[[ Attack and farm Globals ]]------
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local range = myHero.range
 local ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, range, DAMAGE_PHYSICAL, false)
 require 'VPrediction'
 
 
---Chat
+-----[[ Chat Global ]]------
 local switcher = true
 
---Buyer
-local lastSay = 0
+
+-----[[ Poro Shouter Global ]]------
 local lastCast = 0
 
 
---Main Script
+-----[[ Main Script ]]------
 local abilitySequence
 local qOff, wOff, eOff, rOff = 0,0,0,0
-
-local shoplist = {}
 local buffs = {{pos = { x = 8922, y = 10, z = 7868 },current=0},{pos = { x = 7473, y = 10, z = 6617 },current=0},{pos = { x = 5929, y = 10, z = 5190 },current=0},{pos = { x = 4751, y = 10, z = 3901 },current=0}}
 local lastsixpos = {0,0,0,0,0,0,0,0,0,0}
 
-buyIndex = 1
-startTime = 0
-lastGold = 0
-lastBuy = -50001
+--!> Buyer
+local shoplist = {}
+local buyIndex = 1
+local startTime = 0
+local lastGold = 0
+local lastBuy = -50001
 
 
---Autopotions
+-----[[ Autopotions Globals ]]------
 local _b = false
 local ab = true
 local db = {br0l4nds = true, corearmies = true}
 
 
---Auto ward
+-----[[ Auto ward Globals ]]------
 local drawWardSpots      = false
 local wardSlot           = nil
 
 
---!> Ignite
+-----[[ Ignite Globals ]]------
 local iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
 local iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
 
 
 
---[[ Auto Update Globals]]--
-
-local UPDATE_CHANGE_LOG = "Fixed Autobuy"
+--[[ Auto Update Globals ]]--
+local UPDATE_CHANGE_LOG = "Updating items"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 
+--[[ Auto Update Function ]]--
 function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
 	local ServerData = GetWebResult(UPDATE_HOST, "/Husmeador12/Bol_Script/master/version/iARAM.version")
@@ -222,6 +223,7 @@ do
                                         [3075]=2100,--Thornmail
                                         [3068]=2600,--Sunfire Cape
                                         [3072]=1950,--*Bloodthirster
+										[1053]=800,--Vampiric Scepter
                                         [3069]=1235,--*Talisman of Ascension
                                         [1038]=1550,--B.F. Sword
                                         [3031]=2250,--*Infinity Edge
@@ -235,7 +237,8 @@ do
                                         [3065]=1550,--*Spirit Visage
                                         [3102]=1550,--*Banshee's Veil
                                         [1058]=1600,--Needlessly Large Rod
-                                        [3089]=1700,--*Rabadon's Deathcap
+                                        [3089]=1600,--*Rabadon's Deathcap
+										[1026]=860,--Blasting Wand
                                         [3157]=1700,--*Zhonya's Hourglass
                                         [3285]=1500,--*Luden's Echo
                                         [3001]=2440,--Abyssal Scepter
@@ -246,43 +249,49 @@ do
                                         [3100]=3000,--Lich Bane
                                         [3044]=1325,--Phage
                                         [3071]=1675,--*The Black Cleaver       
-                                        [3165]=2300--Morellonomicon
+                                        [3108]=820,--Fiendish Codex
+										[3165]=2300,--*Morellonomicon
+										[1001]=325,--Boots of Speed
+										[3006]=1000,--*Berserker's Greaves
+										[3047]=1000,--*Ninja Tabi
+										[2003]=35,--Health Potion
+										[3340]=0--Warding Totem
                                 }
 
 	--[[ ItemsList ]]--
 	
 	if heroType == 1 then --ADC
-		shopList = {1038,3072,1038,3031,1038,3139,1038,3508}
+		shopList = {1001,2003,1038,1053,3072,3006,3031,3139,3508}
 	end
 	if heroType == 2 then --ADTANK
-		shopList = {3083,3155,3156,3068,3211,3102,3075}
+		shopList = {2003,1001,3047,3083,3155,3156,3068,3211,3102,3075}
 	end
 	if heroType == 3 then --APTANK
-		shopList = {3083,1058,3089,1058,3157,1058,3285,3001}
+		shopList = {1001,2003,3083,1058,3089,1058,3157,1058,3285,3001}
 	end
 	if heroType == 4 then --HYBRID
-		shopList = {3101,3115,3136,3151,1058,3089,3100}
+		shopList = {2003,1001,3101,3115,3136,3151,1058,3089,3100}
 	end
 	if heroType == 5 then --BRUISER
-		shopList = {3211,3102,3075,1038,3072,3044,3071}
+		shopList = {1001,2003,3211,3102,3075,1038,3072,3044,3071}
 	end
 	if heroType == 6 then --ASSASSIN
-		shopList = {3211,3065,3190,3075,3068}
+		shopList = {2003,1001,3211,3065,3190,3075,3068}
 	end
 	if heroType == 7 then --MAGE
-		shopList = {3165,1058,3089,1058,3157,1058,3285}
+		shopList = {1001,2003,3108,3165,1058,1026,3089,1058,3157,1058,3285}
 	end
 	if heroType == 8 then  --APC
-		shopList = {3165,1058,3089,1058,3157,1058,3285}
+		shopList = {1001,2003,3165,1058,3089,1058,3157,1058,3285}
 	end
 	if heroType == 9 or heroType == 10 then --FIGHTER and OTHERS
-		shopList = {3211,3065,3190,3075,3068}
+		shopList = {1001,2003,3211,3065,3190,3075,3068}
 	end
 	startTime = GetTickCount()
-	--yellow ward 3340
-	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
+	--item ids can be found at many websites, ie: http://www.lolking.net/items/
 	
 end
+
 
 --[[ Checks Function ]]--
 function Checks()
@@ -312,6 +321,7 @@ function Checks()
 	
 end
 
+
 --[[ On Draw Function ]]--
 function OnDraw()
 	AirText()
@@ -322,6 +332,7 @@ function OnDraw()
 	
 
 end
+
 
 --[[ On Load Function ]]--
  function OnLoad()
@@ -336,6 +347,7 @@ end
 			AutoChat()
 		end
 	
+	
 		AutoWard()
 	
 		
@@ -348,10 +360,12 @@ end
 		
 end
 
+
 --[[ On Unload Function ]]--
 function OnUnload()
 	print ("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">disabled.</font>")
 end
+
 
 --[[ OnTick Function ]]--
 function OnTick()
@@ -383,6 +397,7 @@ function OnTick()
 	
 
 end
+
 
 --[[ Follow Function ]]--
 function Follow()
@@ -506,10 +521,26 @@ function Follow()
 				distance2 = math.random(250,300)
 				neg1 = 1 
 				neg2 = 1 
+				
 				if myHero.team == TEAM_BLUE then
-					myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
+					if GetInGameTimer() < 10 then
+					lastMovement = 0
+						DelayAction(function()
+						if lastMovement > os.clock() - 0.1 then return end
+								myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
+							lastMovement = os.clock()
+						end, 0.1-GetInGameTimer()) 
+					end
 				else
-					myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
+				if GetInGameTimer() < 10 then
+					lastMovement1 = 0
+						DelayAction(function()
+						if lastMovement1 > os.clock() - 0.01 then return end
+								myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
+							lastMovement1 = os.clock()
+						end, 0.01-GetInGameTimer()) 
+					end
+					
 				end
 			end
 			if frontally() == myHero then
@@ -645,6 +676,11 @@ function followHero()
 	return target
 end
 
+function getTrueRange()
+    return myHero.range + GetDistance(myHero.minBBox)+100
+end
+
+
 --[[ AutoBuyItems ]]--
 function buyItems()
 	if iARAM.autobuy then
@@ -670,13 +706,22 @@ function buyItems()
 						end
 				end
 		end
+		--[[ Basic Items ]]--	
+		if summonersRiftMap then
+		
+			if GetInGameTimer() < 10 then
+				lastCast1 = 0
+					DelayAction(function()
+							BuyItem(3340)
+						if lastCast1 > os.clock() - 10 then return end
+							_AutoupdaterMsg("Buying Trinket")
+						lastCast1 = os.clock()
+					end, 10-GetInGameTimer()) --0:12
+			end
+		end
 	end
 end
 
-
-function getTrueRange()
-    return myHero.range + GetDistance(myHero.minBBox)+100
-end
 
 --[[ Level Sequence ]]--
 function LevelSequence()
@@ -817,6 +862,7 @@ function LevelSequence()
     end
 end
 
+
 --[[ Attack Distance ]]-- 
 function getChampTable() 
     return {                                                   
@@ -878,6 +924,7 @@ function getChampTable()
     }
 end
 
+
 --[[ Menu Function ]]-- 
 function Menu()
        iARAM = scriptConfig("iARAM: "..myHero.charName.." Bot", "iARAM BOT")
@@ -919,13 +966,14 @@ function Menu()
 		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 
 		-----------------------------------------------------------------------------------------------------
-		iARAM:addParam("info", " >> edited by ", SCRIPT_PARAM_INFO, "Husmeador12") 
+		iARAM:addParam("info", "edited by ", SCRIPT_PARAM_INFO, "Husmeador12") 
 		iARAM:addParam("info2", "iARAM Version : ", SCRIPT_PARAM_INFO, version)
 		
 		
 		
 		
 end
+
 
 --[[ Lagfree Circles by barasia, vadash and viseversa ]]---
 function RangeCircles()
@@ -962,12 +1010,14 @@ function DrawCircle2(x, y, z, radius, color)
     end
 end
 
+
 ---------[[ Lagfree Circles ]]---------
 function LFC()
 	if iARAM.drawing.LfcDraw then
 		_G.DrawCircle = DrawCircle2
 	end
 end	
+
 
 ---------[[ AirText ]]---------
 function AirText()
@@ -1006,10 +1056,7 @@ end
 
 
 
---[[
-	Perfect Ward, originally by Husky
-]]--     
-
+--[[ Perfect Ward, originally by Husky ]]--     
 local wardSpots = {
     -- Perfect Wards
 	{x=3261.93, y=60, z=7773.65}, -- BLUE GOLEM
@@ -1194,8 +1241,6 @@ local wardItems = {
 
 }
 
-
-
 -- Code ------------------------------------------------------------------------
 
 function AutoWard()
@@ -1283,7 +1328,6 @@ function DebugCursorPos()
 end
 
 
-
 ---------[[ Auto Ignite ]]---------
 function AutoIgnite()
 	Ignite = { name = "summonerdot", range = 600, slot = nil }
@@ -1343,7 +1387,6 @@ end
 
 
 ---------[[ Poro shouter function ]]---------
-
 function PoroCheck()
 	Target = getTarget()
 	if ARAM and (myHero:CanUseSpell(ARAM) == READY) then 
@@ -1402,7 +1445,6 @@ end
 
 
 -----[[ AutoFarm and harras ]]------
-
 function AutotatackChamp()
 	
 	range = myHero.range + myHero.boundingRadius - 3
@@ -1471,7 +1513,6 @@ end
 
 
 -----[[ Zhonya ]]------
-
 function Zhonya()
 	if iARAM.zhonya and getHealthPercent(myHero) < iARAM.zhonyaHP then 
 		for slot = ITEM_1, ITEM_7 do
@@ -1544,7 +1585,6 @@ end
 
 
 -----[[ AutoPotions ]]------
-
 function LoadTables()
 	Slots = 
 	{
@@ -1605,7 +1645,6 @@ function LoadVariables()
 	LoadMapVariables()
 	LoadAutoPotsMenu()
 end
-
 
 function LoadAutoPotsMenu()
 	iARAM:addSubMenu("Auto Pot Settings", "autoPots")
