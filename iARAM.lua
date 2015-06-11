@@ -37,7 +37,7 @@ local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "3.2"
+local version = "3.3"
 
 
 -----[[ Attack and farm Globals ]]------
@@ -87,7 +87,7 @@ local iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
 
 
 --[[ Auto Update Globals ]]--
-local UPDATE_CHANGE_LOG = "Updating items"
+local UPDATE_CHANGE_LOG = "Auto buy and auto level crashed"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -404,36 +404,11 @@ function Follow()
 	if iARAM.follow and not myHero.dead then
 		stance = 0
 		if Allies() >=  2 then
-			stance = 1
-			--if lastCast > os.clock() - 0.5 then return end
-			--_AutoupdaterMsg("TF mode")
-			--lastCast = os.clock()
-			--_FloatTextMsg("TF mode")
-			--DrawText("TF mode", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
-			
+			stance = 1		
 		else
 			stance = 0
-			--if lastCast > os.clock() - 10 then return end
-			--_AutoupdaterMsg("Alone mode")
-			--lastCast = os.clock()
-			
-			--_FloatTextMsg("Alone mode")
-			--local Note = "Alone mode"
-			--DrawText("Alone mode", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
-			
-			
 		end
-		--val = myHero.maxHealth/myHero.health
-		--if  val > 3 and GetDistance(findClosestEnemy()) > 300 then
-			--stance = 3
-			--if lastCast > os.clock() - 10 then return end
-			--_AutoupdaterMsg("Low Health mode")
-			--lastCast = os.clock()
-			
-			--_FloatTextMsg("Lox Health mode")
-			--DrawText("Low Health mode", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
-			--PrintFloatText(myHero, 0, "Low Health mode")
-		--end
+
 		if findLowHp() ~= 0 then
 			Target = findLowHp()
 			else
@@ -454,21 +429,14 @@ function Follow()
 				if myHero:GetSpellData(_Q).range > GetDistance(Target) then
 					CastSpell(_Q, Target)
 					attacksuccess =1 
-					
-					--PrintFloatText(Target,0,"Casting spell to".. Target.charName)
 				end
 				if myHero:GetSpellData(_E).range > GetDistance(Target) then
 					CastSpell(_E, Target)
 					attacksuccess = 1
-				
-					--PrintFloatText(Target,0,"Casting spell to".. Target.charName)
 				end
 				if myHero:GetSpellData(_R).range > GetDistance(Target) then
 					CastSpell(_R, Target)
 					attacksuccess =1
-					--DrawText("Casting spell to".. Target.charName, 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
-				
-				
 				end
 				if GetDistance(Target) < getTrueRange() then
 					myHero:Attack(Target)
@@ -492,38 +460,16 @@ function Follow()
 				
 				--alone
 			elseif stance == 3 then
-			--myHero:MoveTo(spawnpos.x,spawnpos.z)
-				--low health
-				--[[
-				if HL_slot ~= nil and player:CanUseSpell(HL_slot) == READY then
-					CastSpell(HL_slot)
-				end
-				if BR_slot ~= nil and player:CanUseSpell(BR_slot) == READY then
-					CastSpell(BR_slot)
-				end
-				
-				
-				for i,buff in pairs(buffs) do 
-					if buff.current ==1 then
-						if GetDistance(spawnpos,findClosestEnemy()) > GetDistance(spawnpos,buff.pos) then 
-							myHero:MoveTo(buff.pos.x,buff.pos.z) 
-							break 
-						end
-					end
-				end
-				]]--
-				--/low health
 			end
 			allytofollow = followHero()
 			if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350  then
-				--PrintFloatText(allytofollow, 0, "Following")
 				distance1 = math.random(250,300)
 				distance2 = math.random(250,300)
 				neg1 = 1 
 				neg2 = 1 
 				
 				if myHero.team == TEAM_BLUE then
-					if GetInGameTimer() < 10 then
+					if GetInGameTimer() < 0.1 then
 					lastMovement = 0
 						DelayAction(function()
 						if lastMovement > os.clock() - 0.1 then return end
@@ -532,7 +478,7 @@ function Follow()
 						end, 0.1-GetInGameTimer()) 
 					end
 				else
-				if GetInGameTimer() < 10 then
+				if GetInGameTimer() < 0.01 then
 					lastMovement1 = 0
 						DelayAction(function()
 						if lastMovement1 > os.clock() - 0.01 then return end
@@ -553,45 +499,11 @@ function Follow()
 		buyItems()
 	end
 	buyItems()
-	--[[
-	for i =1, objManager.maxObjects do
-		local object = objManager:getObject(i)
-		if object ~= nil and object.name == "HA_AP_HealthRelic4.1.1" then 
-			buffs[4].current =1
-		else 
-			buffs[4].current=0 
-		end
-		if object ~= nil and object.name == "HA_AP_HealthRelic3.1.1" then 
-			buffs[3].current =1 
-		else 
-			buffs[3].current=0 
-		end
-		if object ~= nil and object.name == "HA_AP_HealthRelic2.1.1" then 
-			buffs[2].current =1 
-		else 
-			buffs[2].current=0 
-		end
-		if object ~= nil and object.name == "HA_AP_HealthRelic1.1.1" then 
-			buffs[1].current =1 
-		else 
-			buffs[1].current=0 
-		end
-	end
-	]]--
-	--LEVELUP
-	local qL, wL, eL, rL = player:GetSpellData(_Q).level + qOff, player:GetSpellData(_W).level + wOff, player:GetSpellData(_E).level + eOff, player:GetSpellData(_R).level + rOff
-	if qL + wL + eL + rL < player.level then
-		local spellSlot = { SPELL_1, SPELL_2, SPELL_3, SPELL_4, }
-		local level = { 0, 0, 0, 0 }
-		for i = 1, player.level, 1 do
-			level[abilitySequence[i]] = level[abilitySequence[i]] + 1
-		end
-		for i, v in ipairs({ qL, wL, eL, rL }) do
-			if v < level[i] then LevelSpell(spellSlot[i]) end
-		end
-	end
-	--/LEVELUP
 	
+	
+	
+	
+
 end
 
 function findClosestEnemy()
@@ -683,45 +595,20 @@ end
 
 --[[ AutoBuyItems ]]--
 function buyItems()
-	if iARAM.autobuy then
-		if InFountain() then	
-			 if shopList[buyIndex] ~= 0 then
-						nowTime = GetTickCount()
-						if nowTime - lastBuy > 5000 then
-								currentGold = myHero.gold
-								if (currentGold < lastGold) or ((currentGold ~= lastGold) and (nowTime - lastBuy > 50000)) then
-										local itemval = shopList[buyIndex]
-										if itemval ~= nil then
-												local cost = itemCosts[itemval]
-												if cost ~= nil then
-														if myHero.gold > cost then
-																lastGold = currentGold
-																lastBuy = GetTickCount()
-																BuyItem(itemval)
-																table.remove(shopList, 1)              
-														end
-												end
-										end
-								end
-						end
-				end
-		end
-		--[[ Basic Items ]]--	
-		if summonersRiftMap then
-		
-			if GetInGameTimer() < 10 then
+if iARAM.autobuy then
+		if player.dead then	
+		if GetInGameTimer() < 10 then
 				lastCast1 = 0
 					DelayAction(function()
-							BuyItem(3340)
+							--BuyItem(3340)
 						if lastCast1 > os.clock() - 10 then return end
-							_AutoupdaterMsg("Buying Trinket")
+							_AutoupdaterMsg("Cant buy items")
 						lastCast1 = os.clock()
 					end, 10-GetInGameTimer()) --0:12
-			end
 		end
 	end
 end
-
+end
 
 --[[ Level Sequence ]]--
 function LevelSequence()
@@ -1036,21 +923,8 @@ end
 
 ---------[[ Activated/disabled Script ]]---------
 function OnWndMsg(msg, keycode)
-
-	--|> AutoWard
-		if summonersRiftMap then
-			AutoWard()
-		end
-		
-	if keycode == HotKey and msg == KEY_DOWN then
-        if switcher == true then
-            switcher = false
-			_AutoupdaterMsg("<font color='#FF0000'>Script disabled </font>")
-        else
-            switcher = true
-			_AutoupdaterMsg("<font color='#00FF00'>Script enabled </font>")
-        end
-    end
+AutoWard()
+	
 	
 end
 
