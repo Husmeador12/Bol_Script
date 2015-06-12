@@ -40,7 +40,7 @@ local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "3.4"
+local version = "3.5"
 
 
 -----[[ Attack and farm Globals ]]------
@@ -87,7 +87,7 @@ local iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
 
 
 --[[ Auto Update Globals ]]--
-local UPDATE_CHANGE_LOG = "Fixed AutoLevel"
+local UPDATE_CHANGE_LOG = "Fixed AutoCast Spells"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -422,43 +422,58 @@ function Follow()
 		  myHero:Attack(Target)
 			if stance == 1  then
 				attacksuccess = 0
-				if myHero:GetSpellData(_W).range > GetDistance(Target) then
+				if myHero:CanUseSpell(_W) == READY then
 					CastSpell(_W, Target)
 					attacksuccess =1
 										
 				end
-				if myHero:GetSpellData(_Q).range > GetDistance(Target) then
+				if myHero:CanUseSpell(_Q) == READY then
 					CastSpell(_Q, Target)
 					attacksuccess =1 
 				end
-				if myHero:GetSpellData(_E).range > GetDistance(Target) then
+				if myHero:CanUseSpell(_E) == READY  then
 					CastSpell(_E, Target)
 					attacksuccess = 1
 				end
-				if myHero:GetSpellData(_R).range > GetDistance(Target) then
+				if myHero:CanUseSpell(_R) == READY then
 					CastSpell(_R, Target)
 					attacksuccess =1
 				end
-				if GetDistance(Target) < getTrueRange() then
-					myHero:Attack(Target)
-					if ranged == 1 then
-						attacksuccess = 1
-						missilesent = 0
-						while not missilesent do
-							if myHero.dead then missilesent = 1 end
-							for _, v in pairs(getChampTable()[myHero.charName].aaParticles) do
-								if obj.name:lower():find(v:lower()) then
-									missilesent =1 
-								end
-							end
-						end
-					end
-				end
+				
 				if attacksuccess == 0 then
 					--Attack Minions
 				end
 			elseif stance == 0 then
+			
+			
+				if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350  then
+				distance1 = math.random(250,300)
+				distance2 = math.random(250,300)
+				neg1 = 1 
+				neg2 = 1 
 				
+				if myHero.team == TEAM_BLUE then
+					if GetInGameTimer() < 0.1 then
+					lastMovement = 0
+						DelayAction(function()
+						if lastMovement > os.clock() - 0.1 then return end
+								myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
+							lastMovement = os.clock()
+						end, 0.1-GetInGameTimer()) 
+					end
+				else
+				if GetInGameTimer() < 0.01 then
+					lastMovement1 = 0
+						DelayAction(function()
+						if lastMovement1 > os.clock() - 0.01 then return end
+								myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
+							lastMovement1 = os.clock()
+						end, 0.01-GetInGameTimer()) 
+					end
+					
+				end
+			end
+			
 				--alone
 			elseif stance == 3 then
 			end
