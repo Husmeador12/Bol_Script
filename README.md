@@ -1,6 +1,6 @@
 Bol_Scripts
 ==========
-I´m working as a unofficial scripture. do not expect that I will do an awesome script althought I will try it. >.<
+I´m working as an unofficial scripture. Do not expect that I will do an awesome script althought I will try it. >.<
 
 See you later!
 
