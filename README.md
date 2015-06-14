@@ -6,7 +6,8 @@ See you later!
 
 Husmeador
 
-#### iARAM Script
+iARAM Script
+==========
 
 See the [iARAM.lua](https://github.com/Husmeador12/Bol_Script/blob/master/iARAM.lua)
 
