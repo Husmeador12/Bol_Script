@@ -8,4 +8,4 @@ Husmeador
 
 #### iARAM Script
 
-See the [release listing](https://github.com/Husmeador12/Bol_Script/blob/master/iARAM.lua)
+See the [iARAM.lua](https://github.com/Husmeador12/Bol_Script/blob/master/iARAM.lua)
