@@ -14,7 +14,6 @@
 ────────────────────────────────────────────────────────────────────────────────────
 ]]--
 
-
 --[[
 		Credits & Mentions:
 			-Barasia
@@ -28,9 +27,10 @@
 
 		──|> Error with stance: "low health"
 		──|> Error with delay action in Follow Function.
-		──|> Auto ignite, Auto heal doesn´t test it.
-		──|> Auto Buy Doesn´t work again.
+		──|> Auto heal doesn´t work.
+		──|> Auto Buy doesn´t work again.
 		──|> Auto Chat doesn´t work.
+		──|> Auto Poro Shouter doesn´t work.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -40,7 +40,7 @@ local AUTOUPDATE = true --change to false to disable auto update
 
 
 --[[ GLOBALS [Do Not Change] ]]--
-local version = "3.5"
+local version = "3.6"
 
 
 -----[[ Attack and farm Globals ]]------
@@ -58,10 +58,7 @@ local switcher = true
 local lastCast = 0
 
 
------[[ Main Script ]]------
-
-
---!> Buyer
+-----[[ Buyer Globals ]]------
 local shoplist = {}
 local buyIndex = 1
 local startTime = 0
@@ -80,21 +77,21 @@ local drawWardSpots      = false
 local wardSlot           = nil
 
 
------[[ Ignite Globals ]]------
-local iReady = (ignite ~= nil and myHero:CanUseSpell(ignite) == READY)
-local iDmg = (ignite and getDmg("IGNITE", enemy, myHero)) or 0
+-----[[ Ignite and Zhonya Globals ]]------
+local SlotIgnite
+local SlotZhonya
+ nTarget = TargetSelector(TARGET_NEAR_MOUSE, 700, DAMAGE_MAGIC, true)
 
 
-
---[[ Auto Update Globals ]]--
-local UPDATE_CHANGE_LOG = "Fixed AutoCast Spells"
+-----[[ Auto Update Globals ]]------
+local UPDATE_CHANGE_LOG = "Fixed AutoIgnite and printFloatText, Thresh is ADTank"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
 local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 
---[[ Auto Update Function ]]--
+-----[[ Auto Update Function ]]------
 function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 if AUTOUPDATE then
 	local ServerData = GetWebResult(UPDATE_HOST, "/Husmeador12/Bol_Script/master/version/iARAM.version")
@@ -116,15 +113,15 @@ if AUTOUPDATE then
 end
 
 
---[[ Build and defining Champion Class ]]--
+-----[[ Build and defining Champion Class ]]------
 do
 	myHero = GetMyHero()
 	Target = nil
 	spawnpos  = { x = myHero.x, z = myHero.z}
 	ranged = 0
 	assassins = {"Akali","Diana","Evelynn","Fizz","Katarina","Nidalee"}
-	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Volibear","Yorick"}
-	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Thresh","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
+	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Thresh","Volibear","Yorick"}
+	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
 	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
@@ -296,28 +293,6 @@ end
 --[[ Checks Function ]]--
 function Checks()
 
---|> Ignite Slot
-	if myHero:GetSpellData(SUMMONER_1).name:find(Ignite.name) then
-                    Ignite.slot = SUMMONER_1
-    elseif myHero:GetSpellData(SUMMONER_2).name:find(Ignite.name) then
-                    Ignite.slot = SUMMONER_2
-    end
-     
-    Ignite.ready = (Ignite.slot ~= nil and myHero:CanUseSpell(Ignite.slot) == READY)
-	
-	--|> Healh Slot
-	if SUMMONER_1 == 4 then
-		HL_slot = SUMMONER_1
-	elseif SUMMONER_2 == 4 then
-		HL_slot = SUMMONER_2
-	end
-	
-	--|> Barrier Slot
-	if SUMMONER_1 == 5 then
-		BR_slot = SUMMONER_1	
-	elseif SUMMONER_2 == 5 then
-		BR_slot = SUMMONER_2
-	end
 	
 end
 
@@ -326,9 +301,12 @@ end
 function OnDraw()
 	AirText()
 	RangeCircles()
-	--Autoward
+	--|>Autoward
 	AutoWarderDraw()
 	DebugCursorPos()
+	
+	--|>FloatText
+	FloatTextStance()
 	
 
 end
@@ -346,19 +324,19 @@ end
 		if AutomaticChat then
 			AutoChat()
 		end
-	
-	
+		--|>Auto Ward
 		AutoWard()
 	
-		
-		--Autopotions
+
+		--|>Autopotions
 		LoadTables()
 		LoadVariables()
 		OnRemoveBuff()
 		OnApplyBuff()
 		
+		--|>Auto Ignite
+		AutoIgniteandZhonya()
 
-		
 end
 
 
@@ -371,7 +349,7 @@ end
 --[[ OnTick Function ]]--
 function OnTick()
 
-	AutoIgnite()
+	LoadAutoIgniteZhonya()
 	AutotatackChamp()
 	AutoFarm()
 	Follow()	
@@ -382,13 +360,7 @@ function OnTick()
 	
 		PoroCheck()
 	
-	
-	--|> Zhonya
-	Zhonya()
-	getHealthPercent(unit)
-	
 
-	
 	--|> AutoPotions
 	if not myHero.dead then
 
@@ -417,7 +389,7 @@ function Follow()
 		end
 		
 		Allie = followHero()
-		--Attacks Champs
+		--|>Attacks Champs
 		if Target ~= nil then
 		  myHero:Attack(Target)
 			if stance == 1  then
@@ -441,7 +413,7 @@ function Follow()
 				end
 				
 				if attacksuccess == 0 then
-					--Attack Minions
+					--|>Attack Minions
 				end
 			elseif stance == 0 then
 			
@@ -474,7 +446,7 @@ function Follow()
 				end
 			end
 			
-				--alone
+				--|> Alone
 			elseif stance == 3 then
 			end
 			allytofollow = followHero()
@@ -511,14 +483,12 @@ function Follow()
 		end	
 		
 	else
-		--dead
+		--|> Dead
 		buyItems()
 	end
 	buyItems()
 
-
 end
-
 
 function findClosestEnemy()
     local closestEnemy = nil
@@ -1080,24 +1050,50 @@ function DebugCursorPos()
 end
 
 
----------[[ Auto Ignite ]]---------
-function AutoIgnite()
-	Ignite = { name = "summonerdot", range = 600, slot = nil }
-	if ValidTarget(unit, Ignite.range) and unit.health <= getDmg("IGNITE", unit, myHero) then
-               if Ignite.ready then
-                   CastSpell(Ignite.slot, unit)
-               end
-    end
-			
---[[	if myTarget ~=	nil then		
-		if Target.health <= iDmg and GetDistance(Target) <= 600 then
-			if iReady then
-				CastSpell(ignite, Target)			
-			end
-
-		end
-	
-	end]]--
+---------[[ Auto Ignite and Auto Zhonya ]]---------
+--[ Scripted By LeoFRM ]
+function AutoIgniteandZhonya()
+               
+                iARAM:addSubMenu("Other Settings", "Other")                      
+                        iARAM.Other:addParam("AutoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
+                        iARAM.Other:addParam("AutoZhonya", "Enable Auto Zhonya", SCRIPT_PARAM_ONOFF, true)
+                        iARAM.Other:addParam("AutoZhonya", "Auto Zhonya If Heal", SCRIPT_PARAM_SLICE, 500, 0, 1500, 0)       
+                --iARAM.Other:permaShow("AutoIgnite")
+                if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then
+                        SlotIgnite = SUMMONER_1
+                elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then
+                        SlotIgnite = SUMMONER_2
+                end
+               
+                
+               
+end
+ 
+function LoadAutoIgniteZhonya()
+        nTarget:update()                
+        if iARAM.Other.AutoIgnite then FunctionAutoIgnite() end
+        if iARAM.Other.AutoZhonya then FunctionAutoZhonya() end 
+end
+ 
+function FunctionAutoIgnite()
+        if nTarget.target ~= nil and nTarget.target.type == myHero.type then
+                if SlotIgnite ~= nil and myHero:CanUseSpell(SlotIgnite) == READY then        
+                        if nTarget.target.health <= (50 + (20 * myHero.level)) and GetDistanceSqr(nTarget.target) <= 600*600 then
+                                CastSpell(SlotIgnite, nTarget.target)
+                             
+                        end
+                end
+        end
+end
+ 
+function FunctionAutoZhonya()
+        SlotZhonya = GetInventorySlotItem(3157)
+        if SlotZhonya ~= nil and myHero:CanUseSpell(SlotZhonya) == READY then
+                if myHero.health <= iARAM.Other.AutoZhonya then
+                        CastSpell(SlotZhonya)
+                 
+                end
+        end
 end
 
 
@@ -1265,22 +1261,7 @@ function OnProcessSpell(object, spell)
 end
 
 
------[[ Zhonya ]]------
-function Zhonya()
-	if iARAM.zhonya and getHealthPercent(myHero) < iARAM.zhonyaHP then 
-		for slot = ITEM_1, ITEM_7 do
-			if myHero:GetSpellData(slot).name == "ZhonyasHourglass" then
-				CastSpell(slot)
-			end
-		end
-	end
-end
-
-function getHealthPercent(unit)
-    local obj = unit or myHero
-    return (obj.health / obj.maxHealth) * 100
-end
-
+-----[[ PrintFloatText ]]------
 function ChampionFloatText()
 ChampionCount = 0
     ChampionTable = {}
@@ -1651,3 +1632,32 @@ function AutoLevel:LevelSpell(id)
 	p:Encode1(0x00)
 	SendPacket(p)
 end
+
+
+--[[ PrintFloatText Function ]]--
+function FloatTextStance()
+	if not myHero.dead then
+		if stance == 1 then
+			_MyHeroText("TF mode")
+		end
+		if stance == 2 then
+			_MyHeroText("Unknow")
+		end
+		if stance == 3 then
+			_MyHeroText("Low Health mode")
+		end
+		if stance == 0 then
+			_MyHeroText("Alone mode")
+		end
+	end	
+end
+
+function _MyHeroText(FloatTxt) 
+	local barPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
+	DrawText(FloatTxt, 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
+
+end
+
+ 
+ 
+
