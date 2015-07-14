@@ -28,9 +28,10 @@
 		──|> Error with stance: "low health"
 		──|> Error with delay action in Alone Mode Function.
 		──|> Auto heal doesn´t work.
-		──|> Auto Buy menu doesn´t work again.
+		──|> Auto Potion doesn´t work.
+		──|> Auto Buy menu fixed.
 		──|> Auto Chat doesn´t work.
-		──|> Auto Poro Shouter doesn´t work.
+		──|> Auto Poro Shouter Fixed work.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -54,7 +55,7 @@ local switcher = true
 
 -----[[ Poro Shouter Global ]]------
 local lastCast = 0
---require 'VPrediction'
+require 'VPrediction'
 
 -----[[ Buyer Globals ]]------
 local shoplist = {}
@@ -83,8 +84,8 @@ nTarget = TargetSelector(TARGET_NEAR_MOUSE, 700, DAMAGE_MAGIC, true)
 
 
 -----[[ Auto Update Globals ]]------
-local version = 3.9
-local UPDATE_CHANGE_LOG = "AutoBuy Fixed"
+local version = 4.0
+local UPDATE_CHANGE_LOG = "Improving"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -210,49 +211,6 @@ do
 		ranged = 1
 	end
 	
-	itemCosts = {
-                                        [3096]=865,--Nomad's Medallion
-                                        [3801]=600,--Crystalline Bracer
-                                        [1011]=1000,--Giant's Belt
-                                        [3083]=300,--*Warmog's Armor
-                                        [3190]=2800,--Locket of the Iron Solari
-                                        [3075]=2100,--Thornmail
-                                        [3068]=2600,--Sunfire Cape
-                                        [3072]=1950,--*Bloodthirster
-										[1053]=800,--Vampiric Scepter
-                                        [3069]=1235,--*Talisman of Ascension
-                                        [1038]=1550,--B.F. Sword
-                                        [3031]=2250,--*Infinity Edge
-                                        [3139]=2150,--*Mercurial Scimitar
-                                        [3508]=1650,--*Essence Reaver
-                                        [3155]=1450,--Hexdrinker
-                                        [3156]=1750,--*Maw of Malmortius
-                                        [3082]=1050,--Warden's Mail
-                                        [3110]=1400,--*Frozen Heart
-                                        [3211]=1200,--Spectre's Cowl
-                                        [3065]=1550,--*Spirit Visage
-                                        [3102]=1550,--*Banshee's Veil
-                                        [1058]=1600,--Needlessly Large Rod
-                                        [3089]=1600,--*Rabadon's Deathcap
-										[1026]=860,--Blasting Wand
-                                        [3157]=1700,--*Zhonya's Hourglass
-                                        [3285]=1500,--*Luden's Echo
-                                        [3001]=2440,--Abyssal Scepter
-                                        [3101]=1250,--Stinger
-                                        [3115]=1670,--*Nashor's Tooth
-                                        [3136]=1485,--Haunting Guise
-                                        [3151]=1415,--Liandry's Torment
-                                        [3100]=3000,--Lich Bane
-                                        [3044]=1325,--Phage
-                                        [3071]=1675,--*The Black Cleaver       
-                                        [3108]=820,--Fiendish Codex
-										[3165]=2300,--*Morellonomicon
-										[1001]=325,--Boots of Speed
-										[3006]=1000,--*Berserker's Greaves
-										[3047]=1000,--*Ninja Tabi
-										[2003]=35,--Health Potion
-										[3340]=0--Warding Totem
-                                }
 
 	--[[ ItemsList ]]--
 	
@@ -306,6 +264,7 @@ function OnDraw()
 	--|>FloatText
 	FloatTextStance()
 	
+	--DrawCircle(allytofollow.x,allytofollow.z, 70, ARGB(200,255,255,0))
 
 end
 
@@ -344,8 +303,9 @@ end
 
 --[[ OnTick Function ]]--
 function OnTick()
-
-	AutoBuy()
+	if iARAM.autobuy then
+		AutoBuy()
+	end
 	Follow()	
 	LFC()
 	Checks()
@@ -476,6 +436,8 @@ function Follow()
 			end
 			allytofollow = followHero()
 			if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350  then
+				
+			
 				distance1 = math.random(250,300)
 				distance2 = math.random(250,300)
 				neg1 = 1 
@@ -739,7 +701,7 @@ function Menu()
 		--[[ PoroShoter menu ]]--
 		
 		ARAM = ARAMSlot()
-		--vPred = VPrediction()
+		vPred = VPrediction()
 		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
 		iARAM:addSubMenu("PoroShotter Settings", "PoroShot")
 		iARAM.PoroShot:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
@@ -756,7 +718,7 @@ function Menu()
 		iARAM:addParam("key", "Auto Attack champs", SCRIPT_PARAM_ONOFF, true)
 
 		--Main Script
-		iARAM:addParam("autobuy", "Auto Buy Items(Broken)", SCRIPT_PARAM_ONOFF, true)
+		iARAM:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
 		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 
 		-----------------------------------------------------------------------------------------------------
