@@ -29,9 +29,8 @@
 		──|> Error with delay action in Alone Mode Function.
 		──|> Auto heal doesn´t work.
 		──|> Auto Potion doesn´t work.
-		──|> Auto Buy menu fixed.
 		──|> Auto Chat doesn´t work.
-		──|> Auto Poro Shouter Fixed work.
+
 ]]--
 
 --[[ SETTINGS ]]--
@@ -73,19 +72,19 @@ local db = {br0l4nds = true, corearmies = true}
 
 
 -----[[ Auto ward Globals ]]------
-local drawWardSpots      = false
-local wardSlot           = nil
+local drawWardSpots = false
+local wardSlot = nil
 
 
 -----[[ Ignite and Zhonya Globals ]]------
 local SlotIgnite
 local SlotZhonya
-nTarget = TargetSelector(TARGET_NEAR_MOUSE, 700, DAMAGE_MAGIC, true)
+nTarget = TargetSelector(100, 700, DAMAGE_MAGIC, true)
 
 
 -----[[ Auto Update Globals ]]------
-local version = 4.0
-local UPDATE_CHANGE_LOG = "Improving"
+local version = 4.1
+local UPDATE_CHANGE_LOG = "Added Tahm_Kench"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -121,7 +120,7 @@ do
 	spawnpos  = { x = myHero.x, z = myHero.z}
 	ranged = 0
 	assassins = {"Akali","Diana","Evelynn","Fizz","Katarina","Nidalee"}
-	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Thresh","Volibear","Yorick"}
+	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Tahm_Kench","Thresh","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
 	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
@@ -215,31 +214,31 @@ do
 	--[[ ItemsList ]]--
 	
 	if heroType == 1 then --ADC
-		shopList = {1001,2003,1038,1053,3072,3006,3031,3139,3508}
+		shopList = {1001,1038,1053,3072,3006,3031,3139,3508}
 	end
 	if heroType == 2 then --ADTANK
-		shopList = {2003,1001,3047,3083,3155,3156,3068,3211,3102,3075}
+		shopList = {1001,3047,3083,3155,3156,3068,3211,3102,3075}
 	end
 	if heroType == 3 then --APTANK
-		shopList = {1001,2003,3083,1058,3089,1058,3157,1058,3285,3001}
+		shopList = {1001,3083,1058,3089,1058,3157,1058,3285,3001}
 	end
 	if heroType == 4 then --HYBRID
-		shopList = {2003,1001,3101,3115,3136,3151,1058,3089,3100}
+		shopList = {1001,3101,3115,3136,3151,1058,3089,3100}
 	end
 	if heroType == 5 then --BRUISER
-		shopList = {1001,2003,3211,3102,3075,1038,3072,3044,3071}
+		shopList = {1001,3211,3102,3075,1038,3072,3044,3071}
 	end
 	if heroType == 6 then --ASSASSIN
-		shopList = {2003,1001,3211,3065,3190,3075,3068}
+		shopList = {1001,3211,3065,3190,3075,3068}
 	end
 	if heroType == 7 then --MAGE
-		shopList = {1001,2003,3108,3165,1058,1026,3089,1058,3157,1058,3285}
+		shopList = {1001,3108,3165,1058,1026,3089,1058,3157,1058,3285}
 	end
 	if heroType == 8 then  --APC
-		shopList = {1001,2003,3165,1058,3089,1058,3157,1058,3285}
+		shopList = {1001,3165,1058,3089,1058,3157,1058,3285}
 	end
 	if heroType == 9 or heroType == 10 then --FIGHTER and OTHERS
-		shopList = {1001,2003,3211,3065,3190,3075,3068}
+		shopList = {1001,3211,3065,3190,3075,3068}
 	end
 	startTime = GetTickCount()
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/
@@ -264,7 +263,6 @@ function OnDraw()
 	--|>FloatText
 	FloatTextStance()
 	
-	--DrawCircle(allytofollow.x,allytofollow.z, 70, ARGB(200,255,255,0))
 
 end
 
@@ -428,7 +426,12 @@ function Follow()
 				if attacksuccess == 0 then
 					--|>Attack Minions
 				end
+				
+				--|> Alone Mode
 			elseif stance == 0 then
+			if frontally() == myHero then
+				myHero:MoveTo(spawnpos.x,spawnpos.z)
+			end
 			
 				--|> Enemy Target
 			elseif stance == 3 then
@@ -436,30 +439,22 @@ function Follow()
 			end
 			allytofollow = followHero()
 			if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350  then
-				
-			
 				distance1 = math.random(250,300)
 				distance2 = math.random(250,300)
 				neg1 = 1 
-				neg2 = 1 
-				
+				neg2 = 1 	
 				if myHero.team == TEAM_BLUE then
 					myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
 				else
 					myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
 				end
 			end
-			if frontally() == myHero then
-				myHero:MoveTo(spawnpos.x,spawnpos.z)
-			end
 		end	
-		
 	else
-		--|> Dead
+	--|> Dead
 		AutoBuy()
 	end
 	AutoBuy()
-
 end
 
 function findClosestEnemy()
@@ -475,6 +470,8 @@ function findClosestEnemy()
             end
         end
     end
+	local barPos = WorldToScreen(D3DXVECTOR3(currentEnemy.x, currentEnemy.y, currentEnemy.z))
+	DrawText("Enemy!", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
 	--PrintFloatText(closestEnemy, 0, "Enemy!")
 	return closestEnemy
 end
@@ -734,6 +731,7 @@ end
 --[[ Lagfree Circles by barasia, vadash and viseversa ]]---
 function RangeCircles()
 	if iARAM.drawing.drawcircles and not myHero.dead then
+		
 		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
 		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))	
 	end
@@ -964,32 +962,30 @@ local safeWardSpots = {
 local wardItems = {
     { id = 2043, spellName = "VisionWard",     		range = 1450, duration = 180000},
     { id = 2044, spellName = "SightWard",      		range = 1450, duration = 180000},
-	{ id = 2045, spellName = "RubySightstone",  		range = 1450, duration = 180000},
+	{ id = 2045, spellName = "RubySightstone",  	range = 1450, duration = 180000},
     { id = 2049, spellName = "Sightstone",  		range = 1450, duration = 180000},
     { id = 2050, spellName = "ItemMiniWard",   		range = 1450, duration = 60000},
     { id = 3154, spellName = "WriggleLantern", 		range = 1450, duration = 180000},
     { id = 3160, spellName = "FeralFlare",	   		range = 1450, duration = 180000},
 	{ id = 3340, spellName = "WardingTotem(Trinket)",   range = 1450, duration = 180000},
     { id = 3350, spellName = "YellowTrinketUpgrade", range = 1450, duration = 180000}, 
-	{ id = 3361, spellName = "TrinketTotemLvl3", 	range = 1450, duration = 180000},--added
-	{ id = 3362, spellName = "TrinketTotemLvl3B", 	range = 1450, duration = 180000},--added
+	{ id = 3361, spellName = "TrinketTotemLvl3", 	range = 1450, duration = 180000},
+	{ id = 3362, spellName = "TrinketTotemLvl3B", 	range = 1450, duration = 180000},
 
 }
 
 -- Code ------------------------------------------------------------------------
 
 function AutoWard()
-
    if iARAM.AutoWard.AutoWardEnable then
 	wardSlot = ITEM_7
- 
         local item = myHero:getInventorySlot(wardSlot)
          for i,wardItems in pairs(wardItems) do
-                    if item == wardItems.id and myHero:CanUseSpell(wardSlot) == READY then
-                        drawWardSpots = true
-                        return
-                    end
+                if item == wardItems.id and myHero:CanUseSpell(wardSlot) == READY then
+					drawWardSpots = true
+					return
                 end
+         end
            
         for i,wardSpot in pairs(wardSpots) do
             if GetDistance(wardSpot, myHeroPos) <= 250  then
@@ -1001,7 +997,6 @@ function AutoWard()
 end
 
 function AutoWarderDraw()
-
     if iARAM.AutoWard.AutoWardDraw and summonersRiftMap then
         for i, wardSpot in pairs(wardSpots) do
             local wardColor = (GetDistance(wardSpot, myHeroPos) <= 250) and ARGB(255,0,255,0) or ARGB(255,0,255,0)
@@ -1022,7 +1017,6 @@ function AutoWarderDraw()
             if onScreen then
                 DrawCircle(wardSpot.wardPosition.x, wardSpot.wardPosition.y, wardSpot.wardPosition.z, 31, wardColor)
                 DrawCircle(wardSpot.wardPosition.x, wardSpot.wardPosition.y, wardSpot.wardPosition.z, 32, wardColor)
-
                 DrawCircle(wardSpot.magneticSpot.x, wardSpot.magneticSpot.y, wardSpot.magneticSpot.z, 99, wardColor)
                 DrawCircle(wardSpot.magneticSpot.x, wardSpot.magneticSpot.y, wardSpot.magneticSpot.z, 100, wardColor)
 
@@ -1036,13 +1030,10 @@ function AutoWarderDraw()
 
                 DrawLine3D(line1Start.x,line1Start.y,line1Start.z, line1End.x,line1End.y,line1End.z,1,arrowColor)
                 DrawLine3D(line2Start.x,line2Start.y,line2Start.z, line2End.x,line2End.y,line2End.z,1,arrowColor)
-
-                
+            
             end
         end
-    end
-
-    
+    end  
 end
 
 function get2DFrom3D(x, y, z)
@@ -1557,6 +1548,7 @@ if not VIP_USER then return end
     elseif champ == "Soraka" then       AutoLevel({ 1, 3, 1, 2, 1, 4, 1, 2, 1, 3, 4, 2, 3, 2, 3, 4, 2, 3, })
     elseif champ == "Swain" then        AutoLevel({ 2, 3, 3, 1, 3, 4, 3, 1, 3, 1, 4, 1, 1, 2, 2, 4, 2, 2, })
     elseif champ == "Syndra" then       AutoLevel({ 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, })
+	elseif champ == "Tahm_Kench" then   AutoLevel({ 2, 3, 1, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Talon" then        AutoLevel({ 2, 3, 1, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Taric" then        AutoLevel({ 3, 2, 1, 2, 2, 4, 1, 2, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Teemo" then        AutoLevel({ 1, 3, 2, 3, 1, 4, 3, 3, 3, 1, 4, 2, 2, 1, 2, 4, 2, 1, })
@@ -1653,7 +1645,7 @@ end
 
 --[[ PrintFloatText Function ]]--
 function FloatTextStance()
-	if not myHero.dead then
+	if not myHero.dead and iARAM.follow then
 		if stance == 1 then
 			_MyHeroText("TF mode")
 		end
@@ -1672,8 +1664,9 @@ end
 function _MyHeroText(FloatTxt) 
 	local barPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
 	DrawText(FloatTxt, 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
-
 end
+
+
 
 
 
