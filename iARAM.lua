@@ -21,6 +21,7 @@
 			-Husky
 			-Dekland
 			-LegendBot
+			-Justh1n10
 ]]--
 
 --[[
@@ -77,14 +78,12 @@ local wardSlot = nil
 
 
 -----[[ Ignite and Zhonya Globals ]]------
-local SlotIgnite
-local SlotZhonya
-nTarget = TargetSelector(100, 700, DAMAGE_MAGIC, true)
+local ignite = nil
 
 
 -----[[ Auto Update Globals ]]------
-local version = 4.1
-local UPDATE_CHANGE_LOG = "Added Tahm_Kench"
+local version = 4.2
+local UPDATE_CHANGE_LOG = "Fixed Items and added fake name."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -214,41 +213,41 @@ do
 	--[[ ItemsList ]]--
 	
 	if heroType == 1 then --ADC
-		shopList = {1001,1038,1053,3072,3006,3031,3139,3508}
+		shopList = {1001,3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
 	end
-	if heroType == 2 then --ADTANK
-		shopList = {1001,3047,3083,3155,3156,3068,3211,3102,3075}
+	if heroType == 2 then	--ADTANK
+		shopList = {1001,3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
 	end
-	if heroType == 3 then --APTANK
-		shopList = {1001,3083,1058,3089,1058,3157,1058,3285,3001}
+	if heroType == 3 then	--APTANK
+		shopList = {1001,3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
 	end
 	if heroType == 4 then --HYBRID
-		shopList = {1001,3101,3115,3136,3151,1058,3089,3100}
+		shopList = {1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
 	end
 	if heroType == 5 then --BRUISER
-		shopList = {1001,3211,3102,3075,1038,3072,3044,3071}
+		shopList = {1001,3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
 	end
 	if heroType == 6 then --ASSASSIN
-		shopList = {1001,3211,3065,3190,3075,3068}
+		shopList = {1001,3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
 	end
-	if heroType == 7 then --MAGE
-		shopList = {1001,3108,3165,1058,1026,3089,1058,3157,1058,3285}
+	if heroType == 7 then  --MAGE
+		shopList = {1001,3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
 	end
 	if heroType == 8 then  --APC
-		shopList = {1001,3165,1058,3089,1058,3157,1058,3285}
+		shopList = {1001,3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
 	end
-	if heroType == 9 or heroType == 10 then --FIGHTER and OTHERS
-		shopList = {1001,3211,3065,3190,3075,3068}
+	if heroType == 9 or heroType == 10 then  --FIGHTER and OTHERS
+		shopList = {1001,3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
 	end
-	startTime = GetTickCount()
-	--item ids can be found at many websites, ie: http://www.lolking.net/items/
-	
+	--yellow ward 3340
+	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
+
 end
 
 
 --[[ Checks Function ]]--
 function Checks()
-	
+	ignite = myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") and SUMMONER_1 or myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") and SUMMONER_2 or nil
 end
 
 
@@ -262,6 +261,8 @@ function OnDraw()
 	
 	--|>FloatText
 	FloatTextStance()
+	--|>NameDrawer
+	DrawFakeNames()
 	
 
 end
@@ -288,7 +289,7 @@ end
 		OnApplyBuff()
 		
 		--|>Auto Ignite
-		AutoIgniteandZhonya()	
+		FunctionAutoIgnite()	
 
 end
 
@@ -307,7 +308,7 @@ function OnTick()
 	Follow()	
 	LFC()
 	Checks()
-	LoadAutoIgniteZhonya()
+	--LoadAutoIgniteZhonya()
 	AutotatackChamp()
 	AutoFarm()
 	--|> Poro Shouter
@@ -394,6 +395,7 @@ function Follow()
 					end
 				end, timerito)
 				]]
+				
 			end
 			
 		end
@@ -705,12 +707,9 @@ function Menu()
 		iARAM.PoroShot:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
 		iARAM.PoroShot:addTS(TargetSelector)
 		
-		
-		--Zhonya
-		iARAM:addParam("zhonya", "Use Zhonyas", SCRIPT_PARAM_ONOFF, true)
-		iARAM:addParam("zhonyaHP", "Max HP when using Zhonya", SCRIPT_PARAM_SLICE, 25, 0, 100, 0)
 
 		--Attack
+		iARAM:addParam("UseIgnite", "Use Ignite", SCRIPT_PARAM_ONOFF, true)
 		iARAM:addParam("farm", "last hit farm", SCRIPT_PARAM_ONOFF, true)	
 		iARAM:addParam("key", "Auto Attack champs", SCRIPT_PARAM_ONOFF, true)
 
@@ -722,9 +721,7 @@ function Menu()
 		iARAM:addParam("info", "edited by ", SCRIPT_PARAM_INFO, "Husmeador12") 
 		iARAM:addParam("info2", "iARAM Version : ", SCRIPT_PARAM_INFO, version)
 		
-		
-		
-		
+
 end
 
 
@@ -1055,45 +1052,19 @@ end
 
 
 ---------[[ Auto Ignite and Auto Zhonya ]]---------
---[ Scripted By LeoFRM ]
-function AutoIgniteandZhonya()   
-                iARAM:addSubMenu("Other Settings", "Other")                      
-                        iARAM.Other:addParam("AutoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
-                        iARAM.Other:addParam("AutoZhonya", "Enable Auto Zhonya", SCRIPT_PARAM_ONOFF, true)
-                        iARAM.Other:addParam("AutoZhonya", "Auto Zhonya If Heal", SCRIPT_PARAM_SLICE, 500, 0, 1500, 0)       
-                --iARAM.Other:permaShow("AutoIgnite")
-                if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then
-                        SlotIgnite = SUMMONER_1
-                elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then
-                        SlotIgnite = SUMMONER_2
-                end 
-end
- 
-function LoadAutoIgniteZhonya()
-        nTarget:update()                
-        if iARAM.Other.AutoIgnite then FunctionAutoIgnite() end
-        if iARAM.Other.AutoZhonya then FunctionAutoZhonya() end 
-end
- 
+
 function FunctionAutoIgnite()
-        if nTarget.target ~= nil and nTarget.target.type == myHero.type then
-                if SlotIgnite ~= nil and myHero:CanUseSpell(SlotIgnite) == READY then        
-                        if nTarget.target.health <= (50 + (20 * myHero.level)) and GetDistanceSqr(nTarget.target) <= 600*600 then
-                                CastSpell(SlotIgnite, nTarget.target)
-                             
-                        end
-                end
-        end
+	if iARAM.UseIgnite and myHero:CanUseSpell(ignite) == READY then
+		for i, enemy in ipairs(GetEnemyHeroes()) do
+			if ValidTarget(enemy, 600) and enemy.health <= getDmg('IGNITE', enemy, myHero) then
+				CastSpell(ignite, enemy)
+			end
+		end
+	end 
 end
  
 function FunctionAutoZhonya()
-        SlotZhonya = GetInventorySlotItem(3157)
-        if SlotZhonya ~= nil and myHero:CanUseSpell(SlotZhonya) == READY then
-                if myHero.health <= iARAM.Other.AutoZhonya then
-                        CastSpell(SlotZhonya)
-                 
-                end
-        end
+
 end
 
 
@@ -1667,8 +1638,58 @@ function _MyHeroText(FloatTxt)
 end
 
 
+--[[ Drawing Names Function ]]--
+
+function DrawFakeNames()
+
+	-- Your own hero has different height for name
+	if myHero.visible == true and myHero.dead == false then
+		framePos = GetAbilityFramePos(myHero)
+    	DrawOverheadHUD(myHero, framePos, ""..myHero.charName.."")
+	end
+
+	
+end
+
+function DrawOverheadHUD(unit, framePos, str, isAlly)
+    local barPos = Point(framePos.x, framePos.y)
+    textWidth = (GetTextArea(str, 18).x / 2)
+    offset = 105
+    barPos = Point(framePos.x + 66, framePos.y - 43)
+
+    -- Enemy heros, your ally heros and your own hero have different bar heights
+    if unit == myHero then
+    	DrawText(str, 18, barPos.x-textWidth+1, barPos.y+1, 0xFF000000)
+    	DrawText(str, 18, barPos.x-textWidth, barPos.y, 0xFFFFFFFF)
+    elseif isAlly and unit ~= myHero then
+		DrawText(str, 18, barPos.x-textWidth+1, barPos.y+4, 0xFF000000)
+    	DrawText(str, 18, barPos.x-textWidth, barPos.y+3, 0xFFFFFFFF)
+    else
+    	DrawText(str, 18, barPos.x-textWidth+1, barPos.y+7, 0xFF000000)
+   		DrawText(str, 18, barPos.x-textWidth, barPos.y+6, 0xFFFFFFFF)
+   	end
+   	UpdateWindow()
+end
+
+-- Credits to Jorj for the bar position
+function GetAbilityFramePos(unit)
+  local barPos = GetUnitHPBarPos(unit)
+  local barOffset = GetUnitHPBarOffset(unit)
+
+  do -- For some reason the x offset never exists
+    local t = {
+      ["Darius"] = -0.05,
+      ["Renekton"] = -0.05,
+      ["Sion"] = -0.05,
+      ["Thresh"] = 0.03,
+    }
+   -- barOffset.x = t[unit.charName] or 0
+  end
+  return Point(barPos.x - 69 + barOffset.x * 150, barPos.y + barOffset.y * 50 + 12.5)
+end
 
 
+--[[ Improving Function ]]--
 
 function TowerFocusPlayer()
 	print("Tower focus: Player")
