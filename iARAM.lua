@@ -82,8 +82,8 @@ local ignite = nil
 
 
 -----[[ Auto Update Globals ]]------
-local version = 4.2
-local UPDATE_CHANGE_LOG = "Fixed Items and added fake name."
+local version = 4.3
+local UPDATE_CHANGE_LOG = "Auto Potion Fixed"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -282,12 +282,6 @@ end
 		--|>Auto Ward
 		AutoWard()
 
-		--|>Autopotions
-		LoadTables()
-		LoadVariables()
-		OnRemoveBuff()
-		OnApplyBuff()
-		
 		--|>Auto Ignite
 		FunctionAutoIgnite()	
 
@@ -313,13 +307,13 @@ function OnTick()
 	AutoFarm()
 	--|> Poro Shouter
 	PoroCheck()
+	
+	--|>Autopotions
+	AutoPotions()
 
-	--|> AutoPotions
-	if not myHero.dead then
-		Consumables()	
-	end
 
 end
+
 
 ---------[[ OnWndMsg Script ]]---------
 function OnWndMsg(msg, keycode)
@@ -334,7 +328,6 @@ function OnWndMsg(msg, keycode)
         end
 	end
 end
-
 
 
 --[[ Follow Function ]]--
@@ -1288,58 +1281,39 @@ end
 
 
 -----[[ AutoPotions ]]------
-function LoadTables()
-	Slots = 
-	{
-		6,
-		7,
-		8,
-		9,
-		10,
-		11
-	}
-	
-	Items = 
-	{
-		Pots = 
-		{
-			regenerationpotion = 
-			{
-				Name = "regenerationpotion",
-				CastType = "Self"
-			},
 
-			flaskofcrystalwater = 
-			{
-				Name = "flaskofcrystalwater",
-				CastType = "Self"
-			},
-
-			itemcrystalflask = 
-			{
-				Name = "itemcrystalflask",
-				CastType = "Self"
-			}
-		},
-	}
-end
-
-function PotReady(_c)
-	for ac, bc in pairs(Slots) do
-		if Items.Pots[myHero:GetSpellData(bc).name:lower()] and Items.Pots[myHero:GetSpellData(bc).name:lower()].Name == _c then
-			if myHero:CanUseSpell(bc) == 0 then
-				return true
-			else
-				return false
+function AutoPotions()
+	--if not iARAM.autoPots.useAutoPots then
+	--	return
+	--end
+	for SLOT = ITEM_1, ITEM_6 do
+	-- if Helper.Debug then PrintChat("ITEM : "..myHero:GetSpellData(SLOT).name) end
+		-- Crystalline Flash
+		if myHero:GetSpellData(SLOT).name == "ItemCrystalFlask" then
+			-- Conditions
+			if myHero:CanUseSpell(SLOT) == READY and ((myHero.health / myHero.maxHealth < myHero:getItem(SLOT).stacks / 4 or myHero.mana / myHero.maxMana < myHero:getItem(SLOT).stacks / 4) or ((myHero.maxHealth - myHero.health > 120 and myHero.maxMana - myHero.mana > 60) or (myHero.mana < 100 or myHero.health < 100))) then
+				-- Cast
+				CastSpell(SLOT)
+				--if Helper.Debug then PrintChat("Crystalline Flask") end
 			end
 		end
-	end
-end
-
-function CastPots(_c)
-	for ac, bc in pairs(Slots) do
-		if Items.Pots[myHero:GetSpellData(bc).name:lower()] and Items.Pots[myHero:GetSpellData(bc).name:lower()].Name == _c and myHero:CanUseSpell(bc) == 0 then
-			CastSpell(bc)
+		-- Health Potions
+		if myHero:GetSpellData(SLOT).name == "RegenerationPotion" and not RevenerationPotion then
+			-- Conditions
+			if myHero:CanUseSpell(SLOT) == READY and myHero.health / myHero.maxHealth < myHero:getItem(SLOT).stacks / 6 and myHero.maxHealth - myHero.health > 150 then
+				-- Cast
+				CastSpell(SLOT)
+				--if Helper.Debug then PrintChat("Health Potion") end
+			end
+		end
+		-- Mana Potions
+		if myHero:GetSpellData(SLOT).name == "FlaskOfCrystalWater" then
+			-- Conditions
+			if myHero:CanUseSpell(SLOT) == READY and myHero.mana / myHero.maxMana < myHero:getItem(SLOT).stacks / 6 and myHero.maxMana - myHero.mana > 100 or myHero.mana < 100 then
+				-- Cast
+				CastSpell(SLOT)
+				--if Helper.Debug then PrintChat("Mana Potion") end
+			end
 		end
 	end
 end
@@ -1361,60 +1335,6 @@ function LoadAutoPotsMenu()
 	iARAM.autoPots:addParam("minManaPercent", "Min Mana Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
 	iARAM.autoPots:addParam("minHealthFlaskPercent", "Min Flask Health Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
 	iARAM.autoPots:addParam("minManaFlaskPercent", "Min Flask Mana Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
-end
-
-function Consumables()
-	if not iARAM.autoPots.useAutoPots then
-		return
-	end
-	
-	if not recalling and not InFountain() and not usingMixedPot then
-		local _c = myHero.health / myHero.maxHealth * 100
-		local ac = myHero.mana / myHero.maxMana * 100
-		if _c <= iARAM.autoPots.minHealthPercent and not usingHealthPot and PotReady("regenerationpotion") then
-			if PotReady("regenerationpotion") then
-				CastPots("regenerationpotion")
-			end
-		elseif _c <= iARAM.autoPots.minHealthFlaskPercent and iARAM.autoPots.useFlask and PotReady("itemcrystalflask") and not usingHealthPot then
-			CastPots("itemcrystalflask")
-		elseif ac <= iARAM.autoPots.minManaPercent and iARAM.autoPots.useManaPots and PotReady("flaskofcrystalwater") and not usingManaPot then
-			CastPots("flaskofcrystalwater")
-		elseif ac <= iARAM.autoPots.minManaFlaskPercent and iARAM.autoPots.useFlask and PotReady("itemcrystalflask") and not usingManaPot then
-			CastPots("itemcrystalflask")
-		end
-	end
-end
-
-function OnApplyBuff(_c, ac, bc)
-	if not ac then
-		return
-	end
-	if ac and ac.isMe then
-		if bc.name == "ItemCrystalFlask" or bc.name == "ItemMiniRegenPotion" then
-			usingMixedPot = true
-		elseif bc.name == "RegenerationPotion" then
-			usingHealthPot = true
-		elseif bc.name == "FlaskOfCrystalWater" then
-			usingManaPot = true
-		end
-	end
-end
-
-function OnRemoveBuff(_c, ac)
-	if not _c then
-		return
-	end
-	if _c and _c.isMe and (ac.name == "ItemCrystalFlask" or ac.name == "ItemMiniRegenPotion") then
-		usingMixedPot = false
-	end
-	
-	if _c and _c.isMe and ac.name == "RegenerationPotion" then
-		usingHealthPot = false
-	end
-	
-	if _c and _c.isMe and ac.name == "FlaskOfCrystalWater" then
-		usingManaPot = false
-	end
 end
 
 
