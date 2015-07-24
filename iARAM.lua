@@ -25,13 +25,21 @@
 ]]--
 
 --[[
-
+	   SOON:
+	    -Debug Option
+	    -Drawcircles allies
+		-Remake Auto Follow.
+		-Remake Auto Update.
+		-Remake Menu Function.
+		-Detects if it´s playing summoner rift or other map.
+		-Auto Barrier, health and clarity.
+]]--
+--[[
+	   NOTES:
 		──|> Error with stance: "low health"
 		──|> Error with delay action in Alone Mode Function.
-		──|> Auto heal doesn´t work.
-		──|> Auto Potion doesn´t work.
 		──|> Auto Chat doesn´t work.
-
+		──|> Auto Buy doesn´t work.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -82,8 +90,8 @@ local ignite = nil
 
 
 -----[[ Auto Update Globals ]]------
-local version = 4.3
-local UPDATE_CHANGE_LOG = "Auto Potion Fixed"
+local version = 4.4
+local UPDATE_CHANGE_LOG = "Update for 5.14"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -270,7 +278,6 @@ end
 
 --[[ On Load Function ]]--
  function OnLoad()
- 
 		OnProcessSpell()
 		timeToShoot()
 		heroCanMove()
@@ -281,10 +288,8 @@ end
 		end
 		--|>Auto Ward
 		AutoWard()
-
 		--|>Auto Ignite
 		FunctionAutoIgnite()	
-
 end
 
 
@@ -296,9 +301,6 @@ end
 
 --[[ OnTick Function ]]--
 function OnTick()
-	if iARAM.autobuy then
-		AutoBuy()
-	end
 	Follow()	
 	LFC()
 	Checks()
@@ -307,11 +309,8 @@ function OnTick()
 	AutoFarm()
 	--|> Poro Shouter
 	PoroCheck()
-	
 	--|>Autopotions
 	AutoPotions()
-
-
 end
 
 
@@ -334,24 +333,19 @@ end
 function Follow()
 	if iARAM.follow and not myHero.dead then
 		stance = 0
-		if Allies() >=  2 then
+		if Allies() >= 2 then
 			stance = 1		
 		else
 			stance = 0
 		end
-		
+
 		if findLowHp() ~= 0 then
 			Target = findLowHp()
 		else
 			Target = findClosestEnemy()
 		end
 			
-		if Target ~= nil then
-			stance = 3
-		else
-			stance = 0
-		end
-		--[[]]
+
 		--|> Alone Mode
 		if stance == 0 then
 			if howlingAbyssMap == true then
@@ -447,9 +441,9 @@ function Follow()
 		end	
 	else
 	--|> Dead
-		AutoBuy()
+	--	AutoBuy()
 	end
-	AutoBuy()
+	--AutoBuy()
 end
 
 function findClosestEnemy()
@@ -501,7 +495,7 @@ function Allies()
     local allycount = 0
     for i=1, heroManager.iCount do
         hero = heroManager:GetHero(i)
-        if hero.team == myHero.team and not hero.dead and GetDistance(hero) < 350 then
+        if hero.team == myHero.team and not hero.dead and GetDistance(hero) < 450 then
 					allycount = allycount + 1
 				end
     end
@@ -597,7 +591,7 @@ function BuyItem1(id)
 end
 
 function AutoBuy()
-	if InFountain() or myHero.dead then
+	if VIP_USER and iARAM.autobuy and InFountain() or myHero.dead then
 			-- Item purchases
 		if GetTickCount() > lastBuy + buyDelay then
 			if lastBoughtItem == shopList[nextbuyIndex] then
@@ -613,74 +607,12 @@ function AutoBuy()
 end
 
 
---[[ Attack Distance ]]-- 
-function getChampTable() 
-    return {                                                   
-        Ahri         = { projSpeed = 1.6, aaParticles = {"Ahri_BasicAttack_mis", "Ahri_BasicAttack_tar"}, aaSpellName = "ahribasicattack", startAttackSpeed = "0.668",  },
-        Anivia       = { projSpeed = 1.05, aaParticles = {"cryo_BasicAttack_mis", "cryo_BasicAttack_tar"}, aaSpellName = "aniviabasicattack", startAttackSpeed = "0.625",  },
-        Annie        = { projSpeed = 1.0, aaParticles = {"AnnieBasicAttack_tar", "AnnieBasicAttack_tar_frost", "AnnieBasicAttack2_mis", "AnnieBasicAttack3_mis"}, aaSpellName = "anniebasicattack", startAttackSpeed = "0.579",  },
-        Ashe         = { projSpeed = 2.0, aaParticles = {"bowmaster_frostShot_mis", "bowmasterbasicattack_mis"}, aaSpellName = "ashebasicattack", startAttackSpeed = "0.658" },
-		Azir         = { projSpeed = 1.6, aaParticles = {"Azir_BasicAttack_mis", "Azir_BasicAttack_tar"}, aaSpellName = "Azirbasicattack", startAttackSpeed = "0.668",  },
-        Brand        = { projSpeed = 1.975, aaParticles = {"BrandBasicAttack_cas", "BrandBasicAttack_Frost_tar", "BrandBasicAttack_mis", "BrandBasicAttack_tar", "BrandCritAttack_mis", "BrandCritAttack_tar", "BrandCritAttack_tar"}, aaSpellName = "brandbasicattack", startAttackSpeed = "0.625" },
-		Bard         = { projSpeed = 1.0, aaParticles = {"BardBasicAttack_tar", "BardBasicAttack_tar_frost", "BardBasicAttack2_mis", "BardBasicAttack3_mis"}, aaSpellName = "Bardbasicattack", startAttackSpeed = "0.579",  },        
-		Caitlyn      = { projSpeed = 2.5, aaParticles = {"caitlyn_basicAttack_cas", "caitlyn_headshot_tar", "caitlyn_mis_04"}, aaSpellName = "caitlynbasicattack", startAttackSpeed = "0.668" },
-        Cassiopeia   = { projSpeed = 1.22, aaParticles = {"CassBasicAttack_mis"}, aaSpellName = "cassiopeiabasicattack", startAttackSpeed = "0.644" },
-        Corki        = { projSpeed = 2.0, aaParticles = {"corki_basicAttack_mis", "Corki_crit_mis"}, aaSpellName = "CorkiBasicAttack", startAttackSpeed = "0.658" },
-        Draven       = { projSpeed = 1.4, aaParticles = {"Draven_BasicAttack_mis", "Draven_crit_mis", "Draven_Q_mis", "Draven_Qcrit_mis"}, aaSpellName = "dravenbasicattack", startAttackSpeed = "0.679",  },
-        Ezreal       = { projSpeed = 2.0, aaParticles = {"Ezreal_basicattack_mis", "Ezreal_critattack_mis"}, aaSpellName = "ezrealbasicattack", startAttackSpeed = "0.625" },
-        FiddleSticks = { projSpeed = 1.75, aaParticles = {"FiddleSticks_cas", "FiddleSticks_mis", "FiddleSticksBasicAttack_tar"}, aaSpellName = "fiddlesticksbasicattack", startAttackSpeed = "0.625" },
-        Graves       = { projSpeed = 3.0, aaParticles = {"Graves_BasicAttack_mis",}, aaSpellName = "gravesbasicattack", startAttackSpeed = "0.625" },
-        Gnar         = { projSpeed = 1.6, aaParticles = {"Gnar_BasicAttack_mis", "Gnar_BasicAttack_tar"}, aaSpellName = "gnarbasicattack", startAttackSpeed = "0.668",  },
-		Heimerdinger = { projSpeed = 1.4, aaParticles = {"heimerdinger_basicAttack_mis", "heimerdinger_basicAttack_tar"}, aaSpellName = "heimerdingerbasicAttack", startAttackSpeed = "0.625" },
-        Janna        = { projSpeed = 1.2, aaParticles = {"JannaBasicAttack_mis", "JannaBasicAttack_tar", "JannaBasicAttackFrost_tar"}, aaSpellName = "jannabasicattack", startAttackSpeed = "0.625" },
-        Jayce        = { projSpeed = 2.2, aaParticles = {"Jayce_Range_Basic_mis", "Jayce_Range_Basic_Crit"}, aaSpellName = "jaycebasicattack", startAttackSpeed = "0.658",  },
-        Kalista      = { projSpeed = 1.6, aaParticles = {"Kalista_BasicAttack_mis", "Kalista_BasicAttack_tar"}, aaSpellName = "Kalistabasicattack", startAttackSpeed = "0.668",  },
-		Karma        = { projSpeed = nil, aaParticles = {"karma_basicAttack_cas", "karma_basicAttack_mis", "karma_crit_mis"}, aaSpellName = "karmabasicattack", startAttackSpeed = "0.658",  },
-        Karthus      = { projSpeed = 1.25, aaParticles = {"LichBasicAttack_cas", "LichBasicAttack_glow", "LichBasicAttack_mis", "LichBasicAttack_tar"}, aaSpellName = "karthusbasicattack", startAttackSpeed = "0.625" },
-        Kayle        = { projSpeed = 1.8, aaParticles = {"RighteousFury_nova"}, aaSpellName = "KayleBasicAttack", startAttackSpeed = "0.638",  }, -- Kayle doesn't have a particle when auto attacking without E buff..
-        Kennen       = { projSpeed = 1.35, aaParticles = {"KennenBasicAttack_mis"}, aaSpellName = "kennenbasicattack", startAttackSpeed = "0.690" },
-        KogMaw       = { projSpeed = 1.8, aaParticles = {"KogMawBasicAttack_mis", "KogMawBioArcaneBarrage_mis"}, aaSpellName = "kogmawbasicattack", startAttackSpeed = "0.665", },
-        Leblanc      = { projSpeed = 1.7, aaParticles = {"leBlanc_basicAttack_cas", "leBlancBasicAttack_mis"}, aaSpellName = "leblancbasicattack", startAttackSpeed = "0.625" },
-        Lulu         = { projSpeed = 2.5, aaParticles = {"lulu_attack_cas", "LuluBasicAttack", "LuluBasicAttack_tar"}, aaSpellName = "LuluBasicAttack", startAttackSpeed = "0.625" },
-        Lux          = { projSpeed = 1.55, aaParticles = {"LuxBasicAttack_mis", "LuxBasicAttack_tar", "LuxBasicAttack01"}, aaSpellName = "luxbasicattack", startAttackSpeed = "0.625" },
-        Malzahar     = { projSpeed = 1.5, aaParticles = {"AlzaharBasicAttack_cas", "AlZaharBasicAttack_mis"}, aaSpellName = "malzaharbasicattack", startAttackSpeed = "0.625" },
-        MissFortune  = { projSpeed = 2.0, aaParticles = {"missFortune_basicAttack_mis", "missFortune_crit_mis"}, aaSpellName = "missfortunebasicattack", startAttackSpeed = "0.656" },
-        Morgana      = { projSpeed = 1.6, aaParticles = {"FallenAngelBasicAttack_mis", "FallenAngelBasicAttack_tar", "FallenAngelBasicAttack2_mis"}, aaSpellName = "Morganabasicattack", startAttackSpeed = "0.579" },
-        Nidalee      = { projSpeed = 1.7, aaParticles = {"nidalee_javelin_mis"}, aaSpellName = "nidaleebasicattack", startAttackSpeed = "0.670" },
-        Orianna      = { projSpeed = 1.4, aaParticles = {"OrianaBasicAttack_mis", "OrianaBasicAttack_tar"}, aaSpellName = "oriannabasicattack", startAttackSpeed = "0.658" },
-        Quinn        = { projSpeed = 1.85, aaParticles = {"Quinn_basicattack_mis", "QuinnValor_BasicAttack_01", "QuinnValor_BasicAttack_02", "QuinnValor_BasicAttack_03", "Quinn_W_mis"}, aaSpellName = "QuinnBasicAttack", startAttackSpeed = "0.668" },  --Quinn's critical attack has the same particle name as his basic attack.
-        Ryze         = { projSpeed = 2.4, aaParticles = {"ManaLeach_mis"}, aaSpellName = {"RyzeBasicAttack"}, startAttackSpeed = "0.625" },
-        Sivir        = { projSpeed = 1.4, aaParticles = {"sivirbasicattack_mis", "sivirbasicattack2_mis", "SivirRicochetAttack_mis"}, aaSpellName = "sivirbasicattack", startAttackSpeed = "0.658" },
-        Sona         = { projSpeed = 1.6, aaParticles = {"SonaBasicAttack_mis", "SonaBasicAttack_tar", "SonaCritAttack_mis", "SonaPowerChord_AriaofPerseverance_mis", "SonaPowerChord_AriaofPerseverance_tar", "SonaPowerChord_HymnofValor_mis", "SonaPowerChord_HymnofValor_tar", "SonaPowerChord_SongOfSelerity_mis", "SonaPowerChord_SongOfSelerity_tar", "SonaPowerChord_mis", "SonaPowerChord_tar"}, aaSpellName = "sonabasicattack", startAttackSpeed = "0.644" },
-        Soraka       = { projSpeed = 1.0, aaParticles = {"SorakaBasicAttack_mis", "SorakaBasicAttack_tar"}, aaSpellName = "sorakabasicattack", startAttackSpeed = "0.625" },
-        Swain        = { projSpeed = 1.6, aaParticles = {"swain_basicAttack_bird_cas", "swain_basicAttack_cas", "swainBasicAttack_mis"}, aaSpellName = "swainbasicattack", startAttackSpeed = "0.625" },
-        Syndra       = { projSpeed = 1.2, aaParticles = {"Syndra_attack_hit", "Syndra_attack_mis"}, aaSpellName = "sorakabasicattack", startAttackSpeed = "0.625",  },
-        Teemo        = { projSpeed = 1.3, aaParticles = {"TeemoBasicAttack_mis", "Toxicshot_mis"}, aaSpellName = "teemobasicattack", startAttackSpeed = "0.690" },
-        Tristana     = { projSpeed = 2.25, aaParticles = {"TristannaBasicAttack_mis"}, aaSpellName = "tristanabasicattack", startAttackSpeed = "0.656",  },
-        TwistedFate  = { projSpeed = 1.5, aaParticles = {"TwistedFateBasicAttack_mis", "TwistedFateStackAttack_mis"}, aaSpellName = "twistedfatebasicattack", startAttackSpeed = "0.651",  },
-        Twitch       = { projSpeed = 2.5, aaParticles = {"twitch_basicAttack_mis",--[[ "twitch_punk_sprayandPray_tar", "twitch_sprayandPray_tar",]] "twitch_sprayandPray_mis"}, aaSpellName = "twitchbasicattack", startAttackSpeed = "0.679" },
-        Urgot        = { projSpeed = 1.3, aaParticles = {"UrgotBasicAttack_mis"}, aaSpellName = "urgotbasicattack", startAttackSpeed = "0.644" },
-        Vayne        = { projSpeed = 2.0, aaParticles = {"vayne_basicAttack_mis", "vayne_critAttack_mis", "vayne_ult_mis" }, aaSpellName = "vaynebasicattack", startAttackSpeed = "0.658",  },
-        Varus        = { projSpeed = 2.0, aaParticles = {"varus_basicAttack_mis", "varus_critAttack_mis" }, aaSpellName = "varusbasicattack", startAttackSpeed = "0.658",  },
-        Veigar       = { projSpeed = 1.05, aaParticles = {"ahri_basicattack_mis"}, aaSpellName = "veigarbasicattack", startAttackSpeed = "0.625" },
-        Velkoz       = { projSpeed = 1.05, aaParticles = {"velkoz_basicattack_mis"}, aaSpellName = "velkozbasicattack", startAttackSpeed = "0.625" },
-		Viktor       = { projSpeed = 2.25, aaParticles = {"ViktorBasicAttack_cas", "ViktorBasicAttack_mis", "ViktorBasicAttack_tar"}, aaSpellName = "viktorbasicattack", startAttackSpeed = "0.625" },
-        Vladimir     = { projSpeed = 1.4, aaParticles = {"VladBasicAttack_mis", "VladBasicAttack_mis_bloodless", "VladBasicAttack_tar", "VladBasicAttack_tar_bloodless"}, aaSpellName = "vladimirbasicattack", startAttackSpeed = "0.658" },
-        Xerath       = { projSpeed = 1.2, aaParticles = {"XerathBasicAttack_mis", "XerathBasicAttack_tar"}, aaSpellName = "xerathbasicattack", startAttackSpeed = "0.625" },
-        Ziggs        = { projSpeed = 1.5, aaParticles = {"ZiggsBasicAttack_mis", "ZiggsPassive_mis"}, aaSpellName = "ziggsbasicattack", startAttackSpeed = "0.656" },
-        Zilean       = { projSpeed = 1.25, aaParticles = {"ChronoBasicAttack_mis"}, aaSpellName = "zileanbasicattack" },
-        Zyra         = { projSpeed = 1.7, aaParticles = {"Zyra_basicAttack_cas", "Zyra_basicAttack_cas_02", "Zyra_basicAttack_mis", "Zyra_basicAttack_tar", "Zyra_basicAttack_tar_hellvine"}, aaSpellName = "zileanbasicattack", startAttackSpeed = "0.625",  },
- 
-    }
-end
-
-
 --[[ Menu Function ]]-- 
 function Menu()
-       iARAM = scriptConfig("iARAM: "..myHero.charName.." Bot", "iARAM BOT")
+       iARAM = scriptConfig("iARAM", "iARAM BOT")
 
 	   --[[ AutoWard Menu ]]--   
-			iARAM:addSubMenu("Config Autoguard", "AutoWard")
+			iARAM:addSubMenu("AutoWard Settings", "AutoWard")
 			iARAM.AutoWard:addParam("AutoWardEnable", "Autoward Enabled", SCRIPT_PARAM_ONOFF, true)
 			iARAM.AutoWard:addParam("AutoWardDraw", "Autoward Draw Circles", SCRIPT_PARAM_ONOFF, false)
 			iARAM.AutoWard:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
@@ -699,6 +631,10 @@ function Menu()
 		iARAM.PoroShot:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
 		iARAM.PoroShot:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
 		iARAM.PoroShot:addTS(TargetSelector)
+		
+		--[[ Misc menu ]]--
+		iARAM:addSubMenu("Miscelaneus Settings", "misc")
+		iARAM.misc:addParam("misc2", "Coming Soon", SCRIPT_PARAM_ONOFF, true)
 		
 
 		--Attack
@@ -976,7 +912,6 @@ function AutoWard()
 					return
                 end
          end
-           
         for i,wardSpot in pairs(wardSpots) do
             if GetDistance(wardSpot, myHeroPos) <= 250  then
                 CastSpell(wardSlot, wardSpot.x, wardSpot.z)
@@ -990,7 +925,6 @@ function AutoWarderDraw()
     if iARAM.AutoWard.AutoWardDraw and summonersRiftMap then
         for i, wardSpot in pairs(wardSpots) do
             local wardColor = (GetDistance(wardSpot, myHeroPos) <= 250) and ARGB(255,0,255,0) or ARGB(255,0,255,0)
-
             local x, y, onScreen = get2DFrom3D(wardSpot.x, wardSpot.y, wardSpot.z)
             if onScreen then
                 DrawCircle(wardSpot.x, wardSpot.y, wardSpot.z, 31, wardColor)
@@ -998,7 +932,6 @@ function AutoWarderDraw()
                 DrawCircle(wardSpot.x, wardSpot.y, wardSpot.z, 250, wardColor)
             end
         end
-
         for i,wardSpot in pairs(safeWardSpots) do
             local wardColor  = (GetDistance(wardSpot.magneticSpot, myHeroPos) <= 100) and ARGB(255,0,255,0) or ARGB(255,0,255,0)
             local arrowColor = (GetDistance(wardSpot.magneticSpot, myHeroPos) <= 100) and ARGB(255,0,255,0) or ARGB(255,0,255,0)
@@ -1017,10 +950,8 @@ function AutoWarderDraw()
                 local line1End = wardPositionVector + directionVector:perpendicular() * 31
                 local line2Start = magneticWardSpotVector + directionVector:perpendicular2() * 98
                 local line2End = wardPositionVector + directionVector:perpendicular2() * 31
-
                 DrawLine3D(line1Start.x,line1Start.y,line1Start.z, line1End.x,line1End.y,line1End.z,1,arrowColor)
-                DrawLine3D(line2Start.x,line2Start.y,line2Start.z, line2End.x,line2End.y,line2End.z,1,arrowColor)
-            
+                DrawLine3D(line2Start.x,line2Start.y,line2Start.z, line2End.x,line2End.y,line2End.z,1,arrowColor)  
             end
         end
     end  
@@ -1048,13 +979,13 @@ end
 
 function FunctionAutoIgnite()
 	if iARAM.UseIgnite and myHero:CanUseSpell(ignite) == READY then
-		for i, enemy in ipairs(GetEnemyHeroes()) do
-			if ValidTarget(enemy, 600) and enemy.health <= getDmg('IGNITE', enemy, myHero) then
-				CastSpell(ignite, enemy)
+	ts:update()
+			if ValidTarget(ts.target,600) and ts.target.health <= getDmg('IGNITE', ts.target, myHero) then
+				CastSpell(ignite, ts.target)
 			end
-		end
-	end 
-end
+	end
+end 
+
  
 function FunctionAutoZhonya()
 
@@ -1144,7 +1075,6 @@ end
 
 function shootARAM(unit)
 	if lastCast > os.clock() - 10 then return end
-	
 	if  ValidTarget(unit, iARAM.PoroShot.range + 50) and ARAMRdy then
 		local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(Target, .25, 75, iARAM.range, 1200, myHero, true)
 		if CastPosition and Hitchance >= 2 then
@@ -1158,7 +1088,6 @@ end
 
 -----[[ AutoFarm and harras ]]------
 function AutotatackChamp()
-	
 	range = myHero.range + myHero.boundingRadius - 3
 	ts.range = range
 	ts:update()
@@ -1482,55 +1411,53 @@ end)
 
 class 'AutoLevel'
 function AutoLevel:__init(table)
-
-	self.clock = os.clock()
-	self.LastLeveled = GetHeroLeveled()
-	self.LevelSequence = table
-	self.SpellSlots = {SPELL_1, SPELL_2, SPELL_3, SPELL_4}
-	AddTickCallback(function()
-		if os.clock() < (self.clock or 0) then return end
-		self.clock = os.clock() + math.random(0.5,2)
-		if #self.LevelSequence == 4 then
-			if myHero.level > self.LastLeveled then
-				self:LevelSpell(self.LevelSequence[1])
-				self:LevelSpell(self.LevelSequence[2])
-				self:LevelSpell(self.LevelSequence[3])
-				self:LevelSpell(self.LevelSequence[4])
-			end
-			self.LastLeveled = GetHeroLeveled()
-		elseif #self.LevelSequence == 18 then
-			self.LastLeveled = GetHeroLeveled()
-			if myHero.level > self.LastLeveled and self.LevelSequence[self.LastLeveled + 1] ~= nil then
-				self.SpellToLevel = self.LevelSequence[self.LastLeveled + 1]
-				if self.SpellToLevel >= 1 and self.SpellToLevel <= 4 then
-					self:LevelSpell(self.SpellSlots[self.SpellToLevel])
+	if VIP_USER then
+		self.clock = os.clock()
+		self.LastLeveled = GetHeroLeveled()
+		self.LevelSequence = table
+		self.SpellSlots = {SPELL_1, SPELL_2, SPELL_3, SPELL_4}
+		AddTickCallback(function()
+			if os.clock() < (self.clock or 0) then return end
+			self.clock = os.clock() + math.random(0.5,2)
+			if #self.LevelSequence == 4 then
+				if myHero.level > self.LastLeveled then
+					self:LevelSpell(self.LevelSequence[1])
+					self:LevelSpell(self.LevelSequence[2])
+					self:LevelSpell(self.LevelSequence[3])
+					self:LevelSpell(self.LevelSequence[4])
+				end
+				self.LastLeveled = GetHeroLeveled()
+			elseif #self.LevelSequence == 18 then
+				self.LastLeveled = GetHeroLeveled()
+				if myHero.level > self.LastLeveled and self.LevelSequence[self.LastLeveled + 1] ~= nil then
+					self.SpellToLevel = self.LevelSequence[self.LastLeveled + 1]
+					if self.SpellToLevel >= 1 and self.SpellToLevel <= 4 then
+						self:LevelSpell(self.SpellSlots[self.SpellToLevel])
+					end
 				end
 			end
-		end
-	end)
-
+		end)
+	end
 end
 
 function AutoLevel:LevelSpell(id)
-
 	local offsets = {
-		[_Q] = {0x7D, 0x07},
-		[_W] = {0x12, 0x06},
-		[_E] = {0x76, 0x05},
-		[_R] = {0x9C, 0x04},
+		[_Q] = 0xAA,
+		[_W] = 0xAB,
+		[_E] = 0xAC,
+		[_R] = 0xAD,
 	}
-	local p = CLoLPacket(0x00A2)
-	p.vTable = 0xF72190
+	local p = CLoLPacket(0x009C)
+	p.vTable = 0xF0A57C
 	p:EncodeF(myHero.networkID)
-	p:Encode1(offsets[id][1])
-	p:Encode4(0xA4A4A4A4)
-	p:Encode4(0x4C4C4C4C)
-	p:Encode1(0xE2)
-	p:Encode4(0x48484848)
-	p:Encode1(offsets[id][2])
-	p:Encode4(0x00000000)
+	for i = 1, 4 do	p:Encode1(0xB4)	end
+	for i = 1, 4 do	p:Encode1(0x69)	end
+	for i = 1, 4 do p:Encode1(0x09)	end
+	p:Encode1(offsets[id])
+	p:Encode1(0xE4)
+	p:Encode1(0x00)
+	for i = 1, 4 do	p:Encode1(0x00) end
 	SendPacket(p)
-
 end
 
 
