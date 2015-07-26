@@ -90,8 +90,8 @@ local ignite = nil
 
 
 -----[[ Auto Update Globals ]]------
-local version = 4.4
-local UPDATE_CHANGE_LOG = "Update for 5.14"
+local version = 4.5
+local UPDATE_CHANGE_LOG = "Added AutoPlay in mode Alone Mode"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -255,7 +255,7 @@ end
 
 --[[ Checks Function ]]--
 function Checks()
-	ignite = myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") and SUMMONER_1 or myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") and SUMMONER_2 or nil
+	
 end
 
 
@@ -289,7 +289,10 @@ end
 		--|>Auto Ward
 		AutoWard()
 		--|>Auto Ignite
-		FunctionAutoIgnite()	
+		FunctionAutoIgnite()
+		
+		
+				
 end
 
 
@@ -311,6 +314,9 @@ function OnTick()
 	PoroCheck()
 	--|>Autopotions
 	AutoPotions()
+	
+	FollowMinionAlly()
+	
 end
 
 
@@ -338,14 +344,12 @@ function Follow()
 		else
 			stance = 0
 		end
-
 		if findLowHp() ~= 0 then
 			Target = findLowHp()
 		else
 			Target = findClosestEnemy()
 		end
-			
-
+		
 		--|> Alone Mode
 		if stance == 0 then
 			if howlingAbyssMap == true then
@@ -382,22 +386,18 @@ function Follow()
 					end
 				end, timerito)
 				]]
-				
 			end
-			
 		end
-		
 		Allie = followHero()
 		--|>Attacks Champs
 		if Target ~= nil then
 		stance = 3
 		  myHero:Attack(Target)
-			if stance == 1 or stance == 3 then
+			if stance == 3 then
 				attacksuccess = 0
 				if myHero:CanUseSpell(_W) == READY then
 					CastSpell(_W, Target)
 					attacksuccess =1
-										
 				end
 				if myHero:CanUseSpell(_Q) == READY then
 					CastSpell(_Q, Target)
@@ -414,6 +414,7 @@ function Follow()
 				
 				if attacksuccess == 0 then
 					--|>Attack Minions
+						AutoFarm()
 				end
 				
 				--|> Alone Mode
@@ -427,7 +428,7 @@ function Follow()
 				myHero:MoveTo(spawnpos.x,spawnpos.z)
 			end
 			allytofollow = followHero()
-			if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350  then
+			if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350 then
 				distance1 = math.random(250,300)
 				distance2 = math.random(250,300)
 				neg1 = 1 
@@ -576,6 +577,7 @@ function OnRecvPacket(p)
 end
 
 function BuyItem1(id)
+
 	local rB = {}
 	for i=0, 255 do rB[IDBytes[i]] = i end
 	local p = CLoLPacket(0x0008)
@@ -591,6 +593,9 @@ function BuyItem1(id)
 end
 
 function AutoBuy()
+	if (not VIP_USER) then
+		_AutoupdaterMsg('[AutoBuy] Non-VIP Not Supported!');
+	end;
 	if VIP_USER and iARAM.autobuy and InFountain() or myHero.dead then
 			-- Item purchases
 		if GetTickCount() > lastBuy + buyDelay then
@@ -638,7 +643,7 @@ function Menu()
 		
 
 		--Attack
-		iARAM:addParam("UseIgnite", "Use Ignite", SCRIPT_PARAM_ONOFF, true)
+		IgniteCheck()
 		iARAM:addParam("farm", "last hit farm", SCRIPT_PARAM_ONOFF, true)	
 		iARAM:addParam("key", "Auto Attack champs", SCRIPT_PARAM_ONOFF, true)
 
@@ -656,10 +661,13 @@ end
 
 --[[ Lagfree Circles by barasia, vadash and viseversa ]]---
 function RangeCircles()
+
 	if iARAM.drawing.drawcircles and not myHero.dead then
-		
 		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
 		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))	
+		--for index, allyminion in pairs(allyMinions.objects) do
+		--DrawCircle(allyminion.x,allyminion.y,allyminion.z,100,RGB(0,255,0))
+		--end
 	end
 end
 
@@ -978,14 +986,22 @@ end
 ---------[[ Auto Ignite and Auto Zhonya ]]---------
 
 function FunctionAutoIgnite()
-	if iARAM.UseIgnite and myHero:CanUseSpell(ignite) == READY then
-	ts:update()
-			if ValidTarget(ts.target,600) and ts.target.health <= getDmg('IGNITE', ts.target, myHero) then
-				CastSpell(ignite, ts.target)
+	if iARAM.UseIgnite then
+		if Ignite and ts.target ~= nil then
+			if ts.target.health <= 40 + (20 * myHero.level) and myHero:CanUseSpell(Ignite) == READY then
+				CastSpell(Ignite, ts.target)
 			end
+		end
 	end
-end 
+end
 
+function IgniteCheck()
+	if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then Ignite = SUMMONER_1
+			iARAM:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then Ignite = SUMMONER_2
+			iARAM:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
+	end
+end
  
 function FunctionAutoZhonya()
 
@@ -1115,8 +1131,6 @@ function AutoFarm()
 		local tick = 0
 		local delay = 400
 		local myTarget = ts.target
-	  
-		
 		  if iARAM.farm then
 			for index, minion in pairs(enemyMinions.objects) do
 			  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
@@ -1546,3 +1560,32 @@ function TowerFocusPlayer()
 			myHero:MoveTo(myHero.x*3,myHero.z*3)
 		end
 end
+
+function FollowMinionAlly()
+	if stance == 0 and iARAM.follow then
+				allyMinions = minionManager(MINION_ALLY, 90000, player, MINION_SORT_HEALTH_DEC)
+				allyMinions:update()
+				local player = GetMyHero()
+				local tick = 0
+				local delay = 400
+				local myTarget = ts.target
+		if heroCanMove() then
+			for index, allyminion in pairs(allyMinions.objects) do
+				if GetDistance(allyminion, myHero) <= 1600 and GetTickCount() > tick + delay then
+					distance1 = math.random(250,300)
+					distance2 = math.random(230,290)
+					neg1 = -1 
+					neg2 = -1 	
+					if myHero.team == TEAM_BLUE then
+						myHero:MoveTo(allyminion.x+distance1*neg1,allyminion.z+distance2*neg2)
+						tick = GetTickCount()
+					else
+						myHero:MoveTo(allyminion.x-distance1*neg1,allyminion.z-distance2*neg2)
+						tick = GetTickCount()
+					end
+				end
+			end
+		end
+	end
+end
+
