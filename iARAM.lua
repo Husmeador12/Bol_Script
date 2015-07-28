@@ -72,6 +72,10 @@ local nextbuyIndex = 1
 local lastBuy = 0
 local lastBoughtItem = nil
 local UP_TO_DATE = true
+local startTime = 0
+local buyIndex = 1
+local lastGold = 0
+local lastBuy = -50001
 
 
 -----[[ Autopotions Globals ]]------
@@ -85,13 +89,9 @@ local drawWardSpots = false
 local wardSlot = nil
 
 
------[[ Ignite and Zhonya Globals ]]------
-
-
-
 -----[[ Auto Update Globals ]]------
-local version = 4.6
-local UPDATE_CHANGE_LOG = "Improving."
+local version = 4.7
+local UPDATE_CHANGE_LOG = "Fixing Autobuy"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -189,7 +189,9 @@ do
 		heroType = 10
 	end
 	if heroType ~= 10 then
-	--	_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Items Loaded</font>")
+		--if iARAM.misc.miscelaneus then
+			_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Items Loaded</font>")
+		--end
 	end
 	if heroType == 1 then
 		_AutoupdaterMsg("<font color=\"#81BEF7\">Hero Type:</font> <font color=\"#00FF00\">ADC</font>" )
@@ -220,33 +222,76 @@ do
 
 	--[[ ItemsList ]]--
 	
-	if heroType == 1 then --ADC
-		shopList = {1001,3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
-	end
-	if heroType == 2 then	--ADTANK
-		shopList = {1001,3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
-	end
-	if heroType == 3 then	--APTANK
-		shopList = {1001,3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
-	end
-	if heroType == 4 then --HYBRID
-		shopList = {1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
-	end
-	if heroType == 5 then --BRUISER
-		shopList = {1001,3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
-	end
-	if heroType == 6 then --ASSASSIN
-		shopList = {1001,3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
-	end
-	if heroType == 7 then  --MAGE
-		shopList = {1001,3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
-	end
-	if heroType == 8 then  --APC
-		shopList = {1001,3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
-	end
-	if heroType == 9 or heroType == 10 then  --FIGHTER and OTHERS
-		shopList = {1001,3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
-	end
+	itemCosts = {
+                                        [3096]=865,--Nomad's Medallion
+                                        [3801]=600,--Crystalline Bracer
+                                        [1011]=1000,--Giant's Belt
+                                        [3083]=300,--*Warmog's Armor
+                                        [3190]=2800,--Locket of the Iron Solari
+                                        [3075]=2100,--Thornmail
+                                        [3068]=2600,--Sunfire Cape
+                                        [3072]=1950,--*Bloodthirster
+                                        [3069]=1235,--*Talisman of Ascension
+                                        [1038]=1550,--B.F. Sword
+                                        [3031]=2250,--*Infinity Edge
+                                        [3139]=2150,--*Mercurial Scimitar
+                                        [3508]=1650,--*Essence Reaver
+                                        [3155]=1450,--Hexdrinker
+                                        [3156]=1750,--*Maw of Malmortius
+                                        [3082]=1050,--Warden's Mail
+                                        [3110]=1400,--*Frozen Heart
+                                        [3211]=1200,--Spectre's Cowl
+                                        [3065]=1550,--*Spirit Visage
+                                        [3102]=1550,--*Banshee's Veil
+                                        [1058]=1600,--Needlessly Large Rod
+                                        [3089]=1700,--*Rabadon's Deathcap
+                                        [3157]=1700,--*Zhonya's Hourglass
+                                        [3285]=1500,--*Luden's Echo
+                                        [3001]=2440,--Abyssal Scepter
+                                        [3101]=1250,--Stinger
+                                        [3115]=1670,--*Nashor's Tooth
+                                        [3136]=1485,--Haunting Guise
+                                        [3151]=1415,--Liandry's Torment
+                                        [3100]=3000,--Lich Bane
+                                        [3044]=1325,--Phage
+                                        [3071]=1675,--*The Black Cleaver       
+                                        [3165]=2300,--Morellonomicon
+										[1001]=325,
+										[3006]=1000,
+										[1042]=450,
+										[3086]=1100,
+										[3144]=1400,--Bilgewater Cutlass
+                                }
+       
+        if heroType == 1 then --ADC
+			shopList = {1001,3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
+		end
+		if heroType == 2 then	--ADTANK
+			shopList = {1001,3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
+		end
+		if heroType == 3 then	--APTANK
+			shopList = {1001,3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
+		end
+		if heroType == 4 then --HYBRID
+			shopList = {1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
+		end
+		if heroType == 5 then --BRUISER
+			shopList = {1001,3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
+		end
+		if heroType == 6 then --ASSASSIN
+			shopList = {1001,3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
+		end
+		if heroType == 7 then  --MAGE
+			shopList = {1001,3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
+		end
+		if heroType == 8 then  --APC
+			shopList = {1001,3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
+		end
+		if heroType == 9 or heroType == 10 then  --FIGHTER and OTHERS
+			shopList = {1001,3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
+		end
+
+        startTime = GetTickCount()
 	--yellow ward 3340
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
 
@@ -290,7 +335,7 @@ end
 		AutoWard()
 		--|>Auto Ignite
 		FunctionAutoIgnite()
-		
+		--|>Mode Alone
 		GetPlayer()
 		LoadMapVariables()
 
@@ -315,7 +360,7 @@ function OnTick()
 	PoroCheck()
 	--|>Autopotions
 	AutoPotions()
-	
+	--|>Mode Alone
 	FollowMinionAlly()
 	HealthAlly()
 	
@@ -341,7 +386,6 @@ end
 function Follow()
 	if iARAM.follow and not myHero.dead then
 		stance = 0
-		
 		if Allies() >= 2 then
 			stance = 1		
 		else
@@ -360,18 +404,22 @@ function Follow()
 			if stance == 3 then
 				attacksuccess = 0
 				if myHero:CanUseSpell(_W) == READY then
+				 --if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell W") end
 					CastSpell(_W, Target)
 					attacksuccess =1
 				end
 				if myHero:CanUseSpell(_Q) == READY then
+				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell Q") end
 					CastSpell(_Q, Target)
 					attacksuccess =1 
 				end
 				if myHero:CanUseSpell(_E) == READY  then
+				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell E") end
 					CastSpell(_E, Target)
 					attacksuccess = 1
 				end
 				if myHero:CanUseSpell(_R) == READY then
+				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell R") end
 					CastSpell(_R, Target)
 					attacksuccess =1
 				end
@@ -501,21 +549,29 @@ end
 --[[ AutoBuyItems ]]--
 
 function AutoBuy()
-	buyIndex = 1
-	if (not VIP_USER) then
-		_AutoupdaterMsg('[AutoBuy] Non-VIP Not Supported!');
-	end;
-	if VIP_USER and iARAM.autobuy and InFountain() or myHero.dead or shopList[buyIndex] ~= 0 then
-			local itemval = shopList[buyIndex]	
-			BuyItem(itemval)
-				if GetInventorySlotItem(shopList[buyIndex]) ~= nil then
-					--Last Buy successful
-					buyIndex = buyIndex + 1
-					buyItems()
-				end
-		end
-
+ if shopList[buyIndex] ~= 0 then
+                nowTime = GetTickCount()
+                if nowTime - lastBuy > 5000 then
+                        currentGold = myHero.gold
+                        if (currentGold < lastGold) or ((currentGold ~= lastGold) and (nowTime - lastBuy > 50000)) then
+                                local itemval = shopList[buyIndex]
+                                if itemval ~= nil then
+                                        local cost = itemCosts[itemval]
+                                        if cost ~= nil then
+                                                if myHero.gold > cost then
+                                                        lastGold = currentGold
+                                                        lastBuy = GetTickCount()
+                                                        BuyItem(itemval)
+                                                        table.remove(shopList, 1)  
+															if iARAM.misc.misc2 then _AutoupdaterMsg("Buying") end
+                                                end
+                                        end
+                                end
+                        end
+                end
+        end
 end
+
 
 
 --[[ Menu Function ]]-- 
@@ -545,7 +601,7 @@ function Menu()
 		
 		--[[ Misc menu ]]--
 		iARAM:addSubMenu("Miscelaneus Settings", "misc")
-		iARAM.misc:addParam("misc2", "Coming Soon", SCRIPT_PARAM_ONOFF, true)
+		iARAM.misc:addParam("misc2", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
 		
 
 		--Attack
@@ -619,13 +675,12 @@ SetupDrawY = 0.15
 SetupDrawX = 0.1
 tempSetupDrawY = SetupDrawY
 MenuTextSize = 18
-
-	DrawText(""..myHero.charName.." Bot", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
-	tempSetupDrawY = tempSetupDrawY + 0.03
-	
-	--DrawText(" ".. GetUser() .." ", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
-	tempSetupDrawY = tempSetupDrawY + 0.07
-
+	if iARAM.misc.misc2 then 
+		DrawText(""..myHero.charName.." Bot", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
+		tempSetupDrawY = tempSetupDrawY + 0.03
+		DrawText("Logged as: ".. GetUser() .." ", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
+		tempSetupDrawY = tempSetupDrawY + 0.07
+	end
 end
 
 
@@ -658,8 +713,6 @@ local wardSpots = {
 	{x=4334.98, y=-60.42, z=9714.54}, -- BARON
 	{x=5363.31, y=-62.70, z=9157.05}, -- BARON BUSH
 
-	--{x=12731.25, y=50.32, z=9132.66}, -- RED BOT T2
-	--{x=8036.52, y=45.19, z=12882.94}, -- RED TOP T2
 	{x=9757.9, y=50.73, z=8768.25}, -- RED MID T1
 
 	{x=4749.79, y=53.59, z=5890.76}, -- BLUE MID T1
@@ -925,6 +978,9 @@ Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt 
 				DelayAction(function()
 				if myHero.team == TEAM_BLUE then
 					myHero:MoveTo(myHero.x*5,myHero.z*5)
+					if iARAM.misc.miscelaneus then
+						print("moving")
+					end
 				else
 					myHero:MoveTo(myHero.x*5,myHero.z*5)
 				end
@@ -1095,24 +1151,27 @@ ChampionCount = 0
 end
 
 function _FloatTextMsg(msg) 
-
 	local barPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
 	DrawText(" "..msg.." ", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
-
 end
 
+
+-----[[ MapVariables Function ]]------
 function LoadMapVariables()
 	gameState = GetGame()
 	--print(gameState.map.shortName)
 	if gameState.map.shortName then
 		if gameState.map.shortName == "summonerRift" then
 			summonersRiftMap = true
+			if iARAM.misc.miscelaneus then _AutoupdaterMsg("Map: summonerRift") end
+			
 		else
 			summonersRiftMap = false
 		end
 		
 		if gameState.map.shortName == "crystalScar" then
 			crystalScarMap = true
+			if iARAM.misc.misc2 then _AutoupdaterMsg("Map: crystalScar") end
 			
 		else
 			crystalScarMap = false
@@ -1120,17 +1179,20 @@ function LoadMapVariables()
 		
 		if gameState.map.shortName == "howlingAbyss" then
 			howlingAbyssMap = true
+			if iARAM.misc.misc2 then _AutoupdaterMsg("Map: howlingAbyss") end
 		else
 			howlingAbyssMap = false
 		end
 		
 		if gameState.map.shortName == "twistedTreeline" then
 			twistedTreeLineMap = true
+			if iARAM.misc.misc2 then _AutoupdaterMsg("Map: twistedTreeline") end
 		else
 			twistedTreeLineMap = false
 		end
 	else
 		summonersRiftMap = true
+		if iARAM.misc.misc2 then _AutoupdaterMsg("Map: Unknow") end
 	end
 end
 
@@ -1149,7 +1211,7 @@ function AutoPotions()
 			if myHero:CanUseSpell(SLOT) == READY and ((myHero.health / myHero.maxHealth < myHero:getItem(SLOT).stacks / 4 or myHero.mana / myHero.maxMana < myHero:getItem(SLOT).stacks / 4) or ((myHero.maxHealth - myHero.health > 120 and myHero.maxMana - myHero.mana > 60) or (myHero.mana < 100 or myHero.health < 100))) then
 				-- Cast
 				CastSpell(SLOT)
-				--if Helper.Debug then PrintChat("Crystalline Flask") end
+				if iARAM.misc.misc2 then _AutoupdaterMsg("CrystalFlask Potions") end
 			end
 		end
 		-- Health Potions
@@ -1158,7 +1220,7 @@ function AutoPotions()
 			if myHero:CanUseSpell(SLOT) == READY and myHero.health / myHero.maxHealth < myHero:getItem(SLOT).stacks / 6 and myHero.maxHealth - myHero.health > 150 then
 				-- Cast
 				CastSpell(SLOT)
-				--if Helper.Debug then PrintChat("Health Potion") end
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Health Potion") end
 			end
 		end
 		-- Mana Potions
@@ -1167,7 +1229,7 @@ function AutoPotions()
 			if myHero:CanUseSpell(SLOT) == READY and myHero.mana / myHero.maxMana < myHero:getItem(SLOT).stacks / 6 and myHero.maxMana - myHero.mana > 100 or myHero.mana < 100 then
 				-- Cast
 				CastSpell(SLOT)
-				--if Helper.Debug then PrintChat("Mana Potion") end
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Mana Potion") end
 			end
 		end
 	end
@@ -1327,11 +1389,11 @@ if not VIP_USER then return end
     else _AutoupdaterMsg(string.format(" >> AutoLevelSpell  disabled for %s", champ))
     end
    -- if AutoLevel and #AutoLevel == 18 then
-		--_AutoupdaterMsg("<font color=\"#81BEF7\">AutoLevelSpell loaded!</font>")
+	--	 if iARAM.misc.misc2 then _AutoupdaterMsg("AutoLevelSpell loaded!") end
    -- else
-     --   _AutoupdaterMsg(" >> AutoLevel Error")
-     --   OnTick = function() end
-    --    return
+   --     if iARAM.misc.misc2 then _AutoupdaterMsg(" >> AutoLevel Error") end
+   --     OnTick = function() end
+   --     return
    -- end
 end)
 
@@ -1415,16 +1477,12 @@ end
 
 
 --[[ Drawing Names Function ]]--
-
 function DrawFakeNames()
-
 	-- Your own hero has different height for name
 	if myHero.visible == true and myHero.dead == false then
 		framePos = GetAbilityFramePos(myHero)
     	DrawOverheadHUD(myHero, framePos, ""..myHero.charName.."")
 	end
-
-	
 end
 
 function DrawOverheadHUD(unit, framePos, str, isAlly)
@@ -1476,9 +1534,15 @@ function TowerFocusPlayer()
 		end
 end
 
+
+--[[ Alone Mode Function ]]--
+
 function FollowMinionAlly()
 	if stance == 0 and iARAM.follow then
 		if summonersRiftMap == true then
+			if iARAM.misc.misc2 then
+				_AutoupdaterMsg("FollowMinion in summonersRiftMap")
+			end
 			CountTimer = 15
 			if os.clock() < CountTimer then return end
 			CountTimer = os.clock() + math.random(0.5,2)
@@ -1518,6 +1582,9 @@ function FollowMinionAlly()
 			end
 		end
 		if howlingAbyssMap == true then
+			if iARAM.misc.misc2 then
+				_AutoupdaterMsg("FollowMinion in howlingAbyssMap")
+			end
 			allyMinions = minionManager(MINION_ALLY, 3000, player, MINION_SORT_HEALTH_DEC)
 			allyMinions:update()
 			local player = GetMyHero()
@@ -1550,13 +1617,18 @@ function HealthAlly()
 	local champ = player.charName
 	local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 		if ally ~= nil and (ally.health/ally.maxHealth) < 99999 then
+			
 			if champ == "Soraka" then
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
 				CastSpell(_W, ally)
 			elseif champ == "Taric" then  
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
 				CastSpell(_Q, ally)
-			elseif champ == "Nami" then  
+			elseif champ == "Nami" then 
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end			
 				CastSpell(_W, ally)
 			elseif champ == "Sona" then  
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
 				CastSpell(_W, ally)
 			end
 		end
@@ -1571,7 +1643,6 @@ function GetPlayer(team, includeDead, includeSelf, distanceTo, distanceAmount, r
 			if member.charName ~= myHero.charName or includeSelf then
 				if distanceAmount == GLOBAL_RANGE or member:GetDistance(distanceTo) <= distanceAmount then
 					if target == nil then target = member end
-
 					if resource == "health" then --least health
 						if member.health < target.health then target = member end
 					elseif resource == "mana" then --least mana
