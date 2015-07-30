@@ -46,7 +46,7 @@
 local HotKey = 115 --F4 = 115, F6 = 117 default
 local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
 local AUTOUPDATE = true --change to false to disable auto update
-
+local SummonerName = myHero.charName
 
 --[[ GLOBALS [Do Not Change] ]]--
 
@@ -71,7 +71,6 @@ local buyDelay = 100 --default 100
 local nextbuyIndex = 1
 local lastBuy = 0
 local lastBoughtItem = nil
-local UP_TO_DATE = true
 local startTime = 0
 local buyIndex = 1
 local lastGold = 0
@@ -90,8 +89,8 @@ local wardSlot = nil
 
 
 -----[[ Auto Update Globals ]]------
-local version = 4.7
-local UPDATE_CHANGE_LOG = "Fixing Autobuy"
+local version = 4.8
+local UPDATE_CHANGE_LOG = "Update for 5.14 Minipatchs 2"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -298,12 +297,6 @@ do
 end
 
 
---[[ Checks Function ]]--
-function Checks()
-	
-end
-
-
 --[[ On Draw Function ]]--
 function OnDraw()
 	AirText()
@@ -352,9 +345,8 @@ end
 function OnTick()
 	Follow()	
 	LFC()
-	Checks()
 	--LoadAutoIgniteZhonya()
-	AutotatackChamp()
+	AutoAttackChamp()
 	AutoFarm()
 	--|> Poro Shouter
 	PoroCheck()
@@ -383,6 +375,8 @@ end
 
 
 --[[ Follow Function ]]--
+
+
 function Follow()
 	if iARAM.follow and not myHero.dead then
 		stance = 0
@@ -404,7 +398,7 @@ function Follow()
 			if stance == 3 then
 				attacksuccess = 0
 				if myHero:CanUseSpell(_W) == READY then
-				 --if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell W") end
+				 if iARAM.misc.misc2 then CastW(str) end
 					CastSpell(_W, Target)
 					attacksuccess =1
 				end
@@ -547,31 +541,31 @@ end
 
 
 --[[ AutoBuyItems ]]--
-
 function AutoBuy()
- if shopList[buyIndex] ~= 0 then
-                nowTime = GetTickCount()
-                if nowTime - lastBuy > 5000 then
-                        currentGold = myHero.gold
-                        if (currentGold < lastGold) or ((currentGold ~= lastGold) and (nowTime - lastBuy > 50000)) then
-                                local itemval = shopList[buyIndex]
-                                if itemval ~= nil then
-                                        local cost = itemCosts[itemval]
-                                        if cost ~= nil then
-                                                if myHero.gold > cost then
-                                                        lastGold = currentGold
-                                                        lastBuy = GetTickCount()
-                                                        BuyItem(itemval)
-                                                        table.remove(shopList, 1)  
+	if iARAM.misc.buy then
+		if shopList[buyIndex] ~= 0 then
+					nowTime = GetTickCount()
+					if nowTime - lastBuy > 5000 then
+							currentGold = myHero.gold
+							if (currentGold < lastGold) or ((currentGold ~= lastGold) and (nowTime - lastBuy > 50000)) then
+									local itemval = shopList[buyIndex]
+									if itemval ~= nil then
+											local cost = itemCosts[itemval]
+											if cost ~= nil then
+													if myHero.gold > cost then
+															lastGold = currentGold
+															lastBuy = GetTickCount()
+															BuyItem(itemval)
+															table.remove(shopList, 1)  
 															if iARAM.misc.misc2 then _AutoupdaterMsg("Buying") end
-                                                end
-                                        end
-                                end
-                        end
-                end
-        end
+													end
+											end
+									end
+							end
+					end
+		end
+	end
 end
-
 
 
 --[[ Menu Function ]]-- 
@@ -579,15 +573,15 @@ function Menu()
        iARAM = scriptConfig("iARAM", "iARAM BOT")
 
 	   --[[ AutoWard Menu ]]--   
-			iARAM:addSubMenu("AutoWard Settings", "AutoWard")
+		iARAM:addSubMenu("AutoWard Settings", "AutoWard")
 			iARAM.AutoWard:addParam("AutoWardEnable", "Autoward Enabled", SCRIPT_PARAM_ONOFF, true)
 			iARAM.AutoWard:addParam("AutoWardDraw", "Autoward Draw Circles", SCRIPT_PARAM_ONOFF, false)
 			iARAM.AutoWard:addParam("debug", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
 		
 		--[[ Drawing menu ]]--
 		iARAM:addSubMenu("Drawing Settings", "drawing")
-		iARAM.drawing:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
-		iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
+			iARAM.drawing:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
+			iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
 		
 		--[[ PoroShoter menu ]]--
 		
@@ -595,22 +589,23 @@ function Menu()
 		vPred = VPrediction()
 		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
 		iARAM:addSubMenu("PoroShotter Settings", "PoroShot")
-		iARAM.PoroShot:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
-		iARAM.PoroShot:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
-		iARAM.PoroShot:addTS(TargetSelector)
+			iARAM.PoroShot:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
+			iARAM.PoroShot:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
+			iARAM.PoroShot:addTS(TargetSelector)
 		
 		--[[ Misc menu ]]--
 		iARAM:addSubMenu("Miscelaneus Settings", "misc")
-		iARAM.misc:addParam("misc2", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
-		
+			iARAM.misc:addParam("misc2", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
+			iARAM.misc:addParam("farm", "Last Hit Farm", SCRIPT_PARAM_ONOFF, true)	
+			iARAM.misc:addParam("attackchamps", "Auto Attack champs", SCRIPT_PARAM_ONOFF, true)
+			iARAM.misc:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
 
 		--Attack
 		IgniteCheck()
-		iARAM:addParam("farm", "last hit farm", SCRIPT_PARAM_ONOFF, true)	
-		iARAM:addParam("key", "Auto Attack champs", SCRIPT_PARAM_ONOFF, true)
+
 
 		--Main Script
-		iARAM:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
+
 		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 
 		-----------------------------------------------------------------------------------------------------
@@ -1071,12 +1066,12 @@ end
 
 
 -----[[ AutoFarm and harras ]]------
-function AutotatackChamp()
+function AutoAttackChamp()
 	range = myHero.range + myHero.boundingRadius - 3
 	ts.range = range
 	ts:update()
 	if iARAM.follow then
-		if not iARAM.key then return end
+		if not iARAM.misc.attackchamps then return end
 		local myTarget = ts.target
 		if myTarget ~=	nil then		
 			if timeToShoot() then
@@ -1099,7 +1094,7 @@ function AutoFarm()
 		local tick = 0
 		local delay = 400
 		local myTarget = ts.target
-		  if iARAM.farm then
+		  if iARAM.misc.farm then
 			for index, minion in pairs(enemyMinions.objects) do
 			  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
 				local dmg = getDmg("AD", minion, myHero)
@@ -1137,7 +1132,7 @@ end
 
 -----[[ PrintFloatText ]]------
 function ChampionFloatText()
-ChampionCount = 0
+	ChampionCount = 0
     ChampionTable = {}
  
     for i = 1, heroManager.iCount do
@@ -1428,7 +1423,6 @@ function AutoLevel:__init(table)
 	else
 	_AutoupdaterMsg("You are not VIP user: AutoLevel disabled")
 	end
-	
 end
 
 function AutoLevel:LevelSpell(id)
@@ -1439,7 +1433,7 @@ function AutoLevel:LevelSpell(id)
 		[_R] = 0xAD,
 	}
 	local p = CLoLPacket(0x009C)
-	p.vTable = 0xF0A57C
+	p.vTable = 0xE61868
 	p:EncodeF(myHero.networkID)
 	for i = 1, 4 do	p:Encode1(0xB4)	end
 	for i = 1, 4 do	p:Encode1(0x69)	end
@@ -1481,7 +1475,7 @@ function DrawFakeNames()
 	-- Your own hero has different height for name
 	if myHero.visible == true and myHero.dead == false then
 		framePos = GetAbilityFramePos(myHero)
-    	DrawOverheadHUD(myHero, framePos, ""..myHero.charName.."")
+    	DrawOverheadHUD(myHero, framePos, ""..SummonerName.."")
 	end
 end
 
@@ -1524,7 +1518,6 @@ end
 
 
 --[[ Improving Function ]]--
-
 function TowerFocusPlayer()
 	print("Tower focus: Player")
 		if myHero.team == TEAM_BLUE then
@@ -1536,13 +1529,26 @@ end
 
 
 --[[ Alone Mode Function ]]--
+local lastPrint1 = ""
+function howling1(str)
+   if str ~= lastPrint1 then
+    _AutoupdaterMsg("Following Minion in Howling Abyss Map")
+      lastPrint1 = str
+   end
+end
+
+local lastPrintSRM = ""
+function PrintSumonerRift(SRM)
+   if SRM ~= lastPrintSRM then
+    _AutoupdaterMsg("Following Minion in Summoners Rift Map")
+      lastPrintSRM = SRM
+   end
+end
 
 function FollowMinionAlly()
 	if stance == 0 and iARAM.follow then
 		if summonersRiftMap == true then
-			if iARAM.misc.misc2 then
-				_AutoupdaterMsg("FollowMinion in summonersRiftMap")
-			end
+			if iARAM.misc.misc2 then PrintSumonerRift() end
 			CountTimer = 15
 			if os.clock() < CountTimer then return end
 			CountTimer = os.clock() + math.random(0.5,2)
@@ -1582,9 +1588,6 @@ function FollowMinionAlly()
 			end
 		end
 		if howlingAbyssMap == true then
-			if iARAM.misc.misc2 then
-				_AutoupdaterMsg("FollowMinion in howlingAbyssMap")
-			end
 			allyMinions = minionManager(MINION_ALLY, 3000, player, MINION_SORT_HEALTH_DEC)
 			allyMinions:update()
 			local player = GetMyHero()
@@ -1594,6 +1597,7 @@ function FollowMinionAlly()
 			if heroCanMove() then
 				for index, allyminion in pairs(allyMinions.objects) do
 					if GetDistance(allyminion, myHero) <= 3000 and GetTickCount() > tick + delay then
+					if iARAM.misc.misc2 then howling1(str) end
 						distance1 = math.random(130,250)
 						distance2 = math.random(130,250)
 						neg1 = -1 
@@ -1657,4 +1661,14 @@ function GetPlayer(team, includeDead, includeSelf, distanceTo, distanceAmount, r
 		end
 	end
 	return target
+end
+
+
+--[[ PrinterDelay Function ]]--
+local lastPrint2 = ""
+function CastW(str)
+   if str ~= lastPrint2 then
+    _AutoupdaterMsg("CastSpell W")
+      lastPrint2 = str
+   end
 end
