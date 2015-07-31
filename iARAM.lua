@@ -56,35 +56,25 @@ local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local range = myHero.range
 local ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, range, DAMAGE_PHYSICAL, false)
 
-
 -----[[ Chat Global ]]------
 local switcher = true
-
 
 -----[[ Poro Shouter Global ]]------
 local lastCast = 0
 require 'VPrediction'
 
 -----[[ Buyer Globals ]]------
-buyIndex = 1
-lastGold = 0
-lastBuy = -5001
-
-
------[[ Autopotions Globals ]]------
-local _b = false
-local ab = true
-local db = {br0l4nds = true, corearmies = true}
-
+local buyIndex = 1
+local lastGold = 0
+local lastBuy = -501
 
 -----[[ Auto ward Globals ]]------
 local drawWardSpots = false
 local wardSlot = nil
 
-
 -----[[ Auto Update Globals ]]------
-local version = 4.9
-local UPDATE_CHANGE_LOG = "Fixing Autobuy"
+local version = 5.0
+local UPDATE_CHANGE_LOG = "Added Items, fixed Tahm_Knech"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -120,7 +110,7 @@ do
 	spawnpos  = { x = myHero.x, z = myHero.z}
 	ranged = 0
 	assassins = {"Akali","Diana","Evelynn","Fizz","Katarina","Nidalee"}
-	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","Tahm_Kench","Thresh","Volibear","Yorick"}
+	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","Jarvan IV","Nasus","Skarner","TahmKench","Thresh","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
 	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
@@ -214,100 +204,109 @@ do
 	
 
 	--[[ ItemsList ]]--
-	
 	itemCosts = {
                                         [3096]=865,--Nomad's Medallion
+										[1001]=325,--Boots
+										[1042]=450,--Dagger
+										[1037]=875,--Pickaxe
+										[3024]=950,--Glacial Shroud
                                         [3801]=600,--Crystalline Bracer
-                                        [1011]=1000,--Giant's Belt
-                                        [3083]=300,--*Warmog's Armor
-                                        [3190]=2800,--Locket of the Iron Solari
+										[1026]=850,--Blasting Wand
+										[3108]=820,--Fiendish Codex
+                                        [1031]=750,--Chain Vest
+										[3028]=900,--Chalice of Harmony
+										[1057]=850,--Negatron Cloak
+                                        [3083]=300,--Warmog's Armor
+										[1053]=800,--Vampiric Scepter
+										[1011]=1000,--ºGiant's Belt
+                                        [3190]=2800,--ºLocket of the Iron Solari
                                         [3075]=2100,--Thornmail
                                         [3068]=2600,--Sunfire Cape
-                                        [3072]=1950,--*Bloodthirster
-                                        [3069]=1235,--*Talisman of Ascension
+                                        [3072]=1950,--Bloodthirster
+                                        [3069]=1235,--ºTalisman of Ascension
                                         [1038]=1550,--B.F. Sword
-                                        [3031]=2250,--*Infinity Edge
-                                        [3139]=2150,--*Mercurial Scimitar
-                                        [3508]=1650,--*Essence Reaver
+                                        [3031]=2250,--ºInfinity Edge
+                                        [3139]=2150,--Mercurial Scimitar
+                                        [3508]=1650,--Essence Reaver
                                         [3155]=1450,--Hexdrinker
-                                        [3156]=1750,--*Maw of Malmortius
+                                        [3156]=1750,--Maw of Malmortius
                                         [3082]=1050,--Warden's Mail
-                                        [3110]=1400,--*Frozen Heart
+                                        [3110]=1400,--Frozen Heart
                                         [3211]=1200,--Spectre's Cowl
-                                        [3065]=1550,--*Spirit Visage
-                                        [3102]=1550,--*Banshee's Veil
+                                        [3065]=1550,--Spirit Visage
+                                        [3102]=1550,--Banshee's Veil
                                         [1058]=1600,--Needlessly Large Rod
-                                        [3089]=1700,--*Rabadon's Deathcap
-                                        [3157]=1700,--*Zhonya's Hourglass
-                                        [3285]=1500,--*Luden's Echo
+                                        [3089]=1700,--Rabadon's Deathcap
+                                        [3157]=1700,--Zhonya's Hourglass
+                                        [3285]=1500,--Luden's Echo
                                         [3001]=2440,--Abyssal Scepter
                                         [3101]=1250,--Stinger
                                         [3115]=1670,--*Nashor's Tooth
                                         [3136]=1485,--Haunting Guise
                                         [3151]=1415,--Liandry's Torment
+										[3057]=1200,--Sheen
                                         [3100]=3000,--Lich Bane
                                         [3044]=1325,--Phage
-                                        [3071]=1675,--*The Black Cleaver       
-                                        [3165]=2300,--Morellonomicon
-										[1001]=325,--Boots
-										[3006]=1000,
-										[1042]=450,
-										[3086]=1100,
+                                        [3071]=3000,--ºThe Black Cleaver       
+                                        [3165]=2300,--ºMorellonomicon
+										[3006]=1000,--Berserker's Greaves
+										[3086]=1100,--Zeal
 										[3144]=1400,--Bilgewater Cutlass
 										[3153]=3200,--Blade of the Ruined King
 										[3181]=2275,--Sanguine Blade
-										[1037]=875,--Pickaxe
-										[3035]=2300,--Last Whisper
+										[3035]=2300,--ºLast Whisper
 										[3026]=2800,--Guardian Angel
-										[3047]=1000,--Ninja Tabi
+										[3047]=1000,--ºNinja Tabi
 										[3134]=1337,--The Brutalizer
-										[3024]=950,--Glacial Shroud
 										[3025]=2900,--Iceborn Gauntlet
 										[3111]=1200,--Mercury's Treads
-										[1031]=750,--Chain Vest
-										[1057]=850,--Negatron Cloak
 										[3116]=3000,--Rylai's Crystal Scepter
-										[1026]=850,--Blasting Wand
-										[3108]=820,--Fiendish Codex
 										[1043]=1100,--Recurve Bow
 										[3020]=1100,--Sorcerer's Shoes
 										[3091]=2600,--Wit's End
-										[3057]=1200,--Sheen
 										[3152]=2500,--Will of the Ancients
 										[3074]=3300,--Ravenous Hydra 
 										[3135]=2500,--Void Staff
 										[3145]=1200,--Hextech Revolver
-										[3078]=3703--Trinity Force
+										[3078]=3703,--Trinity Force
+										[3174]=2700,--Athene's Unholy Grail
+										[3087]=2500,--Statikk Shiv
+										[3143]=2850,--Randuin's Omen
+										[3005]=2250,--Atma's Impaler
+										[3077]=1900--Tiamat
                                 }
        
         if heroType == 1 then --ADC
-			shopList = {1001,3006,1042,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
+			--shopList = {3006,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
+			shopList = {3006,3035,3026,3031,0}
 		end
-		if heroType == 2 then	--ADTANK
-			shopList = {1001,3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
+		if heroType == 2 then --ADTANK
+			--shopList = {3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
+			shopList = {3047,1011,3071,3190,0}
 		end
-		if heroType == 3 then	--APTANK
-			shopList = {1001,3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
+		if heroType == 3 then --APTANK
+			shopList = {3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
 		end
 		if heroType == 4 then --HYBRID
-			shopList = {1001,3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
+			shopList = {3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
 		end
 		if heroType == 5 then --BRUISER
-			shopList = {1001,3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
+			--shopList = {1001,3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
+			shopList = {1001,3071,3190}
 		end
 		if heroType == 6 then --ASSASSIN
-			shopList = {1001,3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
+			shopList = {3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
 		end
-		if heroType == 7 then  --MAGE
-			shopList = {1001,3028,1001,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
+		if heroType == 7 then --MAGE
+			--shopList = {3028,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
+			shopList = {3028,3020,3174,3001,3165,0}
 		end
-		if heroType == 8 then  --APC
-			shopList = {1001,3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
+		if heroType == 8 then --APC
+			shopList = {3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
 		end
-		if heroType == 9 or heroType == 10 then  --FIGHTER and OTHERS
-			shopList = {1001,3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
+		if heroType == 9 or heroType == 10 then --FIGHTER and OTHERS
+			shopList = {3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
 		end
-
         startTime = GetTickCount()
 	--yellow ward 3340
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
@@ -322,7 +321,6 @@ function OnDraw()
 	--|>Autoward
 	AutoWarderDraw()
 	DebugCursorPos()
-	
 	--|>FloatText
 	FloatTextStance()
 	--|>NameDrawer
@@ -334,21 +332,24 @@ end
 
 --[[ On Load Function ]]--
  function OnLoad()
-		OnProcessSpell()
-		timeToShoot()
-		heroCanMove()
-		Menu()
-		OnWndMsg()
-		if AutomaticChat then
-			AutoChat()
-		end
-		--|>Auto Ward
-		AutoWard()
-		--|>Auto Ignite
+
+	OnProcessSpell()
+	timeToShoot()
+	heroCanMove()
+	Menu()
+	OnWndMsg()
+	if AutomaticChat then
+		AutoChat()
+	end
+	--|>Auto Ward
+	AutoWard()
+	--|>Auto Ignite
+	if ignite ~= nil then
 		FunctionAutoIgnite()
-		--|>Mode Alone
-		GetPlayer()
-		LoadMapVariables()
+	end
+	--|>Mode Alone
+	GetPlayer()
+	LoadMapVariables()
 
 end
 
@@ -361,9 +362,9 @@ end
 
 --[[ OnTick Function ]]--
 function OnTick()
+	AutoBuy()
 	Follow()	
 	LFC()
-	--LoadAutoIgniteZhonya()
 	AutoAttackChamp()
 	AutoFarm()
 	--|> Poro Shouter
@@ -393,8 +394,6 @@ end
 
 
 --[[ Follow Function ]]--
-
-
 function Follow()
 	if iARAM.follow and not myHero.dead then
 		stance = 0
@@ -466,9 +465,8 @@ function Follow()
 		end	
 	else
 	--|> Dead
-		AutoBuy()
+	--	AutoBuy()
 	end
-	AutoBuy()
 end
 
 function findClosestEnemy()
@@ -561,19 +559,25 @@ end
 --[[ AutoBuyItems ]]--
 function AutoBuy()
 	if iARAM.misc.autobuy then
-		if InFountain() or myHero.dead or shopList[buyIndex] ~= 0 then
-			nowTime = GetTickCount()
-			if nowTime - lastBuy > 900 then
+		if myHero.dead or shopList[buyIndex] ~= 0 then
+				nowTime = GetTickCount()
+			if nowTime - lastBuy > 500 then
 				currentGold = myHero.gold
-				local itemval = shopList[buyIndex]
-				if itemval ~= nil then
-					local cost = itemCosts[itemval]
-					if cost ~= nil then
-						if myHero.gold > cost then
-							lastGold = currentGold
-							lastBuy = GetTickCount()
-							BuyItem(itemval)
-							table.remove(shopList, 1)		
+				nowTime = GetTickCount()
+				if (currentGold < lastGold) or ((currentGold ~= lastGold) and (nowTime - lastBuy > 500)) then
+					if nowTime - lastBuy > 900 then
+						currentGold = myHero.gold
+						local itemval = shopList[buyIndex]
+						if itemval ~= nil then
+							local cost = itemCosts[itemval]
+							if cost ~= nil then
+								if myHero.gold > cost then
+									lastGold = currentGold
+									lastBuy = GetTickCount()
+									BuyItem(itemval)
+									table.remove(shopList, 1)		
+								end
+							end
 						end
 					end
 				end
@@ -616,7 +620,7 @@ function Menu()
 			iARAM.misc:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
 
 		--Attack
-		IgniteCheck()
+		ignite = IgniteCheck()
 
 
 		--Main Script
@@ -953,21 +957,26 @@ end
 
 
 ---------[[ Auto Ignite and Auto Zhonya ]]---------
-
 function FunctionAutoIgnite()
-	if iARAM.UseIgnite then
-		if Ignite and ts.target ~= nil then
-			if ts.target.health <= 40 + (20 * myHero.level) and myHero:CanUseSpell(Ignite) == READY then
-				CastSpell(Ignite, ts.target)
+	if iARAM.autoIgnite then
+		if myHero:CanUseSpell(ignite) == READY then
+			for _, enemy in pairs(GetEnemyHeroes()) do
+				if myHero:CanUseSpell(ignite) ~= READY then return end
+				if ValidTarget(enemy) and GetDistance(enemy) < 600 then
+					local dmg = getDmg("ignite",enemy,myHero)
+					if dmg > target.health then
+						CastSpell(ignite, enemy)
+					end
+				end
 			end
 		end
 	end
 end
 
 function IgniteCheck()
-	if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then Ignite = SUMMONER_1
+	if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then
 			iARAM:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
-	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then Ignite = SUMMONER_2
+	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then
 			iARAM:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
 	end
 end
@@ -1364,7 +1373,7 @@ if not VIP_USER then return end
     elseif champ == "Soraka" then       AutoLevel({ 1, 3, 1, 2, 1, 4, 1, 2, 1, 3, 4, 2, 3, 2, 3, 4, 2, 3, })
     elseif champ == "Swain" then        AutoLevel({ 2, 3, 3, 1, 3, 4, 3, 1, 3, 1, 4, 1, 1, 2, 2, 4, 2, 2, })
     elseif champ == "Syndra" then       AutoLevel({ 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, })
-	elseif champ == "Tahm_Kench" then   AutoLevel({ 2, 3, 1, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
+	elseif champ == "TahmKench" then   	AutoLevel({ 2, 3, 1, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Talon" then        AutoLevel({ 2, 3, 1, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Taric" then        AutoLevel({ 3, 2, 1, 2, 2, 4, 1, 2, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Teemo" then        AutoLevel({ 1, 3, 2, 3, 1, 4, 3, 3, 3, 1, 4, 2, 2, 1, 2, 4, 2, 1, })
