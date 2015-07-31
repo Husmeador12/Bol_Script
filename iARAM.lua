@@ -66,15 +66,9 @@ local lastCast = 0
 require 'VPrediction'
 
 -----[[ Buyer Globals ]]------
-local shoplist = {}
-local buyDelay = 100 --default 100
-local nextbuyIndex = 1
-local lastBuy = 0
-local lastBoughtItem = nil
-local startTime = 0
-local buyIndex = 1
-local lastGold = 0
-local lastBuy = -50001
+buyIndex = 1
+lastGold = 0
+lastBuy = -5001
 
 
 -----[[ Autopotions Globals ]]------
@@ -89,8 +83,8 @@ local wardSlot = nil
 
 
 -----[[ Auto Update Globals ]]------
-local version = 4.8
-local UPDATE_CHANGE_LOG = "Update for 5.14 Minipatchs 2"
+local version = 4.9
+local UPDATE_CHANGE_LOG = "Fixing Autobuy"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -255,11 +249,35 @@ do
                                         [3044]=1325,--Phage
                                         [3071]=1675,--*The Black Cleaver       
                                         [3165]=2300,--Morellonomicon
-										[1001]=325,
+										[1001]=325,--Boots
 										[3006]=1000,
 										[1042]=450,
 										[3086]=1100,
 										[3144]=1400,--Bilgewater Cutlass
+										[3153]=3200,--Blade of the Ruined King
+										[3181]=2275,--Sanguine Blade
+										[1037]=875,--Pickaxe
+										[3035]=2300,--Last Whisper
+										[3026]=2800,--Guardian Angel
+										[3047]=1000,--Ninja Tabi
+										[3134]=1337,--The Brutalizer
+										[3024]=950,--Glacial Shroud
+										[3025]=2900,--Iceborn Gauntlet
+										[3111]=1200,--Mercury's Treads
+										[1031]=750,--Chain Vest
+										[1057]=850,--Negatron Cloak
+										[3116]=3000,--Rylai's Crystal Scepter
+										[1026]=850,--Blasting Wand
+										[3108]=820,--Fiendish Codex
+										[1043]=1100,--Recurve Bow
+										[3020]=1100,--Sorcerer's Shoes
+										[3091]=2600,--Wit's End
+										[3057]=1200,--Sheen
+										[3152]=2500,--Will of the Ancients
+										[3074]=3300,--Ravenous Hydra 
+										[3135]=2500,--Void Staff
+										[3145]=1200,--Hextech Revolver
+										[3078]=3703--Trinity Force
                                 }
        
         if heroType == 1 then --ADC
@@ -542,27 +560,24 @@ end
 
 --[[ AutoBuyItems ]]--
 function AutoBuy()
-	if iARAM.misc.buy then
-		if shopList[buyIndex] ~= 0 then
-					nowTime = GetTickCount()
-					if nowTime - lastBuy > 5000 then
-							currentGold = myHero.gold
-							if (currentGold < lastGold) or ((currentGold ~= lastGold) and (nowTime - lastBuy > 50000)) then
-									local itemval = shopList[buyIndex]
-									if itemval ~= nil then
-											local cost = itemCosts[itemval]
-											if cost ~= nil then
-													if myHero.gold > cost then
-															lastGold = currentGold
-															lastBuy = GetTickCount()
-															BuyItem(itemval)
-															table.remove(shopList, 1)  
-															if iARAM.misc.misc2 then _AutoupdaterMsg("Buying") end
-													end
-											end
-									end
-							end
+	if iARAM.misc.autobuy then
+		if InFountain() or myHero.dead or shopList[buyIndex] ~= 0 then
+			nowTime = GetTickCount()
+			if nowTime - lastBuy > 900 then
+				currentGold = myHero.gold
+				local itemval = shopList[buyIndex]
+				if itemval ~= nil then
+					local cost = itemCosts[itemval]
+					if cost ~= nil then
+						if myHero.gold > cost then
+							lastGold = currentGold
+							lastBuy = GetTickCount()
+							BuyItem(itemval)
+							table.remove(shopList, 1)		
+						end
 					end
+				end
+			end
 		end
 	end
 end
@@ -1134,10 +1149,8 @@ end
 function ChampionFloatText()
 	ChampionCount = 0
     ChampionTable = {}
- 
     for i = 1, heroManager.iCount do
-        local champ = heroManager:GetHero(i)
-               
+        local champ = heroManager:GetHero(i)       
         if champ.team ~= player.team then
             ChampionCount = ChampionCount + 1
             ChampionTable[ChampionCount] = { player = champ, indicatorText = "", damageGettingText = "", ultAlert = false, ready = true}
