@@ -73,8 +73,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.0
-local UPDATE_CHANGE_LOG = "Added Items, fixed Tahm_Knech"
+local version = 5.1
+local UPDATE_CHANGE_LOG = "Fixing Autobuy"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -214,7 +214,7 @@ do
 										[1026]=850,--Blasting Wand
 										[3108]=820,--Fiendish Codex
                                         [1031]=750,--Chain Vest
-										[3028]=900,--Chalice of Harmony
+										[3028]=900,--ºChalice of Harmony
 										[1057]=850,--Negatron Cloak
                                         [3083]=300,--Warmog's Armor
 										[1053]=800,--Vampiric Scepter
@@ -233,20 +233,20 @@ do
                                         [3082]=1050,--Warden's Mail
                                         [3110]=1400,--Frozen Heart
                                         [3211]=1200,--Spectre's Cowl
-                                        [3065]=1550,--Spirit Visage
+                                        [3065]=1550,--ºSpirit Visage
                                         [3102]=1550,--Banshee's Veil
                                         [1058]=1600,--Needlessly Large Rod
                                         [3089]=1700,--Rabadon's Deathcap
                                         [3157]=1700,--Zhonya's Hourglass
                                         [3285]=1500,--Luden's Echo
-                                        [3001]=2440,--Abyssal Scepter
+                                        [3001]=2440,--ºAbyssal Scepter
                                         [3101]=1250,--Stinger
-                                        [3115]=1670,--*Nashor's Tooth
+                                        [3115]=1670,--Nashor's Tooth
                                         [3136]=1485,--Haunting Guise
                                         [3151]=1415,--Liandry's Torment
-										[3057]=1200,--Sheen
+										[3057]=1200,--ºSheen
                                         [3100]=3000,--Lich Bane
-                                        [3044]=1325,--Phage
+                                        [3044]=1325,--ºPhage
                                         [3071]=3000,--ºThe Black Cleaver       
                                         [3165]=2300,--ºMorellonomicon
 										[3006]=1000,--Berserker's Greaves
@@ -262,7 +262,7 @@ do
 										[3111]=1200,--Mercury's Treads
 										[3116]=3000,--Rylai's Crystal Scepter
 										[1043]=1100,--Recurve Bow
-										[3020]=1100,--Sorcerer's Shoes
+										[3020]=1100,--ºSorcerer's Shoes
 										[3091]=2600,--Wit's End
 										[3152]=2500,--Will of the Ancients
 										[3074]=3300,--Ravenous Hydra 
@@ -273,39 +273,47 @@ do
 										[3087]=2500,--Statikk Shiv
 										[3143]=2850,--Randuin's Omen
 										[3005]=2250,--Atma's Impaler
+										[3124]=2590,--Guinsoo's Rageblade
+										[3046]=2800,--ºPhantom Dancer
+										[3146]=3400,--Hextech Gunblade
 										[3077]=1900--Tiamat
                                 }
        
         if heroType == 1 then --ADC
 			--shopList = {3006,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
-			shopList = {3006,3035,3026,3031,0}
+			shopList = {3006,3035,3026,3031,3046,0}
 		end
 		if heroType == 2 then --ADTANK
 			--shopList = {3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
-			shopList = {3047,1011,3071,3190,0}
+			shopList = {3047,1011,3071,3190,3065,0}
 		end
 		if heroType == 3 then --APTANK
-			shopList = {3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
+			--shopList = {3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
+			shopList = {3044,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
 		end
 		if heroType == 4 then --HYBRID
-			shopList = {3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
+			--shopList = {3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
+			shopList = {3020,3046,3035,3001,3165,0}
 		end
 		if heroType == 5 then --BRUISER
 			--shopList = {1001,3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
-			shopList = {1001,3071,3190}
+			shopList = {3047,3071,3190,3046,0}
 		end
 		if heroType == 6 then --ASSASSIN
-			shopList = {3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
+			--shopList = {3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
+			shopList = {3020,3057,3001,0}
 		end
 		if heroType == 7 then --MAGE
 			--shopList = {3028,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
 			shopList = {3028,3020,3174,3001,3165,0}
 		end
 		if heroType == 8 then --APC
-			shopList = {3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
+			--shopList = {3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
+			shopList = {3020,3001,3046,3001,0}
 		end
 		if heroType == 9 or heroType == 10 then --FIGHTER and OTHERS
-			shopList = {3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
+			--shopList = {3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
+			shopList = {3006,3044,3065,3071,3046,0}
 		end
         startTime = GetTickCount()
 	--yellow ward 3340
