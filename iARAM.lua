@@ -50,6 +50,11 @@ local SummonerName = myHero.charName
 
 --[[ GLOBALS [Do Not Change] ]]--
 
+---Delay
+
+local LastTick = nil
+local LastFollowChamp = nil
+local LastAttack = nil
 
 -----[[ Attack and farm Globals ]]------
 local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
@@ -73,8 +78,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.1
-local UPDATE_CHANGE_LOG = "Fixing Autobuy"
+local version = 5.2
+local UPDATE_CHANGE_LOG = "Improving Follow Function"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -205,8 +210,9 @@ do
 
 	--[[ ItemsList ]]--
 	itemCosts = {
+										[3340]=0,--Trinket
                                         [3096]=865,--Nomad's Medallion
-										[1001]=325,--Boots
+										[1001]=325,--ºBoots
 										[1042]=450,--Dagger
 										[1037]=875,--Pickaxe
 										[3024]=950,--Glacial Shroud
@@ -265,7 +271,7 @@ do
 										[3020]=1100,--ºSorcerer's Shoes
 										[3091]=2600,--Wit's End
 										[3152]=2500,--Will of the Ancients
-										[3074]=3300,--Ravenous Hydra 
+										[3074]=3300,--Ravenous Hydra
 										[3135]=2500,--Void Staff
 										[3145]=1200,--Hextech Revolver
 										[3078]=3703,--Trinity Force
@@ -289,7 +295,7 @@ do
 		end
 		if heroType == 3 then --APTANK
 			--shopList = {3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
-			shopList = {3044,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
+			shopList = {1001,3044,3190,3001,0}
 		end
 		if heroType == 4 then --HYBRID
 			--shopList = {3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
@@ -301,7 +307,7 @@ do
 		end
 		if heroType == 6 then --ASSASSIN
 			--shopList = {3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
-			shopList = {3020,3057,3001,0}
+			shopList = {1001,3020,3057,3001,0}
 		end
 		if heroType == 7 then --MAGE
 			--shopList = {3028,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
@@ -340,7 +346,6 @@ end
 
 --[[ On Load Function ]]--
  function OnLoad()
-
 	OnProcessSpell()
 	timeToShoot()
 	heroCanMove()
@@ -419,25 +424,27 @@ function Follow()
 		--|>Attacks Champs
 		if Target ~= nil then
 		stance = 3
+		if (LastAttack and (GetInGameTimer() < LastAttack + 2)) then return end
+		  LastAttack = GetInGameTimer()
 		  myHero:Attack(Target)
 			if stance == 3 then
 				attacksuccess = 0
-				if myHero:CanUseSpell(_W) == READY then
+				if 800 > GetDistance(Target) and myHero:CanUseSpell(_W) == READY then
 				 if iARAM.misc.misc2 then CastW(str) end
 					CastSpell(_W, Target)
 					attacksuccess =1
 				end
-				if myHero:CanUseSpell(_Q) == READY then
+				if 800 > GetDistance(Target) and myHero:CanUseSpell(_Q) == READY then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell Q") end
 					CastSpell(_Q, Target)
 					attacksuccess =1 
 				end
-				if myHero:CanUseSpell(_E) == READY  then
+				if 800 > GetDistance(Target) and myHero:CanUseSpell(_E) == READY  then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell E") end
 					CastSpell(_E, Target)
 					attacksuccess = 1
 				end
-				if myHero:CanUseSpell(_R) == READY then
+				if 800 > GetDistance(Target) and myHero:CanUseSpell(_R) == READY then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell R") end
 					CastSpell(_R, Target)
 					attacksuccess =1
@@ -463,7 +470,9 @@ function Follow()
 				distance1 = math.random(250,300)
 				distance2 = math.random(250,300)
 				neg1 = 1 
-				neg2 = 1 	
+				neg2 = 1 
+				if (LastFollowChamp and (GetInGameTimer() < LastFollowChamp)) then return end
+							LastFollowChamp = GetInGameTimer()					
 				if myHero.team == TEAM_BLUE then
 					myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
 				else
@@ -567,7 +576,7 @@ end
 --[[ AutoBuyItems ]]--
 function AutoBuy()
 	if iARAM.misc.autobuy then
-		if myHero.dead or shopList[buyIndex] ~= 0 then
+		if myHero.dead or shopList[buyIndex] ~= 0 then --
 				nowTime = GetTickCount()
 			if nowTime - lastBuy > 500 then
 				currentGold = myHero.gold
@@ -1217,13 +1226,12 @@ function LoadMapVariables()
 		end
 	else
 		summonersRiftMap = true
-		if iARAM.misc.misc2 then _AutoupdaterMsg("Map: Unknow") end
+		if iARAM.misc.misc2 then _AutoupdaterMsg("Map: "..gameState.map.shortName.."") end
 	end
 end
 
 
 -----[[ AutoPotions ]]------
-
 function AutoPotions()
 	--if not iARAM.autoPots.useAutoPots then
 	--	return
@@ -1328,7 +1336,7 @@ if not VIP_USER then return end
     elseif champ == "Jayce" then        AutoLevel({ 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }) rOff = -1
 	elseif champ == "Jinx" then         AutoLevel({ 3, 1, 3, 2, 3, 4, 3, 2, 3, 2, 1, 2, 2, 1, 1, 1, 4, 4, })
 	elseif champ == "Kalista" then      AutoLevel({ 1, 3, 2, 1, 1, 4, 1, 1, 3, 3, 4, 3, 3, 2, 2, 4, 2, 2, })
-    elseif champ == "Karma" then        AutoLevel({ 1, 3, 1, 2, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 2, 2, 2, 2, })
+    elseif champ == "Karma" then        AutoLevel({ 1, 3, 1, 2, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 2, 2, 2, 2, }) rOff = -1
     elseif champ == "Karthus" then      AutoLevel({ 1, 3, 2, 1, 1, 4, 1, 1, 3, 3, 4, 3, 3, 2, 2, 4, 2, 2, })
     elseif champ == "Kassadin" then     AutoLevel({ 1, 2, 1, 3, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, })
     elseif champ == "Katarina" then     AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 3, 2, 1, 4, 1, 1, 1, 3, 4, 3, 3, })
@@ -1502,8 +1510,7 @@ end
 
 --[[ Drawing Names Function ]]--
 function DrawFakeNames()
-	-- Your own hero has different height for name
-	if myHero.visible == true and myHero.dead == false then
+	if myHero.visible == true and not myHero.dead then
 		framePos = GetAbilityFramePos(myHero)
     	DrawOverheadHUD(myHero, framePos, ""..SummonerName.."")
 	end
@@ -1512,7 +1519,6 @@ end
 function DrawOverheadHUD(unit, framePos, str, isAlly)
     local barPos = Point(framePos.x, framePos.y)
     textWidth = (GetTextArea(str, 18).x / 2)
-    offset = 105
     barPos = Point(framePos.x + 66, framePos.y - 43)
 
     -- Enemy heros, your ally heros and your own hero have different bar heights
@@ -1526,14 +1532,12 @@ function DrawOverheadHUD(unit, framePos, str, isAlly)
     	DrawText(str, 18, barPos.x-textWidth+1, barPos.y+7, 0xFF000000)
    		DrawText(str, 18, barPos.x-textWidth, barPos.y+6, 0xFFFFFFFF)
    	end
-   	UpdateWindow()
 end
 
 -- Credits to Jorj for the bar position
 function GetAbilityFramePos(unit)
   local barPos = GetUnitHPBarPos(unit)
   local barOffset = GetUnitHPBarOffset(unit)
-
   do -- For some reason the x offset never exists
     local t = {
       ["Darius"] = -0.05,
@@ -1541,7 +1545,6 @@ function GetAbilityFramePos(unit)
       ["Sion"] = -0.05,
       ["Thresh"] = 0.03,
     }
-   -- barOffset.x = t[unit.charName] or 0
   end
   return Point(barPos.x - 69 + barOffset.x * 150, barPos.y + barOffset.y * 50 + 12.5)
 end
@@ -1549,12 +1552,12 @@ end
 
 --[[ Improving Function ]]--
 function TowerFocusPlayer()
-	print("Tower focus: Player")
-		if myHero.team == TEAM_BLUE then
-			myHero:MoveTo(myHero.x*-3,myHero.z*-3)
-		else
-			myHero:MoveTo(myHero.x*3,myHero.z*3)
-		end
+	_AutoupdaterMsg("Tower focus: Player")
+	if myHero.team == TEAM_BLUE then
+		myHero:MoveTo(myHero.x*-3,myHero.z*-3)
+	else
+		myHero:MoveTo(myHero.x*3,myHero.z*3)
+	end
 end
 
 
@@ -1584,7 +1587,7 @@ function FollowMinionAlly()
 			CountTimer = os.clock() + math.random(0.5,2)
 			if GetInGameTimer() < 15 then
 				DelayAction(function()
-				--print("lol")
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Moving") end
 				if myHero.team == TEAM_BLUE then
 					myHero:MoveTo(myHero.x*5,myHero.z*5)
 				else
@@ -1596,16 +1599,14 @@ function FollowMinionAlly()
 			allyMinions = minionManager(MINION_ALLY, 3000, player, MINION_SORT_HEALTH_DEC)
 			allyMinions:update()
 			local player = GetMyHero()
-			local tick = 0
-			local delay = 400
-			local myTarget = ts.target
-			if heroCanMove() then
 				for index, allyminion in pairs(allyMinions.objects) do
-					if GetDistance(allyminion, myHero) <= 1600 and GetTickCount() > tick + delay then
+					if GetDistance(allyminion, myHero) <= 1600 then
 						distance1 = math.random(130,250)
 						distance2 = math.random(130,250)
 						neg1 = -1 
 						neg2 = -1 	
+						if (LastTick and (GetInGameTimer() < LastTick + 2)) then return end
+							LastTick = GetInGameTimer()	
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(allyminion.x+distance1*neg1,allyminion.z+distance2*neg2)
 							tick = GetTickCount()
@@ -1615,23 +1616,20 @@ function FollowMinionAlly()
 						end
 					end
 				end
-			end
 		end
 		if howlingAbyssMap == true then
 			allyMinions = minionManager(MINION_ALLY, 3000, player, MINION_SORT_HEALTH_DEC)
 			allyMinions:update()
 			local player = GetMyHero()
-			local tick = 0
-			local delay = 400
-			local myTarget = ts.target
-			if heroCanMove() then
-				for index, allyminion in pairs(allyMinions.objects) do
-					if GetDistance(allyminion, myHero) <= 3000 and GetTickCount() > tick + delay then
+			for index, allyminion in pairs(allyMinions.objects) do
+					if GetDistance(allyminion, myHero) <= 3000 then
 					if iARAM.misc.misc2 then howling1(str) end
 						distance1 = math.random(130,250)
 						distance2 = math.random(130,250)
 						neg1 = -1 
-						neg2 = -1 	
+						neg2 = -1 
+						if (LastTick and (GetInGameTimer() < LastTick + 2)) then return end
+							LastTick = GetInGameTimer()						
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(allyminion.x+distance1*neg1,allyminion.z+distance2*neg2)
 							tick = GetTickCount()
@@ -1642,28 +1640,42 @@ function FollowMinionAlly()
 					end
 				end
 			end
-		end
 	end
 end
 
 function HealthAlly()
-	if stance == 1 or stance == 3 and iARAM.follow then
+	if stance == 1 or stance == 3 and iARAM.follow and not myHero.dead then
 	local champ = player.charName
 	local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
-		if ally ~= nil and (ally.health/ally.maxHealth) < 99999 then
-			
+		if ally ~= nil and ally.health <= ally.maxHealth * (40 / 100) then
 			if champ == "Soraka" then
-				if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
-				CastSpell(_W, ally)
-			elseif champ == "Taric" then  
-				if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
-				CastSpell(_Q, ally)
+				if myHero:CanUseSpell(_W) == READY then
+					if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
+					CastSpell(_W, ally)
+				end
+			elseif champ == "Taric" then
+					if myHero:CanUseSpell(_Q) == READY then
+						if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
+						CastSpell(_Q, ally)
+					end
 			elseif champ == "Nami" then 
-				if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end			
-				CastSpell(_W, ally)
-			elseif champ == "Sona" then  
-				if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
-				CastSpell(_W, ally)
+					if myHero:CanUseSpell(_W) == READY then
+						if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end			
+						CastSpell(_W, ally)
+					end
+					if myHero:CanUseSpell(_E) == READY then
+						if iARAM.misc.misc2 then _AutoupdaterMsg("Casting E to Ally") end			
+						CastSpell(_E, ally)
+					end
+			elseif champ == "Sona" then
+					if myHero:CanUseSpell(_W) == READY then			
+						if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
+						CastSpell(_W, ally)
+					end
+					if myHero:CanUseSpell(_E) == READY then			
+						if iARAM.misc.misc2 then _AutoupdaterMsg("Casting E to Ally") end
+						CastSpell(_E, ally)
+					end
 			end
 		end
 	end
