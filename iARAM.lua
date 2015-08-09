@@ -36,10 +36,8 @@
 ]]--
 --[[
 	   NOTES:
-		──|> Error with stance: "low health"
-		──|> Error with delay action in Alone Mode Function.
 		──|> Auto Chat doesn´t work.
-		──|> Auto Buy doesn´t work.
+		──|> AutoLevel with ROff doesnt work.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -50,8 +48,7 @@ local SummonerName = myHero.charName
 
 --[[ GLOBALS [Do Not Change] ]]--
 
----Delay
-
+-----[[ Delay ]]------
 local LastTick = nil
 local LastFollowChamp = nil
 local LastAttack = nil
@@ -78,8 +75,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.2
-local UPDATE_CHANGE_LOG = "Improving Follow Function"
+local version = 5.3
+local UPDATE_CHANGE_LOG = "Update for 5.15"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -210,119 +207,118 @@ do
 
 	--[[ ItemsList ]]--
 	itemCosts = {
-										[3340]=0,--Trinket
-                                        [3096]=865,--Nomad's Medallion
-										[1001]=325,--ºBoots
-										[1042]=450,--Dagger
-										[1037]=875,--Pickaxe
+										[3340]=0,--trinket
+                                        [3352]=865,--Nomad's Medallion
+										[1001]=325,--Boots
+										[1298]=450,--Dagger
+										[1293]=875,--Pickaxe
 										[3024]=950,--Glacial Shroud
                                         [3801]=600,--Crystalline Bracer
-										[1026]=850,--Blasting Wand
-										[3108]=820,--Fiendish Codex
-                                        [1031]=750,--Chain Vest
+										[1282]=850,--Blasting Wand
+										[3364]=820,--Fiendish Codex
+                                        [1287]=750,--Chain Vest
 										[3028]=900,--ºChalice of Harmony
-										[1057]=850,--Negatron Cloak
-                                        [3083]=300,--Warmog's Armor
-										[1053]=800,--Vampiric Scepter
+										[1313]=850,--Negatron Cloak
+                                        [3339]=300,--Warmog's Armor
+										[1309]=800,--Vampiric Scepter
 										[1011]=1000,--ºGiant's Belt
                                         [3190]=2800,--ºLocket of the Iron Solari
-                                        [3075]=2100,--Thornmail
+                                        [3331]=2100,--Thornmail
                                         [3068]=2600,--Sunfire Cape
-                                        [3072]=1950,--Bloodthirster
+                                        [3328]=1950,--Bloodthirster
                                         [3069]=1235,--ºTalisman of Ascension
-                                        [1038]=1550,--B.F. Sword
+                                        [1294]=1550,--B.F. Sword
                                         [3031]=2250,--ºInfinity Edge
-                                        [3139]=2150,--Mercurial Scimitar
-                                        [3508]=1650,--Essence Reaver
-                                        [3155]=1450,--Hexdrinker
-                                        [3156]=1750,--Maw of Malmortius
-                                        [3082]=1050,--Warden's Mail
-                                        [3110]=1400,--Frozen Heart
+                                        [3395]=2150,--Mercurial Scimitar
+                                        [3507]=1650,--Essence Reaver
+                                        [3411]=1450,--Hexdrinker
+                                        [3412]=1750,--Maw of Malmortius
+                                        [3338]=1050,--Warden's Mail
+                                        [3366]=1400,--Frozen Heart
                                         [3211]=1200,--Spectre's Cowl
                                         [3065]=1550,--ºSpirit Visage
-                                        [3102]=1550,--Banshee's Veil
-                                        [1058]=1600,--Needlessly Large Rod
-                                        [3089]=1700,--Rabadon's Deathcap
-                                        [3157]=1700,--Zhonya's Hourglass
+                                        [3358]=1550,--Banshee's Veil
+                                        [1314]=1600,--Needlessly Large Rod
+                                        [3345]=1700,--Rabadon's Deathcap
+                                        [3413]=1700,--Zhonya's Hourglass
                                         [3285]=1500,--Luden's Echo
                                         [3001]=2440,--ºAbyssal Scepter
-                                        [3101]=1250,--Stinger
-                                        [3115]=1670,--Nashor's Tooth
-                                        [3136]=1485,--Haunting Guise
-                                        [3151]=1415,--Liandry's Torment
+                                        [3357]=1250,--Stinger
+                                        [3371]=1670,--Nashor's Tooth
+                                        [3392]=1485,--Haunting Guise
+                                        [3407]=1415,--Liandry's Torment
 										[3057]=1200,--ºSheen
-                                        [3100]=3000,--Lich Bane
+                                        [3356]=3000,--Lich Bane
                                         [3044]=1325,--ºPhage
                                         [3071]=3000,--ºThe Black Cleaver       
                                         [3165]=2300,--ºMorellonomicon
 										[3006]=1000,--Berserker's Greaves
-										[3086]=1100,--Zeal
-										[3144]=1400,--Bilgewater Cutlass
-										[3153]=3200,--Blade of the Ruined King
+										[3342]=1100,--Zeal
+										[3400]=1400,--Bilgewater Cutlass
+										[3409]=3200,--Blade of the Ruined King
 										[3181]=2275,--Sanguine Blade
 										[3035]=2300,--ºLast Whisper
 										[3026]=2800,--Guardian Angel
 										[3047]=1000,--ºNinja Tabi
-										[3134]=1337,--The Brutalizer
+										[3390]=1337,--The Brutalizer
 										[3025]=2900,--Iceborn Gauntlet
-										[3111]=1200,--Mercury's Treads
-										[3116]=3000,--Rylai's Crystal Scepter
-										[1043]=1100,--Recurve Bow
+										[3367]=1200,--Mercury's Treads
+										[3372]=3000,--Rylai's Crystal Scepter
+										[1299]=1100,--Recurve Bow
 										[3020]=1100,--ºSorcerer's Shoes
-										[3091]=2600,--Wit's End
-										[3152]=2500,--Will of the Ancients
-										[3074]=3300,--Ravenous Hydra
-										[3135]=2500,--Void Staff
-										[3145]=1200,--Hextech Revolver
-										[3078]=3703,--Trinity Force
+										[3347]=2600,--Wit's End
+										[3408]=2500,--Will of the Ancients
+										[3330]=3300,--Ravenous Hydra 
+										[3391]=2500,--Void Staff
+										[3401]=1200,--Hextech Revolver
+										[3334]=3703,--Trinity Force
 										[3174]=2700,--Athene's Unholy Grail
-										[3087]=2500,--Statikk Shiv
-										[3143]=2850,--Randuin's Omen
+										[3343]=2500,--Statikk Shiv
+										[3399]=2850,--Randuin's Omen
 										[3005]=2250,--Atma's Impaler
-										[3124]=2590,--Guinsoo's Rageblade
+										[3380]=2590,--Guinsoo's Rageblade
 										[3046]=2800,--ºPhantom Dancer
-										[3146]=3400,--Hextech Gunblade
-										[3077]=1900--Tiamat
+										[3402]=3400,--Hextech Gunblade
+										[3333]=1900--Tiamat
                                 }
        
         if heroType == 1 then --ADC
-			--shopList = {3006,3086,3087,3144,3153,1038,3181,1037,3035,3026,0}
-			shopList = {3006,3035,3026,3031,3046,0}
+			--shopList = {3006,3342,3343,3400,3409,1294,3181,1293,3035,3026,0}
+			shopList = {3006,3342,3343,3400,3409,1294,3181,1293,3035,3026,0}
 		end
 		if heroType == 2 then --ADTANK
-			--shopList = {3047,1011,3134,3068,3024,3025,3071,3082,3143,3005,0}
-			shopList = {3047,1011,3071,3190,3065,0}
+			--shopList = {3047,1011,3390,3068,3024,3025,3071,3338,3399,3005,0}
+			shopList = {1001,3047,1011,3390,3068,3024,3025,3071,3338,3399,3005,0}
 		end
 		if heroType == 3 then --APTANK
-			--shopList = {3111,1031,3068,1057,3116,1026,3001,3082,3110,3102,0}
-			shopList = {1001,3044,3190,3001,0}
+			--shopList = {3367,1287,3068,1313,3372,1282,3001,3338,3366,3358,0}
+			shopList = {1001,3367,1287,3068,1313,3372,1282,3001,3338,3366,3358,0}
 		end
 		if heroType == 4 then --HYBRID
-			--shopList = {3108,3115,3020,1026,3136,3089,1043,3091,3151,3116}
-			shopList = {3020,3046,3035,3001,3165,0}
+			--shopList = {3364,3371,3020,1282,3392,3345,1299,3347,3407,3372}
+			shopList = {1001,3364,3371,3020,1282,3392,3345,1299,3347,3407,3372}
 		end
 		if heroType == 5 then --BRUISER
-			--shopList = {1001,3111,3134,1038,3181,3155,3071,1053,3077,3074,3156,3190}
-			shopList = {3047,3071,3190,3046,0}
+			--shopList = {1001,3367,3390,1294,3181,3411,3071,1309,3333,3330,3412,3190}
+			shopList = {1001,3367,3390,1294,3181,3411,3071,1309,3333,3330,3412,3190}
 		end
 		if heroType == 6 then --ASSASSIN
-			--shopList = {3020,3057,3100,1026,3089,3136,3151,1058,3157,3135,0}
-			shopList = {1001,3020,3057,3001,0}
+			--shopList = {3020,3057,3356,1282,3345,3392,3407,1314,3413,3391,0}
+			shopList = {1001,3057,3356,1282,3345,3392,3407,1314,3413,3391,0}
 		end
 		if heroType == 7 then --MAGE
-			--shopList = {3028,3020,3136,1058,3089,3174,3151,1026,3001,3135,0}
-			shopList = {3028,3020,3174,3001,3165,0}
+			--shopList = {3028,3020,3392,1314,3345,3174,3407,1282,3001,3391,0}
+			shopList = {1001,3392,1314,3345,3174,3407,1282,3001,3391,0}
 		end
 		if heroType == 8 then --APC
-			--shopList = {3145,3020,3152,1026,3116,1058,3089,1026,3001,3157}
-			shopList = {3020,3001,3046,3001,0}
+			--shopList = {3401,3020,3408,1282,3372,1314,3345,1282,3001,3413}
+			shopList = {3401,3020,3408,1282,3372,1314,3345,1282,3001,3413}
 		end
 		if heroType == 9 or heroType == 10 then --FIGHTER and OTHERS
-			--shopList = {3111,3044,3086,3078,3144,3153,3067,3065,3134,3071,3156,0}
-			shopList = {3006,3044,3065,3071,3046,0}
+			--shopList = {3367,3044,3342,3334,3400,3409,3067,3065,3390,3071,3412,0}
+			shopList = {3401,3020,3408,1282,3372,1314,3345,1282,3001,3413}
 		end
         startTime = GetTickCount()
-	--yellow ward 3340
 	--item ids can be found at many websites, ie: http://www.lolking.net/items/1004
 
 end
@@ -339,8 +335,6 @@ function OnDraw()
 	FloatTextStance()
 	--|>NameDrawer
 	DrawFakeNames()
-	
-
 end
 
 
@@ -363,7 +357,6 @@ end
 	--|>Mode Alone
 	GetPlayer()
 	LoadMapVariables()
-
 end
 
 
@@ -387,7 +380,6 @@ function OnTick()
 	--|>Mode Alone
 	FollowMinionAlly()
 	HealthAlly()
-	
 end
 
 
@@ -416,6 +408,7 @@ function Follow()
 			stance = 0
 		end
 		if findLowHp() ~= 0 then
+			stance = 2
 			Target = findLowHp()
 		else
 			Target = findClosestEnemy()
@@ -424,8 +417,8 @@ function Follow()
 		--|>Attacks Champs
 		if Target ~= nil then
 		stance = 3
-		if (LastAttack and (GetInGameTimer() < LastAttack + 2)) then return end
-		  LastAttack = GetInGameTimer()
+		--if (LastAttack and (GetInGameTimer() < LastAttack + 2)) then return end
+		 -- LastAttack = GetInGameTimer()
 		  myHero:Attack(Target)
 			if stance == 3 then
 				attacksuccess = 0
@@ -499,8 +492,6 @@ function findClosestEnemy()
             end
         end
     end
-	local barPos = WorldToScreen(D3DXVECTOR3(currentEnemy.x, currentEnemy.y, currentEnemy.z))
-	DrawText("Enemy!", 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
 	--PrintFloatText(closestEnemy, 0, "Enemy!")
 	return closestEnemy
 end
@@ -536,8 +527,8 @@ function Allies()
     for i=1, heroManager.iCount do
         hero = heroManager:GetHero(i)
         if hero.team == myHero.team and not hero.dead and GetDistance(hero) < 450 then
-					allycount = allycount + 1
-				end
+			allycount = allycount + 1
+		end
     end
 	return allycount
 end
@@ -575,7 +566,7 @@ end
 
 --[[ AutoBuyItems ]]--
 function AutoBuy()
-	if iARAM.misc.autobuy then
+	if VIP_USER and iARAM.misc.autobuy then
 		if myHero.dead or shopList[buyIndex] ~= 0 then --
 				nowTime = GetTickCount()
 			if nowTime - lastBuy > 500 then
@@ -600,6 +591,7 @@ function AutoBuy()
 				end
 			end
 		end
+	elseif not VIP_USER and iARAM.misc.miscelaneus then _AutoupdaterMsg("AutoBuy Disabled")
 	end
 end
 
@@ -620,7 +612,6 @@ function Menu()
 			iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
 		
 		--[[ PoroShoter menu ]]--
-		
 		ARAM = ARAMSlot()
 		vPred = VPrediction()
 		TargetSelector = TargetSelector(TARGET_CLOSEST, 2500, DAMAGE_PHYSICAL)
@@ -635,26 +626,22 @@ function Menu()
 			iARAM.misc:addParam("farm", "Last Hit Farm", SCRIPT_PARAM_ONOFF, true)	
 			iARAM.misc:addParam("attackchamps", "Auto Attack champs", SCRIPT_PARAM_ONOFF, true)
 			iARAM.misc:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
+			iARAM.misc:addParam("useAutoPots", "Auto Potions", SCRIPT_PARAM_ONOFF, true)
+			--Ignite
+			ignite = IgniteCheck()
 
-		--Attack
-		ignite = IgniteCheck()
-
-
-		--Main Script
-
+		----[[ Main Script menu ]]--
 		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", "edited by ", SCRIPT_PARAM_INFO, "Husmeador12") 
 		iARAM:addParam("info2", "iARAM Version : ", SCRIPT_PARAM_INFO, version)
 		
-
 end
 
 
 --[[ Lagfree Circles by barasia, vadash and viseversa ]]---
 function RangeCircles()
-
 	if iARAM.drawing.drawcircles and not myHero.dead then
 		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
 		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))	
@@ -717,7 +704,6 @@ end
 
 --[[ Perfect Ward, originally by Husky ]]--     
 local wardSpots = {
-    -- Perfect Wards
 	{x=3261.93, y=60, z=7773.65}, -- BLUE GOLEM
 	{x=7831.46, y=60, z=3501.13}, -- BLUE LIZARD
 	{x=10586.62, y=60, z=3067.93}, -- BLUE TRI BUSH
@@ -973,9 +959,9 @@ function DebugCursorPos()
 end
 
 
----------[[ Auto Ignite and Auto Zhonya ]]---------
+---------[[ Auto Ignite ]]---------
 function FunctionAutoIgnite()
-	if iARAM.autoIgnite then
+	if iARAM.misc.autoIgnite then
 		if myHero:CanUseSpell(ignite) == READY then
 			for _, enemy in pairs(GetEnemyHeroes()) do
 				if myHero:CanUseSpell(ignite) ~= READY then return end
@@ -992,49 +978,50 @@ end
 
 function IgniteCheck()
 	if myHero:GetSpellData(SUMMONER_1).name:find("summonerdot") then
-			iARAM:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
+			iARAM.misc:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
 	elseif myHero:GetSpellData(SUMMONER_2).name:find("summonerdot") then
-			iARAM:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
+			iARAM.misc:addParam("autoIgnite", "Auto Ignite", SCRIPT_PARAM_ONOFF, true)
 	end
 end
 
 
 ---------[[ Auto Good luck and have fun ]]---------
 function AutoChat()
-Text1 = {"Good luck and have fun", "gl hf", "gl hf", "Good luck have fun", "Good luck and have fun guys", "gl hf guys", "gl and have fun", "good luck and hf" } 
-Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt matter", "let´s go", "team work is OP" }
+local Text1 = {"Good luck and have fun", "gl hf", "gl hf", "Good luck have fun", "Good luck and have fun guys", "gl hf guys", "gl and have fun", "good luck and hf" } 
+local Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt matter", "let´s go", "team work is OP" }
 	
 	CountTimer = 15
 	if os.clock() < CountTimer then return end
 		SendChat(Text1[math.random(#Text1)])
-
 		CountTimer = os.clock() + math.random(0.5,2)
 		
 	if GetInGameTimer() < 15 then
-				DelayAction(function()
-				if myHero.team == TEAM_BLUE then
-					myHero:MoveTo(myHero.x*5,myHero.z*5)
-					if iARAM.misc.miscelaneus then
-						print("moving")
-					end
-				else
-					myHero:MoveTo(myHero.x*5,myHero.z*5)
-				end
-				end, 15-GetInGameTimer())
-			end
+		DelayAction(function()
+		if iARAM.misc.miscelaneus then _AutoupdaterMsg("Moving") end
+		distance1 = math.random(250,300)
+		distance2 = math.random(250,300)
+		neg1 = 1 
+		neg2 = 1 				
+		if myHero.team == TEAM_BLUE then
+			myHero:MoveTo(myHero.x*5+distance1*neg1,myHero.z*5+distance2*neg2)
+		else
+			myHero:MoveTo(myHero.x*-5+distance1*neg1,myHero.z*-5+distance2*neg2)
+		end
+		end, 15-GetInGameTimer())
+	end
 			
-	
+	--[[
 	if GetInGameTimer() < 333 then
 		DelayAction(function()
 			SendChat(Phrases2[math.random(#Phrases2)])
 		end, 333-GetInGameTimer()) --5:35
 	end
 	
-	--[[ if GetInGameTimer() < 360 then
+	 if GetInGameTimer() < 360 then
 		DelayAction(function()
 			SendChat(Phrases2[math.random(#Phrases2)])
 		end, 360-GetInGameTimer()) --6:02
-	end ]]--
+	end 
 	
 	if GetInGameTimer() < 460 then
 		DelayAction(function()
@@ -1046,7 +1033,7 @@ Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt 
         SendChat("gg wp")
 		QuitGame(10)
     end
-	
+	]]
 end
 
 
@@ -1061,7 +1048,6 @@ function PoroCheck()
 	if iARAM.PoroShot.comboKey then
 		shootARAM(Target)
 	end
-
 end
 
 function getTarget()
@@ -1193,31 +1179,26 @@ end
 -----[[ MapVariables Function ]]------
 function LoadMapVariables()
 	gameState = GetGame()
-	--print(gameState.map.shortName)
+	if iARAM.misc.misc2 then _AutoupdaterMsg("Map: "..gameState.map.shortName.."") end
 	if gameState.map.shortName then
 		if gameState.map.shortName == "summonerRift" then
 			summonersRiftMap = true
-			if iARAM.misc.miscelaneus then _AutoupdaterMsg("Map: summonerRift") end
-			
+			if iARAM.misc.miscelaneus then _AutoupdaterMsg("Map: summonerRift") end	
 		else
 			summonersRiftMap = false
 		end
-		
 		if gameState.map.shortName == "crystalScar" then
 			crystalScarMap = true
-			if iARAM.misc.misc2 then _AutoupdaterMsg("Map: crystalScar") end
-			
+			if iARAM.misc.misc2 then _AutoupdaterMsg("Map: crystalScar") end	
 		else
 			crystalScarMap = false
 		end
-		
 		if gameState.map.shortName == "howlingAbyss" then
 			howlingAbyssMap = true
 			if iARAM.misc.misc2 then _AutoupdaterMsg("Map: howlingAbyss") end
 		else
 			howlingAbyssMap = false
-		end
-		
+		end	
 		if gameState.map.shortName == "twistedTreeline" then
 			twistedTreeLineMap = true
 			if iARAM.misc.misc2 then _AutoupdaterMsg("Map: twistedTreeline") end
@@ -1226,18 +1207,17 @@ function LoadMapVariables()
 		end
 	else
 		summonersRiftMap = true
-		if iARAM.misc.misc2 then _AutoupdaterMsg("Map: "..gameState.map.shortName.."") end
 	end
 end
 
 
 -----[[ AutoPotions ]]------
 function AutoPotions()
-	--if not iARAM.autoPots.useAutoPots then
-	--	return
-	--end
+	if not iARAM.misc.useAutoPots then
+		return
+	end
 	for SLOT = ITEM_1, ITEM_6 do
-	-- if Helper.Debug then PrintChat("ITEM : "..myHero:GetSpellData(SLOT).name) end
+		--if iARAM.misc.misc2 then _AutoupdaterMsg("ITEM : "..myHero:GetSpellData(SLOT).name.."") end
 		-- Crystalline Flash
 		if myHero:GetSpellData(SLOT).name == "ItemCrystalFlask" then
 			-- Conditions
@@ -1266,25 +1246,6 @@ function AutoPotions()
 			end
 		end
 	end
-end
-
-function LoadVariables()
-	LoadMapVariables()
-	LoadAutoPotsMenu()
-end
-
-function LoadAutoPotsMenu()
-	iARAM:addSubMenu("Auto Pot Settings", "autoPots")
-	iARAM.autoPots:addParam("useAutoPots", "Use Auto Pots", SCRIPT_PARAM_ONOFF, true)
-	iARAM.autoPots:addParam("useHealthPots", "Use Health Pots", SCRIPT_PARAM_ONOFF, true)
-	iARAM.autoPots:addParam("useManaPots", "Use Mana Pots", SCRIPT_PARAM_ONOFF, true)
-	iARAM.autoPots:addParam("useFlask", "Use Flask", SCRIPT_PARAM_ONOFF, true)
-	iARAM.autoPots:addParam("useBiscuit", "Use Biscuit", SCRIPT_PARAM_ONOFF, true)
-	iARAM.autoPots:addParam("minHealthPercent", "Min Health Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
-	iARAM.autoPots:addParam("HealhLost", "Health Lost Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
-	iARAM.autoPots:addParam("minManaPercent", "Min Mana Percent", SCRIPT_PARAM_SLICE, 30, 1, 99, 0)
-	iARAM.autoPots:addParam("minHealthFlaskPercent", "Min Flask Health Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
-	iARAM.autoPots:addParam("minManaFlaskPercent", "Min Flask Mana Percent", SCRIPT_PARAM_SLICE, 40, 1, 99, 0)
 end
 
 
@@ -1464,22 +1425,22 @@ function AutoLevel:__init(table)
 end
 
 function AutoLevel:LevelSpell(id)
-	local offsets = {
-		[_Q] = 0xAA,
-		[_W] = 0xAB,
-		[_E] = 0xAC,
-		[_R] = 0xAD,
+		local offsets = {
+		[_Q] = 0xB9,
+		[_W] = 0xBD,
+		[_E] = 0xD9,
+		[_R] = 0xDD,
 	}
-	local p = CLoLPacket(0x009C)
-	p.vTable = 0xE61868
+	local p = CLoLPacket(0x0043)
+	p.vTable = 0xDE9D68
 	p:EncodeF(myHero.networkID)
-	for i = 1, 4 do	p:Encode1(0xB4)	end
-	for i = 1, 4 do	p:Encode1(0x69)	end
-	for i = 1, 4 do p:Encode1(0x09)	end
+	p:Encode1(0x2E)
+	for i = 1, 4 do	p:Encode1(0x9F)	end
+	for i = 1, 4 do	p:Encode1(0x9B)	end
 	p:Encode1(offsets[id])
-	p:Encode1(0xE4)
-	p:Encode1(0x00)
-	for i = 1, 4 do	p:Encode1(0x00) end
+	for i = 1, 4 do	p:Encode1(0x72)	end
+	p:Encode1(myHero.level-myHero:GetSpellData(_Q).level-myHero:GetSpellData(_W).level-myHero:GetSpellData(_E).level-myHero:GetSpellData(_R).level)
+	for i = 1, 4 do	p:Encode1(0x00)	end
 	SendPacket(p)
 end
 
@@ -1595,7 +1556,6 @@ function FollowMinionAlly()
 				end
 				end, 15-GetInGameTimer())
 			end
-			
 			allyMinions = minionManager(MINION_ALLY, 3000, player, MINION_SORT_HEALTH_DEC)
 			allyMinions:update()
 			local player = GetMyHero()
@@ -1647,7 +1607,7 @@ function HealthAlly()
 	if stance == 1 or stance == 3 and iARAM.follow and not myHero.dead then
 	local champ = player.charName
 	local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
-		if ally ~= nil and ally.health <= ally.maxHealth * (40 / 100) then
+		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
 			if champ == "Soraka" then
 				if myHero:CanUseSpell(_W) == READY then
 					if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
