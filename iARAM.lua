@@ -80,8 +80,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.4
-local UPDATE_CHANGE_LOG = "Fixed Jarvan, Update for 5.16"
+local version = 5.5
+local UPDATE_CHANGE_LOG = "Improving"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -331,37 +331,42 @@ end
 
 --[[ On Draw Function ]]--
 function OnDraw()
-	AirText()
-	RangeCircles()
-	--|>Autoward
-	AutoWarderDraw()
-	DebugCursorPos()
-	--|>FloatText
-	FloatTextStance()
-	--|>NameDrawer
-	DrawFakeNames()
+	if LoLVersionWorking then
+		AirText()
+		RangeCircles()
+		--|>Autoward
+		AutoWarderDraw()
+		DebugCursorPos()
+		--|>FloatText
+		FloatTextStance()
+		--|>NameDrawer
+		DrawFakeNames()
+	end
 end
 
 
 --[[ On Load Function ]]--
  function OnLoad()
-	OnProcessSpell()
-	timeToShoot()
-	heroCanMove()
-	Menu()
-	OnWndMsg()
-	if AutomaticChat then
-		AutoChat()
-	end
-	--|>Auto Ward
-	AutoWard()
-	--|>Auto Ignite
-	if ignite ~= nil then
-		FunctionAutoIgnite()
-	end
-	--|>Mode Alone
-	GetPlayer()
-	LoadMapVariables()
+
+		OnProcessSpell()
+		timeToShoot()
+		heroCanMove()
+		Menu()
+		OnWndMsg()
+		if AutomaticChat then
+			AutoChat()
+		end
+		--|>Auto Ward
+		AutoWard()
+		--|>Auto Ignite
+		if ignite ~= nil then
+			FunctionAutoIgnite()
+		end
+		--|>Mode Alone
+		GetPlayer()
+		LoadMapVariables()
+		CheckLoLVersion()
+
 end
 
 
@@ -373,18 +378,20 @@ end
 
 --[[ OnTick Function ]]--
 function OnTick()
---	AutoBuy()
-	Follow()	
-	LFC()
-	AutoAttackChamp()
-	AutoFarm()
-	--|> Poro Shouter
-	PoroCheck()
-	--|>Autopotions
-	AutoPotions()
-	--|>Mode Alone
-	FollowMinionAlly()
-	HealthAlly()
+	if LoLVersionWorking then
+	--	AutoBuy()
+		Follow()	
+		LFC()
+		AutoAttackChamp()
+		AutoFarm()
+		--|> Poro Shouter
+		PoroCheck()
+		--|>Autopotions
+		AutoPotions()
+		--|>Mode Alone
+		FollowMinionAlly()
+		HealthAlly()
+	end
 end
 
 
@@ -1585,6 +1592,20 @@ function TowerFocusPlayer()
 end
 
 
+--[[ CheckLoLVersion Function ]]--
+function CheckLoLVersion()
+	LoLVersion = GetGameVersion()
+	if iARAM.misc.misc2 then print(""..GetGameVersion().."") end
+	if string.match(LoLVersion, "5.16.0.341") then
+		LoLVersionWorking = true
+		if iARAM.misc.misc2 then _AutoupdaterMsg("Script Updated for this LoL version.") end
+	else
+		LoLVersionWorking = false
+		if iARAM.misc.misc2 then _AutoupdaterMsg("Script Outdated for this LoL version.") end
+	end
+end
+
+
 --[[ Alone Mode Function ]]--
 local lastPrint1 = ""
 function howling1(str)
@@ -1737,3 +1758,5 @@ function CastW(str)
       lastPrint2 = str
    end
 end
+
+
