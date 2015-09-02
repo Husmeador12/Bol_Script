@@ -80,8 +80,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.5
-local UPDATE_CHANGE_LOG = "Improving"
+local version = 5.6
+local UPDATE_CHANGE_LOG = "Update for version 5.17"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -108,6 +108,42 @@ if AUTOUPDATE then
 		_AutoupdaterMsg("Error downloading version info")
 	end
 end
+
+--[[ CheckLoLVersion Function ]]--
+function CheckLoLVersion()
+	LoLVersion = GetGameVersion()
+	--print(""..GetGameVersion().."")
+	if string.match(LoLVersion, "5.17.0.324") then
+		LoLVersionWorking = true
+		 --_AutoupdaterMsg("Script Updated for this LoL version")
+	else
+		LoLVersionWorking = false
+		 _AutoupdaterMsg("Script Outdated for this LoL version")
+	end
+end
+
+--[[ On Load Function ]]--
+ function OnLoad()
+		CheckLoLVersion()
+		Menu()
+		OnProcessSpell()
+		timeToShoot()
+		heroCanMove()
+		OnWndMsg()
+		if AutomaticChat then
+			AutoChat()
+		end
+		--|>Auto Ward
+		AutoWard()
+		--|>Auto Ignite
+		if ignite ~= nil then
+			FunctionAutoIgnite()
+		end
+		--|>Mode Alone
+		GetPlayer()
+		LoadMapVariables()
+end
+
 
 
 -----[[ Build and defining Champion Class ]]------
@@ -331,7 +367,6 @@ end
 
 --[[ On Draw Function ]]--
 function OnDraw()
-	if LoLVersionWorking then
 		AirText()
 		RangeCircles()
 		--|>Autoward
@@ -341,17 +376,17 @@ function OnDraw()
 		FloatTextStance()
 		--|>NameDrawer
 		DrawFakeNames()
-	end
 end
 
 
 --[[ On Load Function ]]--
  function OnLoad()
-
+		CheckLoLVersion()
+		Menu()
+		if LoLVersionWorking then
 		OnProcessSpell()
 		timeToShoot()
 		heroCanMove()
-		Menu()
 		OnWndMsg()
 		if AutomaticChat then
 			AutoChat()
@@ -365,8 +400,7 @@ end
 		--|>Mode Alone
 		GetPlayer()
 		LoadMapVariables()
-		CheckLoLVersion()
-
+	end
 end
 
 
@@ -1461,7 +1495,7 @@ end)
 
 class 'AutoLevel'
 function AutoLevel:__init(table)
-	if VIP_USER then
+	if VIP_USER and LoLVersionWorking then
 		self.clock = os.clock()
 		self.LastLeveled = GetHeroLeveled()
 		self.LevelSequence = table
@@ -1493,25 +1527,24 @@ function AutoLevel:__init(table)
 end
 
 function AutoLevel:LevelSpell(id)
-	local offsets = {
-		[_Q] = 0x07,
-		[_W] = 0x0B,
-		[_E] = 0x03,
-		[_R] = 0x0C,
-	}
-	local p = CLoLPacket(0x00A9)
-	p.vTable = 0xFB572C
-	p:EncodeF(myHero.networkID)
-	for i = 1, 4 do	p:Encode1(0x04)	end
-	for i = 1, 4 do	p:Encode1(0xBD)	end
-	p:Encode1(offsets[id])
-	for i = 1, 4 do	p:Encode1(0x89)	end
-	p:Encode1(0x1C)
-	p:Encode1(0x28)
-	p:Encode1(0xEC)
-	p:Encode1(0x1B)
-	p:Encode1(0x00)
-	SendPacket(p)
+	if LoLVersionWorking then
+		local offsets = {
+		[_Q] = 0x7D,
+		[_W] = 0xFD,
+		[_E] = 0x8B,
+		[_R] = 0x97,
+		}
+		local p = CLoLPacket(0x0142)
+		p.vTable = 0xE9F988
+		p:EncodeF(myHero.networkID)
+		p:Encode1(0x2A)
+		for i = 1, 4 do	p:Encode1(0x12)	end
+		p:Encode1(offsets[id])
+		for i = 1, 4 do	p:Encode1(0x5E)	end
+		for i = 1, 4 do	p:Encode1(0xBD)	end
+		for i = 1, 4 do	p:Encode1(0x00)	end
+		SendPacket(p)
+	end
 end
 
 
@@ -1592,18 +1625,7 @@ function TowerFocusPlayer()
 end
 
 
---[[ CheckLoLVersion Function ]]--
-function CheckLoLVersion()
-	LoLVersion = GetGameVersion()
-	if iARAM.misc.misc2 then print(""..GetGameVersion().."") end
-	if string.match(LoLVersion, "5.16.0.341") then
-		LoLVersionWorking = true
-		if iARAM.misc.misc2 then _AutoupdaterMsg("Script Updated for this LoL version.") end
-	else
-		LoLVersionWorking = false
-		if iARAM.misc.misc2 then _AutoupdaterMsg("Script Outdated for this LoL version.") end
-	end
-end
+
 
 
 --[[ Alone Mode Function ]]--
