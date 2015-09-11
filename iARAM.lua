@@ -80,8 +80,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.6
-local UPDATE_CHANGE_LOG = "Update for version 5.17"
+local version = 5.7
+local UPDATE_CHANGE_LOG = "Update for 5.17 HF"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -113,7 +113,7 @@ end
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
 	--print(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.17.0.324") then
+	if string.match(LoLVersion, "5.17.0.329") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
@@ -1535,7 +1535,7 @@ function AutoLevel:LevelSpell(id)
 		[_R] = 0x97,
 		}
 		local p = CLoLPacket(0x0142)
-		p.vTable = 0xE9F988
+		p.vTable = 0xEBFE44
 		p:EncodeF(myHero.networkID)
 		p:Encode1(0x2A)
 		for i = 1, 4 do	p:Encode1(0x12)	end
