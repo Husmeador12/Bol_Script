@@ -80,8 +80,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.8
-local UPDATE_CHANGE_LOG = "Update for 5.18"
+local version = 5.81
+local UPDATE_CHANGE_LOG = "Fix autolevel."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -1495,7 +1495,6 @@ end)
 
 class 'AutoLevel'
 function AutoLevel:__init(table)
-	if VIP_USER and LoLVersionWorking then
 		self.clock = os.clock()
 		self.LastLeveled = GetHeroLeveled()
 		self.LevelSequence = table
@@ -1521,9 +1520,6 @@ function AutoLevel:__init(table)
 				end
 			end
 		end)
-	else
-	_AutoupdaterMsg("You are not VIP user: AutoLevel disabled")
-	end
 end
 
 function AutoLevel:LevelSpell(id)
@@ -1780,5 +1776,3 @@ function CastW(str)
       lastPrint2 = str
    end
 end
-
-
