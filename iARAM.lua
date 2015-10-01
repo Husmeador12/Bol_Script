@@ -80,8 +80,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.82
-local UPDATE_CHANGE_LOG = "Update for LoL MiniPatch."
+local version = 5.9
+local UPDATE_CHANGE_LOG = "Update for LoL 5.9."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -113,7 +113,7 @@ end
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
 	--print(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.18.0.300") then
+	if string.match(LoLVersion, "5.19.0.295") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
@@ -1524,22 +1524,23 @@ end
 
 function AutoLevel:LevelSpell(id)
 	if LoLVersionWorking then
-		local offsets = {
-		[_Q] = 0xFB,
-		[_W] = 0xEB,
-		[_E] = 0xDB,
-		[_R] = 0xCB,
-		}
-		local p = CLoLPacket(0x10A)
-		p.vTable = 0xE4DB24
-		p:EncodeF(myHero.networkID)
-		for i = 1, 4 do p:Encode1(0x13) end
-		p:Encode1(0x0A)
-		p:Encode1(offsets[id])
-		for i = 1, 4 do p:Encode1(0xB4) end
-		for i = 1, 4 do p:Encode1(0x84) end
-		for i = 1, 4 do p:Encode1(0x00) end
-		SendPacket(p)
+		local offsets = { 
+		[_Q] = 0x29,
+		[_W] = 0x49,
+		[_E] = 0x21,
+		[_R] = 0x41,
+		  }
+		  local p = CLoLPacket(0x114)
+		  p.vTable = 0xF0D574
+		  p:EncodeF(myHero.networkID)
+		  for i = 1, 4 do p:Encode1(0x2B) end
+		  p:Encode1(offsets[id])
+		  for i = 1, 4 do p:Encode1(0xE1) end
+		  for i = 1, 4 do p:Encode1(0x42) end
+		  p:Encode1(0x62)
+		  p:Encode1(0x01)
+		  for i = 1, 3 do p:Encode1(0x00) end
+		  SendPacket(p)
 	end
 end
 
@@ -1776,5 +1777,3 @@ function CastW(str)
       lastPrint2 = str
    end
 end
-
-
