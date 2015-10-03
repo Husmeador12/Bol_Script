@@ -80,8 +80,8 @@ local drawWardSpots = false
 local wardSlot = nil
 
 -----[[ Auto Update Globals ]]------
-local version = 5.9
-local UPDATE_CHANGE_LOG = "Update for LoL 5.9."
+local version = 5.92
+local UPDATE_CHANGE_LOG = "Improving Funcxtions."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -121,29 +121,6 @@ function CheckLoLVersion()
 		 _AutoupdaterMsg("Script Outdated for this LoL version")
 	end
 end
-
---[[ On Load Function ]]--
- function OnLoad()
-		CheckLoLVersion()
-		Menu()
-		OnProcessSpell()
-		timeToShoot()
-		heroCanMove()
-		OnWndMsg()
-		if AutomaticChat then
-			AutoChat()
-		end
-		--|>Auto Ward
-		AutoWard()
-		--|>Auto Ignite
-		if ignite ~= nil then
-			FunctionAutoIgnite()
-		end
-		--|>Mode Alone
-		GetPlayer()
-		LoadMapVariables()
-end
-
 
 
 -----[[ Build and defining Champion Class ]]------
@@ -381,6 +358,7 @@ end
 
 --[[ On Load Function ]]--
  function OnLoad()
+		startingTime = GetTickCount()
 		CheckLoLVersion()
 		Menu()
 		if LoLVersionWorking then
@@ -412,6 +390,7 @@ end
 
 --[[ OnTick Function ]]--
 function OnTick()
+	startingTime = GetTickCount()
 	if LoLVersionWorking then
 	--	AutoBuy()
 		Follow()	
@@ -1091,14 +1070,11 @@ end
 function AutoChat()
 local Text1 = {"Good luck and have fun", "gl hf", "gl hf", "Good luck have fun", "Good luck and have fun guys", "gl hf guys", "gl and have fun", "good luck and hf" } 
 local Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt matter", "let´s go", "team work is OP" }
-	
-	CountTimer = 15
-	if os.clock() < CountTimer then return end
+	if GetTickCount() - startingTime > 2000 then
 		SendChat(Text1[math.random(#Text1)])
-		CountTimer = os.clock() + math.random(0.5,2)
-		
-	if GetInGameTimer() < 15 then
-		DelayAction(function()
+	end
+	
+	if GetTickCount() - startingTime > 5000 then
 		if iARAM.misc.miscelaneus then _AutoupdaterMsg("Moving") end
 		distance1 = math.random(250,300)
 		distance2 = math.random(250,300)
@@ -1109,8 +1085,9 @@ local Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It d
 		else
 			myHero:MoveTo(myHero.x*-5+distance1*neg1,myHero.z*-5+distance2*neg2)
 		end
-		end, 15-GetInGameTimer())
 	end
+
+
 			
 	--[[
 	if GetInGameTimer() < 333 then
@@ -1132,7 +1109,7 @@ local Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It d
 	end
 	]]
 	if GetGame().isOver then 
-        --SendChat("gg wp")
+        SendChat("gg wp")
 		os.exit(0)
     end
 	
@@ -1399,7 +1376,7 @@ if not VIP_USER then return end
     elseif champ == "Jayce" then        AutoLevel({ 1, 3, 1, 2, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, }) rOff = -1
 	elseif champ == "Jinx" then         AutoLevel({ 3, 1, 3, 2, 3, 4, 3, 2, 3, 2, 1, 2, 2, 1, 1, 1, 4, 4, })
 	elseif champ == "Kalista" then      AutoLevel({ 1, 3, 2, 1, 1, 4, 1, 1, 3, 3, 4, 3, 3, 2, 2, 4, 2, 2, })
-    elseif champ == "Karma" then        AutoLevel({ 1, 3, 1, 2, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 2, 2, 2, 2, }) rOff = -1
+    elseif champ == "Karma" then        AutoLevel({ 1, 2, 3, 2, 3, 1, 3, 1, 3, 1, 3, 1, 3, 2, 2, 2, 2, 2, }) rOff = -1
     elseif champ == "Karthus" then      AutoLevel({ 1, 3, 2, 1, 1, 4, 1, 1, 3, 3, 4, 3, 3, 2, 2, 4, 2, 2, })
     elseif champ == "Kassadin" then     AutoLevel({ 1, 2, 1, 3, 1, 4, 1, 3, 1, 3, 4, 3, 3, 2, 2, 4, 2, 2, })
     elseif champ == "Katarina" then     AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 3, 2, 1, 4, 1, 1, 1, 3, 4, 3, 3, })
@@ -1702,7 +1679,23 @@ function FollowMinionAlly()
 						end
 					end
 				end
-			end
+				--Attack enemy minions
+					enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
+					enemyMinions:update()
+					local player = GetMyHero()
+					local tick = 0
+					local delay = 400
+					local myTarget = ts.target
+					for index, minion in pairs(enemyMinions.objects) do
+					  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
+						local dmg = getDmg("AD", minion, myHero)
+						if dmg > minion.health then
+						  myHero:Attack(minion)
+						  tick = GetTickCount()
+						end
+					  end
+					end
+		end			
 	end
 end
 
@@ -1777,3 +1770,5 @@ function CastW(str)
       lastPrint2 = str
    end
 end
+
+
