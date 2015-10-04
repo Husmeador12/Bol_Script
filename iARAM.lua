@@ -48,6 +48,37 @@ local SummonerName = myHero.charName
 
 --[[ GLOBALS [Do Not Change] ]]--
 
+function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+
+-----[[ Auto Download Required LIBS ]]------
+
+if not FileExist(LIB_PATH.."VPrediction.lua") then return _AutoupdaterMsg("Please download VPrediction before running this script, thank you. Make sure it is in your common folder.") end
+
+-- Download Libraries
+local REQUIRED_LIBS = {
+	["VPrediction"] = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua",
+}
+local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
+
+function AfterDownload()
+	DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
+	if DOWNLOAD_COUNT == 0 then
+		DOWNLOADING_LIBS = false
+		_AutoupdaterMsg("<b><font color=\"#6699FF\">Required libraries downloaded successfully, please reload (double F9).</font>")
+	end
+end
+
+for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
+	if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
+		require(DOWNLOAD_LIB_NAME)
+	else
+		DOWNLOADING_LIBS = true
+		DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
+		DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
+	end
+end
+
+
 -----[[ Delay ]]------
 local LastTick = nil
 local LastFollowChamp = nil
@@ -79,9 +110,21 @@ local lastBuy = -501
 local drawWardSpots = false
 local wardSlot = nil
 
+-----[[ Tower Globals ]]------
+local allyTurretColor = RGB(73,210,59)	 		-- Green color
+local enemyTurretColor = RGB(255,0,0) 		-- Red color
+local visibilityTurretColor = RGB(130,0,0) 	-- Dark Red color
+local drawTurrets = {}
+local FollowTurrets = {}
+local ChampionBusy = false
+
+
+
+
+
 -----[[ Auto Update Globals ]]------
-local version = 5.92
-local UPDATE_CHANGE_LOG = "Improving Funcxtions."
+local version = 5.93
+local UPDATE_CHANGE_LOG = "Tower Ranges and auto lib downloader."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -89,7 +132,7 @@ local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 
 -----[[ Auto Update Function ]]------
-function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+
 if AUTOUPDATE then
 	local ServerData = GetWebResult(UPDATE_HOST, "/Husmeador12/Bol_Script/master/version/iARAM.version")
 	if ServerData then
@@ -121,6 +164,8 @@ function CheckLoLVersion()
 		 _AutoupdaterMsg("Script Outdated for this LoL version")
 	end
 end
+
+
 
 
 -----[[ Build and defining Champion Class ]]------
@@ -353,6 +398,7 @@ function OnDraw()
 		FloatTextStance()
 		--|>NameDrawer
 		DrawFakeNames()
+		DrawTowerRange()
 end
 
 
@@ -361,6 +407,7 @@ end
 		startingTime = GetTickCount()
 		CheckLoLVersion()
 		Menu()
+		
 		if LoLVersionWorking then
 		OnProcessSpell()
 		timeToShoot()
@@ -404,6 +451,8 @@ function OnTick()
 		--|>Mode Alone
 		FollowMinionAlly()
 		HealthAlly()
+		TowerRangers()
+		TowerFollowing()
 	end
 end
 
@@ -442,43 +491,42 @@ function Follow()
 		--|>Attacks Champs
 		if Target ~= nil then
 		stance = 3
-		--if (LastAttack and (GetInGameTimer() < LastAttack + 2)) then return end
-		 -- LastAttack = GetInGameTimer()
-		  myHero:Attack(Target)
 			if stance == 3 then
+				myHero:Attack(Target)
 				attacksuccess = 0
-				if 800 > GetDistance(Target) and myHero:CanUseSpell(_W) == READY then
+				if GetDistance(Target) < 800 and myHero:CanUseSpell(_W) == READY then
 				 if iARAM.misc.misc2 then CastW(str) end
 					CastSpell(_W, Target)
 					attacksuccess =1
+					ChampionBusy = true
 				end
-				if 800 > GetDistance(Target) and myHero:CanUseSpell(_Q) == READY then
+				if GetDistance(Target) < 800 and myHero:CanUseSpell(_Q) == READY then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell Q") end
 					CastSpell(_Q, Target)
 					attacksuccess =1 
+					ChampionBusy = true
 				end
-				if 800 > GetDistance(Target) and myHero:CanUseSpell(_E) == READY  then
+				if GetDistance(Target) < 800 and myHero:CanUseSpell(_E) == READY  then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell E") end
 					CastSpell(_E, Target)
 					attacksuccess = 1
+					ChampionBusy = true
 				end
-				if 800 > GetDistance(Target) and myHero:CanUseSpell(_R) == READY then
+				if GetDistance(Target) < 800 and myHero:CanUseSpell(_R) == READY then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell R") end
 					CastSpell(_R, Target)
 					attacksuccess =1
+					ChampionBusy = true
 				end
-				
 				if attacksuccess == 0 then
 					--|>Attack Minions
-						AutoFarm()
-				end
-				
+						ChampionBusy = true
+				end				
 				--|> Alone Mode
 			elseif stance == 0 then
 			if frontally() == myHero then
 				myHero:MoveTo(spawnpos.x,spawnpos.z)
-			end
-			
+			end			
 				--|> Enemy Target
 			elseif stance == 3 then
 				myHero:MoveTo(spawnpos.x,spawnpos.z)
@@ -490,13 +538,16 @@ function Follow()
 				neg1 = 1 
 				neg2 = 1 
 				if (LastFollowChamp and (GetInGameTimer() < LastFollowChamp)) then return end
-							LastFollowChamp = GetInGameTimer()					
+				LastFollowChamp = GetInGameTimer()					
 				if myHero.team == TEAM_BLUE then
 					myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
+					ChampionBusy = true
 				else
 					myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
+					ChampionBusy = true
 				end
 			end
+			AutoFarm()
 		end	
 	else
 	--|> Dead
@@ -690,6 +741,7 @@ function Menu()
 		--[[ Drawing menu ]]--
 		iARAM:addSubMenu("Drawing Settings", "drawing")
 			iARAM.drawing:addParam("drawcircles", "Draw Circles", SCRIPT_PARAM_ONOFF, true)
+			iARAM.drawing:addParam("drawtower", "Draw Tower Ranges", SCRIPT_PARAM_ONOFF, false)
 			iARAM.drawing:addParam("LfcDraw", "Use Lagfree Circles (Requires Reload!)", SCRIPT_PARAM_ONOFF, true)
 		
 		--[[ PoroShoter menu ]]--
@@ -704,6 +756,7 @@ function Menu()
 		--[[ Misc menu ]]--
 		iARAM:addSubMenu("Miscelaneus Settings", "misc")
 			iARAM.misc:addParam("misc2", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
+			iARAM.misc:addParam("permanshow", "See Permashow", SCRIPT_PARAM_ONOFF, true)
 			iARAM.misc:addParam("farm", "Last Hit Farm", SCRIPT_PARAM_ONOFF, true)	
 			iARAM.misc:addParam("attackchamps", "Auto Attack champs", SCRIPT_PARAM_ONOFF, true)
 			iARAM.misc:addParam("autobuy", "Auto Buy Items", SCRIPT_PARAM_ONOFF, true)
@@ -713,6 +766,12 @@ function Menu()
 
 		----[[ Main Script menu ]]--
 		iARAM:addParam("follow", "Enable bot", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
+		
+		----[[ PermaShow Menu ]]----
+		if iARAM.misc.permanshow then
+			iARAM:permaShow("follow")
+			iARAM.misc:permaShow("autobuy")
+		end
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", "edited by ", SCRIPT_PARAM_INFO, "Husmeador12") 
@@ -1200,7 +1259,7 @@ function AutoFarm()
 		local tick = 0
 		local delay = 400
 		local myTarget = ts.target
-		  if iARAM.misc.farm then
+		  if iARAM.misc.farm and ranged == 1 then
 			for index, minion in pairs(enemyMinions.objects) do
 			  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
 				local dmg = getDmg("AD", minion, myHero)
@@ -1234,6 +1293,8 @@ function OnProcessSpell(object, spell)
 		end 
 	end
 end
+
+
 
 
 -----[[ PrintFloatText ]]------
@@ -1631,8 +1692,10 @@ function FollowMinionAlly()
 				if iARAM.misc.misc2 then _AutoupdaterMsg("Moving") end
 				if myHero.team == TEAM_BLUE then
 					myHero:MoveTo(myHero.x*5,myHero.z*5)
+					ChampionBusy = true
 				else
 					myHero:MoveTo(myHero.x*5,myHero.z*5)
+					ChampionBusy = true
 				end
 				end, 15-GetInGameTimer())
 			end
@@ -1658,44 +1721,64 @@ function FollowMinionAlly()
 				end
 		end
 		if howlingAbyssMap == true then
+		--Following minions
 			allyMinions = minionManager(MINION_ALLY, 3000, player, MINION_SORT_HEALTH_DEC)
 			allyMinions:update()
 			local player = GetMyHero()
 			for index, allyminion in pairs(allyMinions.objects) do
-					if GetDistance(allyminion, myHero) <= 3000 then
+				if GetDistance(allyminion, myHero) <= 3000 then
 					if iARAM.misc.misc2 then howling1(str) end
-						distance1 = math.random(130,250)
-						distance2 = math.random(130,250)
-						neg1 = -1 
-						neg2 = -1 
-						if (LastTick and (GetInGameTimer() < LastTick + 2)) then return end
-							LastTick = GetInGameTimer()						
-						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(allyminion.x+distance1*neg1,allyminion.z+distance2*neg2)
-							tick = GetTickCount()
-						else
-							myHero:MoveTo(allyminion.x-distance1*neg1,allyminion.z-distance2*neg2)
-							tick = GetTickCount()
-						end
+					distance1 = math.random(130,250)
+					distance2 = math.random(130,250)
+					neg1 = -1 
+					neg2 = -1 
+					if (LastTick and (GetInGameTimer() < LastTick + 2)) then return end
+						LastTick = GetInGameTimer()						
+					if myHero.team == TEAM_BLUE then
+						myHero:MoveTo(allyminion.x+distance1*neg1,allyminion.z+distance2*neg2)
+						tick = GetTickCount()
+						ChampionBusy = true
+					else
+						myHero:MoveTo(allyminion.x-distance1*neg1,allyminion.z-distance2*neg2)
+						tick = GetTickCount()
+						ChampionBusy = true
 					end
 				end
-				--Attack enemy minions
-					enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
-					enemyMinions:update()
-					local player = GetMyHero()
-					local tick = 0
-					local delay = 400
-					local myTarget = ts.target
-					for index, minion in pairs(enemyMinions.objects) do
-					  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
-						local dmg = getDmg("AD", minion, myHero)
-						if dmg > minion.health then
-						  myHero:Attack(minion)
-						  tick = GetTickCount()
-						end
-					  end
-					end
+			end
+			--Attack enemy minions
+			enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
+			enemyMinions:update()
+			local player = GetMyHero()
+			local tick = 0
+			local delay = 400
+			local myTarget = ts.target
+			for index, minion in pairs(enemyMinions.objects) do
+			  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
+				local dmg = getDmg("AD", minion, myHero)
+				if dmg > minion.health then
+				  myHero:Attack(minion)
+				  tick = GetTickCount()
+				end
+			  end
+			end
+
 		end			
+	end
+end
+
+function TowerFollowing()
+	FollowTurrets = {}
+	if ChampionBusy then return end
+	for name, Towers in pairs(GetTurrets()) do
+		if Towers ~= nil then
+			local enemyTurret = Towers.team ~= player.team
+			if GetDistance(Towers) < 100 then
+				table.insert(FollowTurrets, {x = Towers.x, y = Towers.y, z = Towers.z, range = Towers.range, color = (enemyTurret and allyTurretColor), visibilityRange = Towers.visibilityRange})
+				myHero:MoveTo(Towers.x,Towers.z)
+				if iARAM.misc.misc2 then _AutoupdaterMsg("moving to tower") end
+				
+			end
+		end
 	end
 end
 
@@ -1771,4 +1854,25 @@ function CastW(str)
    end
 end
 
+--[[ TowerRangers Function ]]--
+
+function DrawTowerRange()
+	if iARAM.drawing.drawtower and not myHero.dead then
+		for i, turret in pairs(drawTurrets) do
+			DrawCircle(turret.x, turret.y, turret.z, turret.range, turret.color)
+			DrawCircle(turret.x, turret.y, turret.z, turret.visibilityRange, visibilityTurretColor)
+		end
+	end
+end
+function TowerRangers()
+	drawTurrets = {}
+	for name, turret in pairs(GetTurrets()) do
+		if turret ~= nil then
+			local enemyTurret = turret.team ~= player.team
+			if GetDistance(turret) < 2000 then
+				table.insert(drawTurrets, {x = turret.x, y = turret.y, z = turret.z, range = turret.range, color = (enemyTurret and enemyTurretColor or allyTurretColor), visibilityRange = turret.visibilityRange})
+			end
+		end
+	end
+end
 
