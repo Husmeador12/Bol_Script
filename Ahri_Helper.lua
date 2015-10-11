@@ -100,8 +100,6 @@ function Update()
 end
 
 
-
-
 --[[ On Load Function ]]--
  function OnLoad()	
 	if AUTOUPDATE then
@@ -126,7 +124,6 @@ end
 function OnTick()
 	AutoPotions()
 	Autobuy()
-	
 	CheckIgnite()
 	AutoIgnite()
 	Autolevel()
@@ -207,7 +204,6 @@ function Variables()
 	buyDelay = 100 --default 100
 	--------------------------------
 
-
 	
 	-----[[ Other ]]----
 	waittxt = {} -- prevents UI lags, all credits to Dekaron
@@ -234,28 +230,17 @@ end
 
 ---------[[ Combo ]]---------
 function Combo()
-        ts:update()
-        if ts.target ~= nil then
-                if ts.target.visible == true and AhriConfig.active then
-                        
-                        if qpred ~= nil then
-
-                                if DFGReady then CastSpell(DFGSlot, ts.target) end
-                                if EReady then CastSpell(_E, qpred.x, qpred.z) end
-								if QReady then CastSpell(_Q, ts.target.x, ts.target.z) end
-								if WReady then CastSpell(_W, ts.target.x, ts.target.z) end
-																
-                        end
-                end
-     
-                
-        end
-	
+	ts:update()
+	if ts.target ~= nil then
+		if ts.target.visible == true and AhriConfig.active then
+			if qpred ~= nil then
+				if EReady then CastSpell(_E, qpred.x, qpred.z) end
+				if QReady then CastSpell(_Q, ts.target.x, ts.target.z) end
+				if WReady then CastSpell(_W, ts.target.x, ts.target.z) end								
+			end
+		end
+	end
 end
-
-
-
-
 
 
 ---------[[ Drawing ]]---------
@@ -271,7 +256,7 @@ function ChampionDraw()
                         end
                 end
 		
-end
+		end
 end
 	
 

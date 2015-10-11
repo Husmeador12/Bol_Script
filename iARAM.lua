@@ -22,21 +22,20 @@
 			-Dekland
 			-LegendBot
 			-Justh1n10
+			-LunarBlue
 ]]--
 
 --[[
 	   SOON:
 	    -Debug Option
 	    -Drawcircles allies
-		-Remake Auto Follow.
-		-Remake Auto Update.
 		-Remake Menu Function.
-		-Detects if it´s playing summoner rift or other map.
 		-Auto Barrier, health and clarity.
 ]]--
 --[[
-	   NOTES:
-		──|> Auto Chat doesn´t work.
+	   Problems:
+	   No to follow champs infountain
+	   pairs withs Relics
 		──|> AutoLevel with ROff doesnt work.
 ]]--
 
@@ -52,30 +51,23 @@ function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#
 
 -----[[ Auto Download Required LIBS ]]------
 
-if not FileExist(LIB_PATH.."VPrediction.lua") then return _AutoupdaterMsg("Please download VPrediction before running this script, thank you. Make sure it is in your common folder.") end
-
--- Download Libraries
-local REQUIRED_LIBS = {
-	["VPrediction"] = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua",
-}
-local DOWNLOADING_LIBS, DOWNLOAD_COUNT = false, 0
-
-function AfterDownload()
-	DOWNLOAD_COUNT = DOWNLOAD_COUNT - 1
-	if DOWNLOAD_COUNT == 0 then
-		DOWNLOADING_LIBS = false
-		_AutoupdaterMsg("<b><font color=\"#6699FF\">Required libraries downloaded successfully, please reload (double F9).</font>")
-	end
+function OnLoad()
+	CheckLib()
+	--DelayAction(function() _OnLoad() end, 2)  
+	_OnLoad()
 end
-
-for DOWNLOAD_LIB_NAME, DOWNLOAD_LIB_URL in pairs(REQUIRED_LIBS) do
-	if FileExist(LIB_PATH .. DOWNLOAD_LIB_NAME .. ".lua") then
-		require(DOWNLOAD_LIB_NAME)
+--if not FileExist(LIB_PATH.."VPrediction.lua") then return _AutoupdaterMsg("Please download VPrediction before running this script, thank you. Make sure it is in your common folder.") end
+function CheckLib()
+local SOURCELIB_URL = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua"
+local SOURCELIB_PATH = LIB_PATH.."VPrediction.lua"
+local DownloadSourceLib = false
+	if FileExist(SOURCELIB_PATH) then
+		require("VPrediction")
 	else
-		DOWNLOADING_LIBS = true
-		DOWNLOAD_COUNT = DOWNLOAD_COUNT + 1
-		DownloadFile(DOWNLOAD_LIB_URL, LIB_PATH .. DOWNLOAD_LIB_NAME..".lua", AfterDownload)
+		DownloadSourceLib = true
+		DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() _AutoupdaterMsg("VPrediction downloaded, please reload (F9)") end)
 	end
+	if DownloadSourceLib then _AutoupdaterMsg("Downloading required libraries, please wait...") return end
 end
 
 
@@ -119,12 +111,29 @@ local FollowTurrets = {}
 local ChampionBusy = false
 
 
-
+---[[Globals]]--
+local status = "Normal"
+local mdraw = {x=5940, z=6040}
+local edraw = {x=0, z=0}
+local Qready, Wready, Rready, Eready = false
+local DistanceTower = {AllyTower,EnemyTower}
+underT = {
+AllyTower = false,
+EnemyTower = false
+}
+local comboDmg = 0
+local tabclosed = {} -- get closed enemy
+local tabget = {} -- get all enemys
+local onbase = false
+local safe = true
+local player = myHero
+local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
+local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 5.93
-local UPDATE_CHANGE_LOG = "Tower Ranges and auto lib downloader."
+local version = 5.94
+local UPDATE_CHANGE_LOG = "Fixing AutoZhonyas and Shaco"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -178,7 +187,7 @@ do
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","JarvanIV","Nasus","Skarner","TahmKench","Thresh","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
-	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
+	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Shaco","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
 	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","RekSai","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","MonkeyKing","Zed","Yasuo"}
 	fighters = {"Aatrox","Fiora","Jax","Jayce","MasterYi","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
@@ -370,15 +379,12 @@ do
 			shopList = {1001,3057,3356,1282,3345,3392,3407,1314,3413,3391,0}
 		end
 		if heroType == 7 then --MAGE
-			--shopList = {3028,3020,3392,1314,3345,3174,3407,1282,3001,3391,0}
 			shopList = {1001,3392,1314,3345,3174,3407,1282,3001,3391,0}
 		end
 		if heroType == 8 then --APC
-			--shopList = {3401,3020,3408,1282,3372,1314,3345,1282,3001,3413}
 			shopList = {1001,3401,3020,3408,1282,3372,1314,3345,1282,3001,3413}
 		end
 		if heroType == 9 or heroType == 10 then --FIGHTER and OTHERS
-			--shopList = {3367,3044,3342,3334,3400,3409,3067,3065,3390,3071,3412,0}
 			shopList = {1001,3401,3020,3408,1282,3372,1314,3345,1282,3001,3413}
 		end
         startTime = GetTickCount()
@@ -394,25 +400,30 @@ function OnDraw()
 		--|>Autoward
 		AutoWarderDraw()
 		DebugCursorPos()
-		--|>FloatText
-		FloatTextStance()
 		--|>NameDrawer
 		DrawFakeNames()
 		DrawTowerRange()
+		ChampionesDraw()
+		_MyHeroText()
+		DrawNotificationLib()
 end
 
 
 --[[ On Load Function ]]--
- function OnLoad()
+ function _OnLoad()
 		startingTime = GetTickCount()
 		CheckLoLVersion()
 		Menu()
-		
 		if LoLVersionWorking then
+		NotificationLib:AddTile("WelCome To iARAM", "Improving AutoPlay Function. Version: "..version.."", 10)
+		gete()
+		enemyMinion = minionManager(MINION_ENEMY, 800, player, MINION_SORT_HEALTH_ASC)
+		allyMinion = minionManager(MINION_ALLY, 800, player, MINION_SORT_HEALTH_ASC)
 		OnProcessSpell()
 		timeToShoot()
 		heroCanMove()
 		OnWndMsg()
+		OnWndMsgNotificationLib()
 		if AutomaticChat then
 			AutoChat()
 		end
@@ -423,7 +434,6 @@ end
 			FunctionAutoIgnite()
 		end
 		--|>Mode Alone
-		GetPlayer()
 		LoadMapVariables()
 	end
 end
@@ -440,19 +450,31 @@ function OnTick()
 	startingTime = GetTickCount()
 	if LoLVersionWorking then
 	--	AutoBuy()
-		Follow()	
 		LFC()
-		AutoAttackChamp()
-		AutoFarm()
 		--|> Poro Shouter
 		PoroCheck()
 		--|>Autopotions
 		AutoPotions()
 		--|>Mode Alone
-		FollowMinionAlly()
+		--FollowMinionAlly()
 		HealthAlly()
 		TowerRangers()
-		TowerFollowing()
+		--TowerFollowing()
+		FunctionAutoZhonya()
+		Allie = followHero()
+		EnemyTabFunction()
+		getsafe()
+		ts:update()
+		CheckStatus()
+		enemyMinion:update()
+		allyMinion:update()
+		Cooldowncheck()
+		mqnt()
+		CheckTower()
+		if ts.target then
+			ts.targetSelected = true
+		end
+		EnemyCount()
 	end
 end
 
@@ -472,86 +494,814 @@ function OnWndMsg(msg, keycode)
 end
 
 
---[[ Follow Function ]]--
-function Follow()
-	if iARAM.follow and not myHero.dead then
-		stance = 0
-		if Allies() >= 2 then
-			stance = 1		
-		else
-			stance = 0
+function EnemyTabFunction()
+local champ = player.charName
+if champ == "Aatrox" then           eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Ahri" then         eTab = GetEnemiesInRange(800, myHero) tabclosed = GetEnemiesInRange(800, myHero)
+    elseif champ == "Akali" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Alistar" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Amumu" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Anivia" then       eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Annie" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Ashe" then         eTab = GetEnemiesInRange(900, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1000, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+	elseif champ == "Azir" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Blitzcrank" then   eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Brand" then        eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Bard" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+	elseif champ == "Braum" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Caitlyn" then      eTab = GetEnemiesInRange(1030, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1000, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Cassiopeia" then   eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Chogath" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Corki" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Darius" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Diana" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "DrMundo" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Draven" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+	elseif champ == "Ekko" then      	eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Elise" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Evelynn" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Ezreal" then       eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "FiddleSticks" then eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Fiora" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Fizz" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Galio" then        eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Gangplank" then    eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Garen" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Gragas" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Graves" then       eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+	elseif champ == "Gnar" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Hecarim" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Heimerdinger" then eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Irelia" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Janna" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "JarvanIV" then     eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Jax" then          eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Jayce" then        eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+	elseif champ == "Jinx" then         eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+	elseif champ == "Kalista" then      eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Karma" then        eTab = GetEnemiesInRange(1030, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Karthus" then      eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Kassadin" then     eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Katarina" then     eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Kayle" then        eTab = GetEnemiesInRange(830, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Kennen" then       eTab = GetEnemiesInRange(800, myHero) tabclosed = GetEnemiesInRange(800, myHero)
+    elseif champ == "Khazix" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "KogMaw" then       eTab = GetEnemiesInRange(800, myHero) tabclosed = GetEnemiesInRange(800, myHero)
+    elseif champ == "Leblanc" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "LeeSin" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Leona" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Lissandra" then    eTab = GetEnemiesInRange(800, myHero) tabclosed = GetEnemiesInRange(800, myHero)
+    elseif champ == "Lucian" then       eTab = GetEnemiesInRange(800, myHero) tabclosed = GetEnemiesInRange(800, myHero)
+    elseif champ == "Lulu" then         eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Lux" then          eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Malphite" then     eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Malzahar" then     eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Maokai" then       eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "MasterYi" then     eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "MissFortune" then  eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "MonkeyKing" then   eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Mordekaiser" then  eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Morgana" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Nami" then         eTab = GetEnemiesInRange(800, myHero) tabclosed = GetEnemiesInRange(800, myHero)
+    elseif champ == "Nasus" then        eTab = GetEnemiesInRange(400, myHero) tabclosed = GetEnemiesInRange(400, myHero)
+    elseif champ == "Nautilus" then     eTab = GetEnemiesInRange(800, myHero) tabclosed = GetEnemiesInRange(800, myHero)
+    elseif champ == "Nidalee" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Nocturne" then     eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Nunu" then         eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Olaf" then         eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Orianna" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Pantheon" then     eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Poppy" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Quinn" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Rammus" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+	elseif champ == "RekSai" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Renekton" then     eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Rengar" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Riven" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Rumble" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Ryze" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Sejuani" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Shaco" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Shen" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Shyvana" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Singed" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Sion" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Sivir" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Skarner" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Sona" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Soraka" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Swain" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Syndra" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+	elseif champ == "TahmKench" then   	eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Talon" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Taric" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Teemo" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Thresh" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Tristana" then     eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Trundle" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Tryndamere" then   eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "TwistedFate" then  eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Twitch" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Udyr" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Urgot" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Varus" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Vayne" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Veigar" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+	elseif champ == "Velkoz" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Vi" then           eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Viktor" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Vladimir" then     eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Volibear" then     eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Warwick" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Xerath" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "XinZhao" then      eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Yorick" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+	elseif champ == "Yasuo" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Zac" then          eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Zed" then          eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Ziggs" then        eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Zilean" then       eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Zyra" then         eTab = GetEnemiesInRange(630, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    else eTab = GetEnemiesInRange(630, myHero)
+		 tabclosed = GetEnemiesInRange(800, myHero)
+		 _AutoupdaterMsg(string.format(" >> Get Range Enemies disabled for %s", champ))
+    end
+end
+
+function ChampionesDraw()
+	if iARAM.misc.misc2 then
+		if player.dead or GetGame().isOver then return end
+			for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("W", minion, myHero) then
+				DrawCircle3D(minion.x, minion.y, minion.z, 30, 1, RGB(255,0,255), 100)
+				--DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 1, 0x7FFF00)
+			end
 		end
-		if findLowHp() ~= 0 then
-			stance = 2
-			Target = findLowHp()
-		else
-			Target = findClosestEnemy()
+		-- Draw Enemy
+		for _, str in pairs(tabget) do
+			if myHero:GetDistance(tabget[_]) < 800 and not tabget[_].dead and tabget[_] ~= nil and tabget[_].valid and tabget[_].visible and tabget[_].health > 1 then
+				DrawLine3D(myHero.x, myHero.y, myHero.z, tabget[_].x, tabget[_].y, tabget[_].z, 1, RGB(255,255,255))
+				DrawCircle3D(tabget[_].x, tabget[_].y, tabget[_].z, 100, 1, RGB(255,255,255), 100)
+			end
 		end
-		Allie = followHero()
+		-- Target Draw
+		if ts.target then
+			hp = ((ts.target.health * 100) / ts.target.maxHealth) * 2
+			DrawText(ts.target.charName, 20, 15, 150, RGB(255,255,255))
+			DrawLine(15, 200, 200 + 15, 200, 10, RGB(255,105,105))
+			if ts.target.health < ts.target.maxHealth /2 then
+				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,255,215))
+			elseif ts.target.health > ts.target.maxHealth /2 then
+				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,0,255))
+			elseif ts.target.health < comboDmg then
+				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,255,95))
+			end
+		end		
+	end
+end
+
+
+function CheckStatus() 
+	eTurret = GetCloseTower(player, TEAM_ENEMY)
+	aTurret = GetCloseTower(player, player.team)
+	if iARAM.follow then
+		if safe == false then
+			status = "Not Safe"
+		elseif myHero.health < myHero.maxHealth/4 and summonersRiftMap then -- Back to Base
+			status = "LowHP"
+			lowHP()
+		elseif myHero.health < myHero.maxHealth/4 then -- HP
+			status = "Loking for Relic"
+			TakingRelic()
+		elseif onbase == true then 
+			status = "On Base"
+			if myHero.health == myHero.maxHealth then
+				onbase = false
+			end
+		elseif #eTab > 0 and ts.target ~= nil and ts.target.valid and not ts.target.dead and ts.target.visible then
+			status = "Fight"
+			Fight()
+		elseif #allyMinion.objects > 1 and #enemyMinion.objects >= 1 then -- Farming
+			status = "Farming"
+			FarmMode()
+		elseif Allies() >= 2 and not InFountain() then
+			status = "TF Mode"
+			TFMode()
+		elseif GetDistance(eTurret, player) > 1000 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 then
+			status = "Moving"
+			DelayAction(function() MoveMode() end, 2)
+		elseif #allyMinion.objects <= 1 and GetDistance(aTurret, player) >= 1500 then -- Alone
+			status = "Alone"
+			AloneMode()
+		else
+			status = "Normal"
+			NormalMode()
+		end
+	end
+end
+
+function Fight()
+local champ = player.charName
+	if ts.target then
+	if champ == "Aatrox" then           harass(ts.target)
+		elseif champ == "Ahri" then         AhriCombo() harass(ts.target)
+		elseif champ == "Akali" then        ComboFull() harass(ts.target)
+		elseif champ == "Alistar" then      ComboFull() harass(ts.target)
+		elseif champ == "Amumu" then        ComboFull() harass(ts.target)
+		elseif champ == "Anivia" then       ComboFull() harass(ts.target)
+		elseif champ == "Annie" then        ComboFull() harass(ts.target)
+		elseif champ == "Ashe" then         AsheCombo() harass(ts.target)
+		elseif champ == "Azir" then         ComboFull() harass(ts.target)
+		elseif champ == "Blitzcrank" then   ComboFull() harass(ts.target)
+		elseif champ == "Brand" then        ComboFull() harass(ts.target)
+		elseif champ == "Bard" then         ComboFull() harass(ts.target)
+		elseif champ == "Braum" then        ComboFull() harass(ts.target)
+		elseif champ == "Caitlyn" then      CaitlynCombo() harass(ts.target)
+		elseif champ == "Cassiopeia" then   ComboFull() harass(ts.target)
+		elseif champ == "Chogath" then      ComboFull()
+		elseif champ == "Corki" then        ComboFull() harass(ts.target)
+		elseif champ == "Darius" then       ComboFull()
+		elseif champ == "Diana" then        ComboFull() harass(ts.target)
+		elseif champ == "DrMundo" then      ComboFull() harass(ts.target)
+		elseif champ == "Draven" then       ComboFull() harass(ts.target)
+		elseif champ == "Ekko" then      	ComboFull() harass(ts.target)
+		elseif champ == "Elise" then        ComboFull() harass(ts.target)
+		elseif champ == "Evelynn" then      ComboFull() harass(ts.target)
+		elseif champ == "Ezreal" then       ComboFull() harass(ts.target)
+		elseif champ == "FiddleSticks" then ComboFull() harass(ts.target)
+		elseif champ == "Fiora" then        ComboFull() harass(ts.target)
+		elseif champ == "Fizz" then         ComboFull() harass(ts.target)
+		elseif champ == "Galio" then        ComboFull() harass(ts.target)
+		elseif champ == "Gangplank" then    ComboFull() harass(ts.target)
+		elseif champ == "Garen" then        ComboFull()
+		elseif champ == "Gragas" then       ComboFull() harass(ts.target)
+		elseif champ == "Graves" then       ComboFull() harass(ts.target)
+		elseif champ == "Gnar" then         ComboFull() harass(ts.target)
+		elseif champ == "Hecarim" then      ComboFull() harass(ts.target)
+		elseif champ == "Heimerdinger" then ComboFull() harass(ts.target)
+		elseif champ == "Irelia" then       ComboFull() harass(ts.target)
+		elseif champ == "Janna" then        ComboFull() harass(ts.target)
+		elseif champ == "JarvanIV" then     ComboFull() harass(ts.target)
+		elseif champ == "Jax" then          ComboFull() harass(ts.target)
+		elseif champ == "Jayce" then        ComboFull() harass(ts.target)
+		elseif champ == "Jinx" then         ComboFull() harass(ts.target)
+		elseif champ == "Kalista" then      ComboFull() harass(ts.target)
+		elseif champ == "Karma" then        KarmaCombo() harass(ts.target)
+		elseif champ == "Karthus" then      ComboFull() harass(ts.target)
+		elseif champ == "Kassadin" then     ComboFull() harass(ts.target)
+		elseif champ == "Katarina" then     ComboFull() harass(ts.target)
+		elseif champ == "Kayle" then        KayleCombo() harass(ts.target)
+		elseif champ == "Kennen" then       ComboFull() harass(ts.target)
+		elseif champ == "Khazix" then       ComboFull() harass(ts.target)
+		elseif champ == "KogMaw" then       ComboFull() harass(ts.target)
+		elseif champ == "Leblanc" then      ComboFull() harass(ts.target)
+		elseif champ == "LeeSin" then       ComboFull() harass(ts.target)
+		elseif champ == "Leona" then       	ComboFull()
+		elseif champ == "Lissandra" then    ComboFull() harass(ts.target)
+		elseif champ == "Lucian" then       ComboFull() harass(ts.target)
+		elseif champ == "Lulu" then         ComboFull() harass(ts.target)
+		elseif champ == "Lux" then          LuxCombo() harass(ts.target)
+		elseif champ == "Malphite" then     ComboFull() harass(ts.target)
+		elseif champ == "Malzahar" then     ComboFull() harass(ts.target)
+		elseif champ == "Maokai" then       ComboFull() harass(ts.target)
+		elseif champ == "MasterYi" then     ComboFull() harass(ts.target)
+		elseif champ == "MissFortune" then  ComboFull() harass(ts.target)
+		elseif champ == "MonkeyKing" then   ComboFull() harass(ts.target)
+		elseif champ == "Mordekaiser" then  ComboFull() harass(ts.target)
+		elseif champ == "Morgana" then      MorganaCombo() harass(ts.target)
+		elseif champ == "Nami" then         ComboFull() harass(ts.target)
+		elseif champ == "Nasus" then        ComboFull() harass(ts.target)
+		elseif champ == "Nautilus" then     ComboFull() harass(ts.target)
+		elseif champ == "Nidalee" then      NidaleeCombo() harass(ts.target)
+		elseif champ == "Nocturne" then     ComboFull() harass(ts.target)
+		elseif champ == "Nunu" then         NunuCombo()
+		elseif champ == "Olaf" then         ComboFull() harass(ts.target)
+		elseif champ == "Orianna" then      ComboFull() harass(ts.target)
+		elseif champ == "Pantheon" then     ComboFull() harass(ts.target)
+		elseif champ == "Poppy" then        ComboFull() harass(ts.target)
+		elseif champ == "Quinn" then        ComboFull() harass(ts.target)
+		elseif champ == "Rammus" then       ComboFull() harass(ts.target)
+		elseif champ == "RekSai" then       ComboFull() harass(ts.target)
+		elseif champ == "Renekton" then     ComboFull() harass(ts.target)
+		elseif champ == "Rengar" then       ComboFull() harass(ts.target)
+		elseif champ == "Riven" then        ComboFull() harass(ts.target)
+		elseif champ == "Rumble" then       ComboFull() harass(ts.target)
+		elseif champ == "Ryze" then         ComboFull() harass(ts.target)
+		elseif champ == "Sejuani" then      ComboFull() harass(ts.target)
+		elseif champ == "Shaco" then        ComboFull() harass(ts.target)
+		elseif champ == "Shen" then         ComboFull() harass(ts.target)
+		elseif champ == "Shyvana" then      ComboFull() harass(ts.target)
+		elseif champ == "Singed" then       ComboFull() harass(ts.target)
+		elseif champ == "Sion" then         ComboFull() harass(ts.target)
+		elseif champ == "Sivir" then        ComboFull() harass(ts.target)
+		elseif champ == "Skarner" then      ComboFull() harass(ts.target)
+		elseif champ == "Sona" then         ComboFull() harass(ts.target)
+		elseif champ == "Soraka" then       ComboFull() harass(ts.target)
+		elseif champ == "Swain" then        ComboFull() harass(ts.target)
+		elseif champ == "Syndra" then       ComboFull() harass(ts.target)
+		elseif champ == "TahmKench" then   	ComboFull() harass(ts.target)
+		elseif champ == "Talon" then        ComboFull() harass(ts.target)
+		elseif champ == "Taric" then        ComboFull() harass(ts.target)
+		elseif champ == "Teemo" then        ComboFull() harass(ts.target)
+		elseif champ == "Thresh" then       ComboFull() harass(ts.target)
+		elseif champ == "Tristana" then     ComboFull() harass(ts.target)
+		elseif champ == "Trundle" then      ComboFull() harass(ts.target)
+		elseif champ == "Tryndamere" then   ComboFull() harass(ts.target)
+		elseif champ == "TwistedFate" then  ComboFull() harass(ts.target)
+		elseif champ == "Twitch" then       ComboFull() harass(ts.target)
+		elseif champ == "Udyr" then         ComboFull() harass(ts.target)
+		elseif champ == "Urgot" then        ComboFull() harass(ts.target)
+		elseif champ == "Varus" then        ComboFull() harass(ts.target)
+		elseif champ == "Vayne" then        ComboFull() harass(ts.target)
+		elseif champ == "Veigar" then       ComboFull() harass(ts.target)
+		elseif champ == "Velkoz" then       ComboFull() harass(ts.target)
+		elseif champ == "Vi" then           ComboFull() harass(ts.target)
+		elseif champ == "Viktor" then       ComboFull() harass(ts.target)
+		elseif champ == "Vladimir" then     ComboFull() harass(ts.target)
+		elseif champ == "Volibear" then     ComboFull() harass(ts.target)
+		elseif champ == "Warwick" then      WarwickCombo()
+		elseif champ == "Xerath" then       ComboFull() harass(ts.target)
+		elseif champ == "XinZhao" then      ComboFull() harass(ts.target)
+		elseif champ == "Yorick" then       ComboFull() harass(ts.target)
+		elseif champ == "Yasuo" then        ComboFull() harass(ts.target)
+		elseif champ == "Zac" then          ComboFull() harass(ts.target)
+		elseif champ == "Zed" then          ComboFull() harass(ts.target)
+		elseif champ == "Ziggs" then        ComboFull() harass(ts.target)
+		elseif champ == "Zilean" then       ComboFull() harass(ts.target)
+		elseif champ == "Zyra" then         ComboFull() harass(ts.target)
+		else harass(ts.target)
+			ComboFull()
+			comboDmg = getDmg("Q", ts.target, myHero) + getDmg("W", ts.target, myHero) + getDmg("R", ts.target, myHero)
+			RDmg = getDmg("R", ts.target, myHero)
+			ts.targetSelected = true
+			if RDmg > ts.target.health and Rready then
+				CastSpell(_R, ts.target.x, ts.target.z)
+			elseif comboDmg >= ts.target.health then
+				Combo(ts.target)
+			end
+			 _AutoupdaterMsg(string.format(" >> No mode Fight for %s", champ))
+		end
+	end
+end
+
+
+function getsafe()
+	local q = {}
+	for i, str in pairs(tabclosed) do
+		if str.valid and str.team ~= myHero.team and not str.dead and str.visible then
+			table.insert(q, str.charName)
+		end
+	end
+		if #q > 0 and iARAM.follow then
+			safe = false
+			ts.targetSelected = false
+			if myHero.team == TEAM_BLUE then
+				myHero:MoveTo(myHero.x-800,myHero.z-800)
+			else
+				myHero:MoveTo(myHero.x+800,myHero.z+800)
+			end	
+		else
+			safe = true
+		end	
+end
+
+function InRange(unit, range, from)
+	if (not range) then
+		return false
+	end
+	from = from or myHero
+	return (GetDistance(unit, from) <= range)
+end
+
+function GetEnemiesInRange(range, from)
+	from = from or myHero
+	local enemies = { }
+	for _, enemy in ipairs(GetEnemyHeroes()) do
+		if (InRange(enemy, range, from)) then
+			table.insert(enemies, enemy)
+		end
+	end
+	return enemies	
+end
+
+function lowHP()
+	local myTurret = GetCloseTower(player, player.team)
+	if underT.AllyTower and myHero:GetDistance(myTurret) < 300 then
+		--CastSpell(RECALL)
+		if InFountain() then
+			onbase = true
+		end
+	else if myHero.team == TEAM_BLUE then
+				myHero:MoveTo(400,400)
+			else
+				myHero:MoveTo(14300,myTurret.z+14300)
+			end
+	end
+end
+
+function TakingRelic()
+	if not myHero.dead then
+		if myHero.team == TEAM_BLUE then
+			--myHero:MoveTo(5900,5200)
+			myHero:MoveTo(4790,3950)
+		else
+			myHero:MoveTo(8890,7900)
+		end
+	end
+end
+
+function MoveMode()
+	local Turret = GetCloseTower(player, TEAM_ENEMY)
+	local aTurret = GetCloseTower(player, player.team)
+	local LastTickerone = nil
+	local LastMoveInMoveMode = 1
+
+	if (LastTickerone and (GetInGameTimer() < LastTickerone + 1)) then return end
+		LastTickerone = GetInGameTimer()
+		LastMoveInMoveMode = LastMoveInMoveMode * -1
+	if myHero.team == TEAM_BLUE then
+		--myHero:HoldPosition()
+		myHero:MoveTo(myHero.x+800, myHero.z+800)
+	else
+			--myHero:HoldPosition()
+		myHero:MoveTo(myHero.x-800, myHero.z-800)
+	end
+end
+
+function AloneMode()
+	local myTurret = GetCloseTower(player, player.team)
+	local EnemyTurret = GetCloseTower(player, TEAM_ENEMY)
+	local LastTickore = nil
+	local LastMoveInAloneMode = 1
+	
+	if myHero.team == TEAM_BLUE then
+		if (LastTickore and (GetInGameTimer() < LastTickore + 1)) then return end
+		LastTickore = GetInGameTimer()
+		LastMoveInAloneMode = LastMoveInAloneMode * -1
+		myHero:HoldPosition()
+		--myHero:MoveTo(myHero.x-800, myHero.z-800)
+	else
+		if (LastTickore and (GetInGameTimer() < LastTickore + 1)) then return end
+		LastTickore = GetInGameTimer()
+		LastMoveInAloneMode = LastMoveInAloneMode * -1
+		myHero:HoldPosition()
+		--myHero:MoveTo(myHero.x+800, myHero.z+800)
+	end
+end
+
+function FarmMode()
+if player.dead or GetGame().isOver then return end
+
+
+AhriFarm()
+AsheFarm()
+CaitlynFarm()
+KarmaFarm()
+KayleFarm()
+LuxFarm()
+MorganaFarm()
+NidaleeFarm()
+WarwickFarm()
+
+	-- moveLastFollowingMinion
+	if heroType == 1 then --adc
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
+			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end
+	elseif heroType == 2 then --tank
+		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
+			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end
+	elseif heroType == 3 then --tank
+		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
+			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end
+
+	elseif heroType == 4 then --Fighter
+		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
+			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end
+	elseif heroType == 5 then --Fighter
+		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
+			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end	
+	elseif heroType == 6 then --Fighter
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) >= 400) then
+			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end
+	elseif heroType == 7 then --Mage
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
+			myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end	
+	elseif heroType == 8 then --Fighter
+		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
+			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end
+	elseif heroType == 9 then --Fighter
+		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
+			myHero:MoveTo(edraw.x-100,edraw.z-100) 
+		else if underT.e == true then
+			myHero:MoveTo(mdraw.x,mdraw.z)
+		end
+		end
+	end
+	-- Farm AA
+		range = myHero.range + myHero.boundingRadius - 3
+		ts.range = range
+		ts:update()
+		enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
+		enemyMinions:update()
+		local player = GetMyHero()
+		local ticking = 0
+		local delaying = 400
+		local myTarget = ts.target
+		if not iARAM.misc.farm then return end
+			for index, minion in pairs(enemyMinions.objects) do
+			  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > ticking + delaying then
+				local dmg = getDmg("AD", minion, myHero)
+					if dmg > minion.health and timeToShoot() then
+					  myHero:Attack(minion)
+					  ticking = GetTickCount()
+					  else if heroCanMove() then
+					  --myHero:MoveTo(mdraw.x+3,mdraw.z+3)					  
+					end
+				end
+			end
+		end
+end
+
+
+function NormalMode()
+	if myHero.x >= 2880 and myHero.z >= 2880 then
+	local LastTickaro = nil
+	local LastMoveInNormalMode = 1
+	if (LastTickaro and (GetInGameTimer() < LastTickaro + 1)) then return end
+	LastTickaro = GetInGameTimer()
+	LastMoveInNormalMode = LastMoveInNormalMode * -1
+		if heroType == 1 then --adc
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 80 then
+					--if not timeToShoot() then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+						else
+							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+						end
+				end	
+		elseif heroType == 2 then --tank
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+						else
+							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+						end
+				end	
+		elseif heroType == 3 then --tank
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+						else
+							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+						end
+				end	
+		elseif heroType == 4 then 
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
+					--if not timeToShoot() then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+						else
+							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+						end
+				end	
+		elseif heroType==5 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+800,mdraw.z+800)
+						else
+							myHero:MoveTo(mdraw.x-800,mdraw.z-800)
+						end
+				end	
+		elseif heroType == 6 then 
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+					--if not timeToShoot() then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+						else
+							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+						end
+				end	
+		elseif heroType == 7 then --mage
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
+					--if not timeToShoot() then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+						else
+							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+						end
+				end	
+		elseif heroType == 8 then 
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+					--if not timeToShoot() then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+						else
+							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+						end
+				end	
+		elseif heroType == 9 then --fighter
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
+					--if not timeToShoot() then
+						if myHero.team == TEAM_BLUE then
+							myHero:MoveTo(mdraw.x+800,mdraw.z+800)
+						else
+							myHero:MoveTo(mdraw.x-800,mdraw.z-800)
+						end
+				end	
+		end			
+	end
+end
+
+function heroCanMove()
+	return (GetTickCount() + GetLatency()/2 > lastAttack + lastWindUpTime + 20)
+end 
+ 
+function timeToShoot()
+	return (GetTickCount() + GetLatency()/2 > lastAttack + lastAttackCD)
+end 
+ 
+function OnProcessSpell(object, spell)
+	if object == myHero then
+		if spell.name:lower():find("attack") then
+			lastAttack = GetTickCount() - GetLatency()/2
+			lastWindUpTime = spell.windUpTime*1000
+			lastAttackCD = spell.animationTime*1000
+		end 
+	end
+end
+
+function Combo(unit) -- This function handles our combo
+	if Qready and Wready and Rready and Eready then
+		CastSpell(_E)
+        CastSpell(_Q, unit) 
+        CastSpell(_W, unit.x, unit.z)
+        CastSpell(_R, unit.x, unit.z)
+	end
+end
+
+function harass(unit)
+	local myTarget = ts.target
+	if myTarget ~=	nil then		
+		if timeToShoot() then
+			myHero:Attack(myTarget)
+		elseif heroCanMove() then
+			myHero:MoveTo(myHero.x-3,myHero.z-3)
+		end
+	end
+end
+
+function gete() -- Get Enemy Heroes
+	for i = 1, heroManager.iCount do
+        local hero = heroManager:GetHero(i)
+        if hero.team ~= player.team then
+            table.insert(tabget, hero)
+        end
+    end	
+end
+
+function GetCloseTower(hero, team)
+	local towers = GetTowers(team)
+	if #towers > 0 then
+		local candidate = towers[1]
+		for i=2, #towers, 1 do
+			if (towers[i].health/towers[i].maxHealth > 0.1) and  hero:GetDistance(candidate) > hero:GetDistance(towers[i]) then candidate = towers[i] end
+		end
+		return candidate
+	else
+		return false
+	end
+end
+
+function GetTowers(team)
+	local towers = {}
+	for i=1, objManager.maxObjects, 1 do
+		local tower = objManager:getObject(i)
+		if tower ~= nil and tower.valid and tower.type == "obj_AI_Turret" and tower.visible and tower.team == team then
+			table.insert(towers,tower)
+		end
+	end
+	if #towers > 0 then
+		return towers
+	else
+		return false
+	end
+end
+
+function mqnt() -- Quantidade de minions per to
+	md = {x=0, z=0} 
+	em = {x=0, z=0}
+	if player.dead or GetGame().isOver then return end 
+	for n, m in pairs(allyMinion.objects) do
+		md.x = md.x + allyMinion.objects[n].x
+		md.z = md.z + allyMinion.objects[n].z
+	end
+	for e, ee in pairs(enemyMinion.objects) do
+		em.x = em.x + enemyMinion.objects[e].x
+		em.z = em.z + enemyMinion.objects[e].z
+	end
+	
+
+	mdraw.x = (md.x  / #allyMinion.objects) - 100
+	mdraw.z = (md.z  / #allyMinion.objects) - 100
+
+	edraw.x = (em.x  / #enemyMinion.objects)
+	edraw.z = (em.z  / #enemyMinion.objects)
+end
+
+function Cooldowncheck() -- Checks for your Cooldowns
+	Qready = (myHero:CanUseSpell(_Q) == READY)
+	Wready = (myHero:CanUseSpell(_W) == READY)
+	Rready = (myHero:CanUseSpell(_R) == READY)
+	Eready = (myHero:CanUseSpell(_E) == READY)
+end
+
+function CheckTower()
+	DistanceTower.EnemyTower = GetCloseTower(player, TEAM_ENEMY)
+	DistanceTower.AllyTower = GetCloseTower(player, player.team)
+	-- Ally tower
+	if GetDistance(DistanceTower.AllyTower, player) <= 1000 then
+		underT.AllyTower = true
+	else
+		underT.AllyTower = false
+	end
+	-- Enemy tower
+	if GetDistance(DistanceTower.EnemyTower, player) <= 1000 then
+		underT.EnemyTower = true
+	else
+		underT.EnemyTower = false
+	end
+end
+
+function TowerFocusPlayer()
+	print("Tower focus: Player")
+		if myHero.team == TEAM_BLUE then
+			myHero:MoveTo(myHero.x*-3,myHero.z*-3)
+		else
+			myHero:MoveTo(myHero.x*3,myHero.z*3)
+		end
+end
+
+--[[ ComboFull Function ]]--
+function ComboFull()
+	if not myHero.dead then
 		--|>Attacks Champs
 		if Target ~= nil then
-		stance = 3
-			if stance == 3 then
 				myHero:Attack(Target)
 				attacksuccess = 0
-				if GetDistance(Target) < 800 and myHero:CanUseSpell(_W) == READY then
+				if GetDistance(Target) < 1000 and myHero:CanUseSpell(_W) == READY then
 				 if iARAM.misc.misc2 then CastW(str) end
 					CastSpell(_W, Target)
 					attacksuccess =1
-					ChampionBusy = true
 				end
-				if GetDistance(Target) < 800 and myHero:CanUseSpell(_Q) == READY then
+				if GetDistance(Target) < 1000 and myHero:CanUseSpell(_Q) == READY then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell Q") end
 					CastSpell(_Q, Target)
 					attacksuccess =1 
-					ChampionBusy = true
 				end
-				if GetDistance(Target) < 800 and myHero:CanUseSpell(_E) == READY  then
+				if GetDistance(Target) < 1000 and myHero:CanUseSpell(_E) == READY then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell E") end
 					CastSpell(_E, Target)
 					attacksuccess = 1
-					ChampionBusy = true
 				end
-				if GetDistance(Target) < 800 and myHero:CanUseSpell(_R) == READY then
+				if GetDistance(Target) < 1000 and myHero:CanUseSpell(_R) == READY then
 				--if iARAM.misc.misc2 then _AutoupdaterMsg("CastSpell R") end
 					CastSpell(_R, Target)
 					attacksuccess =1
-					ChampionBusy = true
 				end
-				if attacksuccess == 0 then
-					--|>Attack Minions
-						ChampionBusy = true
-				end				
-				--|> Alone Mode
-			elseif stance == 0 then
-			if frontally() == myHero then
-				myHero:MoveTo(spawnpos.x,spawnpos.z)
-			end			
-				--|> Enemy Target
-			elseif stance == 3 then
-				myHero:MoveTo(spawnpos.x,spawnpos.z)
-			end
-			allytofollow = followHero()
-			if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 350 then
-				distance1 = math.random(250,300)
-				distance2 = math.random(250,300)
-				neg1 = 1 
-				neg2 = 1 
-				if (LastFollowChamp and (GetInGameTimer() < LastFollowChamp)) then return end
-				LastFollowChamp = GetInGameTimer()					
-				if myHero.team == TEAM_BLUE then
-					myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
-					ChampionBusy = true
-				else
-					myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
-					ChampionBusy = true
-				end
-			end
-			AutoFarm()
-		end	
-	else
-	--|> Dead
-	--	AutoBuy()
+		end
+
 	end
 end
 
@@ -598,6 +1348,20 @@ function findLowHp()
 	end
 end
 
+function EnemyCount() 
+	for i = 5, heroManager.iCount do
+		local MyEnemy = heroManager:getHero(i)	
+		if MyEnemy.team ~= myHero.team and not MyEnemy.dead and MyEnemy.visible and GetDistance(MyEnemy, myHero) < 1050 then
+			enemiescount = true
+			--print("2 enemies")
+			--print(MyEnemy.name)
+		else
+			--print("1 enemies")
+			enemiescount = false
+		end
+	end
+end
+
 function Allies()
     local allycount = 0
     for i=1, heroManager.iCount do
@@ -641,90 +1405,7 @@ end
 
 
 --[[ AutoBuyItems ]]--
-local IDBytes = {	
-	[0x00] = 0xB0, [0x01] = 0xF0, [0x02] = 0x90, [0x03] = 0xD0, [0x04] = 0xB1, [0x05] = 0xF1, [0x06] = 0x91, [0x07] = 0xD1, [0x08] = 0x34, [0x09] = 0x74, [0x0A] = 0x14, [0x0B] = 0x54, 
-	[0x0C] = 0x35, [0x0D] = 0x75, [0x0E] = 0x15, [0x0F] = 0x55, [0x10] = 0xB4, [0x11] = 0xF4, [0x12] = 0x94, [0x13] = 0xD4, [0x14] = 0xB5, [0x15] = 0xF5, [0x16] = 0x95, [0x17] = 0xD5, 
-	[0x18] = 0x32, [0x19] = 0x72, [0x1A] = 0x12, [0x1B] = 0x52, [0x1C] = 0x33, [0x1D] = 0x73, [0x1E] = 0x13, [0x1F] = 0x53, [0x20] = 0xB2, [0x21] = 0xF2, [0x22] = 0x92, [0x23] = 0xD2, 
-	[0x24] = 0xB3, [0x25] = 0xF3, [0x26] = 0x93, [0x27] = 0xD3, [0x28] = 0x36, [0x29] = 0x76, [0x2A] = 0x16, [0x2B] = 0x56, [0x2C] = 0x37, [0x2D] = 0x77, [0x2E] = 0x17, [0x2F] = 0x57, 
-	[0x30] = 0xB6, [0x31] = 0xF6, [0x32] = 0x96, [0x33] = 0xD6, [0x34] = 0xB7, [0x35] = 0xF7, [0x36] = 0x97, [0x37] = 0xD7, [0x38] = 0x28, [0x39] = 0x68, [0x3A] = 0x08, [0x3B] = 0x48, 
-	[0x3C] = 0x29, [0x3D] = 0x69, [0x3E] = 0x09, [0x3F] = 0x49, [0x40] = 0xA8, [0x41] = 0xE8, [0x42] = 0x88, [0x43] = 0xC8, [0x44] = 0xA9, [0x45] = 0xE9, [0x46] = 0x89, [0x47] = 0xC9, 
-	[0x48] = 0x2C, [0x49] = 0x6C, [0x4A] = 0x0C, [0x4B] = 0x4C, [0x4C] = 0x2D, [0x4D] = 0x6D, [0x4E] = 0x0D, [0x4F] = 0x4D, [0x50] = 0xAC, [0x51] = 0xEC, [0x52] = 0x8C, [0x53] = 0xCC, 
-	[0x54] = 0xAD, [0x55] = 0xED, [0x56] = 0x8D, [0x57] = 0xCD, [0x58] = 0x2A, [0x59] = 0x6A, [0x5A] = 0x0A, [0x5B] = 0x4A, [0x5C] = 0x2B, [0x5D] = 0x6B, [0x5E] = 0x0B, [0x5F] = 0x4B, 
-	[0x60] = 0xAA, [0x61] = 0xEA, [0x62] = 0x8A, [0x63] = 0xCA, [0x64] = 0xAB, [0x65] = 0xEB, [0x66] = 0x8B, [0x67] = 0xCB, [0x68] = 0x2E, [0x69] = 0x6E, [0x6A] = 0x0E, [0x6B] = 0x4E, 
-	[0x6C] = 0x2F, [0x6D] = 0x6F, [0x6E] = 0x0F, [0x6F] = 0x4F, [0x70] = 0xAE, [0x71] = 0xEE, [0x72] = 0x8E, [0x73] = 0xCE, [0x74] = 0xAF, [0x75] = 0xEF, [0x76] = 0x8F, [0x77] = 0xCF, 
-	[0x78] = 0x38, [0x79] = 0x78, [0x7A] = 0x18, [0x7B] = 0x58, [0x7C] = 0x39, [0x7D] = 0x79, [0x7E] = 0x19, [0x7F] = 0x59, [0x80] = 0xB8, [0x81] = 0xF8, [0x82] = 0x98, [0x83] = 0xD8, 
-	[0x84] = 0xB9, [0x85] = 0xF9, [0x86] = 0x99, [0x87] = 0xD9, [0x88] = 0x3C, [0x89] = 0x7C, [0x8A] = 0x1C, [0x8B] = 0x5C, [0x8C] = 0x3D, [0x8D] = 0x7D, [0x8E] = 0x1D, [0x8F] = 0x5D, 
-	[0x90] = 0xBC, [0x91] = 0xFC, [0x92] = 0x9C, [0x93] = 0xDC, [0x94] = 0xBD, [0x95] = 0xFD, [0x96] = 0x9D, [0x97] = 0xDD, [0x98] = 0x3A, [0x99] = 0x7A, [0x9A] = 0x1A, [0x9B] = 0x5A, 
-	[0x9C] = 0x3B, [0x9D] = 0x7B, [0x9E] = 0x1B, [0x9F] = 0x5B, [0xA0] = 0xBA, [0xA1] = 0xFA, [0xA2] = 0x9A, [0xA3] = 0xDA, [0xA4] = 0xBB, [0xA5] = 0xFB, [0xA6] = 0x9B, [0xA7] = 0xDB, 
-	[0xA8] = 0x3E, [0xA9] = 0x7E, [0xAA] = 0x1E, [0xAB] = 0x5E, [0xAC] = 0x3F, [0xAD] = 0x7F, [0xAE] = 0x1F, [0xAF] = 0x5F, [0xB0] = 0xBE, [0xB1] = 0xFE, [0xB2] = 0x9E, [0xB3] = 0xDE, 
-	[0xB4] = 0xBF, [0xB5] = 0xFF, [0xB6] = 0x9F, [0xB7] = 0xDF, [0xB8] = 0x60, [0xB9] = 0x00, [0xBA] = 0x40, [0xBB] = 0x20, [0xBC] = 0x61, [0xBD] = 0x01, [0xBE] = 0x41, [0xBF] = 0x21, 
-	[0xC0] = 0xE0, [0xC1] = 0x80, [0xC2] = 0xC0, [0xC3] = 0xA0, [0xC4] = 0xE1, [0xC5] = 0x81, [0xC6] = 0xC1, [0xC7] = 0xA1, [0xC8] = 0x64, [0xC9] = 0x04, [0xCA] = 0x44, [0xCB] = 0x24, 
-	[0xCC] = 0x65, [0xCD] = 0x05, [0xCE] = 0x45, [0xCF] = 0x25, [0xD0] = 0xE4, [0xD1] = 0x84, [0xD2] = 0xC4, [0xD3] = 0xA4, [0xD4] = 0xE5, [0xD5] = 0x85, [0xD6] = 0xC5, [0xD7] = 0xA5, 
-	[0xD8] = 0x62, [0xD9] = 0x02, [0xDA] = 0x42, [0xDB] = 0x22, [0xDC] = 0x63, [0xDD] = 0x03, [0xDE] = 0x43, [0xDF] = 0x23, [0xE0] = 0xE2, [0xE1] = 0x82, [0xE2] = 0xC2, [0xE3] = 0xA2, 
-	[0xE4] = 0xE3, [0xE5] = 0x83, [0xE6] = 0xC3, [0xE7] = 0xA3, [0xE8] = 0x66, [0xE9] = 0x06, [0xEA] = 0x46, [0xEB] = 0x26, [0xEC] = 0x67, [0xED] = 0x07, [0xEE] = 0x47, [0xEF] = 0x27, 
-	[0xF0] = 0xE6, [0xF1] = 0x86, [0xF2] = 0xC6, [0xF3] = 0xA6, [0xF4] = 0xE7, [0xF5] = 0x87, [0xF6] = 0xC7, [0xF7] = 0xA7, [0xF8] = 0x70, [0xF9] = 0x10, [0xFA] = 0x50, [0xFB] = 0x30, 
-	[0xFC] = 0x71, [0xFD] = 0x11, [0xFE] = 0x51, [0xFF] = 0x31,
-}
-
-function OnRecvPacket(p)
-	if VIP_USER and UP_TO_DATE then
-		if p.header == 0x0107 then
-			p.pos=2
-			if p:DecodeF() == myHero.networkID then
-				p.pos=10
-				local bytes = {}
-				for i=4, 1, -1 do
-					bytes[i] = IDBytes[p:Decode1()]
-				end
-				lastBoughtItem = bit32.bxor(bit32.lshift(bit32.band(bytes[1],0xFF),24),bit32.lshift(bit32.band(bytes[2],0xFF),16),bit32.lshift(bit32.band(bytes[3],0xFF),8),bit32.band(bytes[4],0xFF))
-			end
-		end
-	end
-end
-
-function BuyItem1(id)
-	local rB = {}
-	for i=0, 255 do rB[IDBytes[i]] = i end
-	local p = CLoLPacket(0x0137)
-	p.vTable = 0xDDEC8C
-	p:EncodeF(myHero.networkID)
-	local b1 = bit32.lshift(bit32.band(rB[bit32.band(bit32.rshift(bit32.band(id,0xFFFF),24),0xFF)],0xFF),24)
-	local b2 = bit32.lshift(bit32.band(rB[bit32.band(bit32.rshift(bit32.band(id,0xFFFFFF),16),0xFF)],0xFF),16)
-	local b3 = bit32.lshift(bit32.band(rB[bit32.band(bit32.rshift(bit32.band(id,0xFFFFFFFF),8),0xFF)],0xFF),8)
-	local b4 = bit32.band(rB[bit32.band(id ,0xFF)],0xFF)
-	p:Encode4(bit32.bxor(b1,b2,b3,b4))
-	p:Encode4(0x63AA2B5E)
-	SendPacket(p)
-end
-
 function AutoBuy()
-	if VIP_USER and iARAM.misc.autobuy then
-		if myHero.dead or shopList[buyIndex] ~= 0 then
-				nowTime = GetTickCount()
-			if nowTime - lastBuy > 500 then
-				currentGold = myHero.gold
-				nowTime = GetTickCount()
-				if (currentGold < lastGold) or ((currentGold ~= lastGold) and (nowTime - lastBuy > 500)) then
-					if nowTime - lastBuy > 900 then
-						currentGold = myHero.gold
-						local itemval = shopList[buyIndex]
-						if itemval ~= nil then
-							local cost = itemCosts[itemval]
-							if cost ~= nil then
-								if myHero.gold > cost then
-									lastGold = currentGold
-									lastBuy = GetTickCount()
-									BuyItem1(itemval)
-									table.remove(shopList, 1)		
-								end
-							end
-						end
-					end
-				end
-			end
-		end
-	elseif not VIP_USER and iARAM.misc.miscelaneus then _AutoupdaterMsg("AutoBuy Disabled")
-	end
 end
 
 
@@ -752,6 +1433,10 @@ function Menu()
 			iARAM.PoroShot:addParam("comboKey", "Auto Poro Shoot", SCRIPT_PARAM_ONOFF, true) 
 			iARAM.PoroShot:addParam("range", "Poro Cast Range", SCRIPT_PARAM_SLICE, 1400, 800, 2500, 0) 
 			iARAM.PoroShot:addTS(TargetSelector)
+		--[[ ItemSettings menu ]]--	
+		iARAM:addSubMenu("Item Settings", "item")
+			iARAM.item:addParam("enableautozhonya", "Auto Zhonya", SCRIPT_PARAM_ONOFF, true)
+			iARAM.item:addParam("autozhonya", "Zhonya if Health under -> %", SCRIPT_PARAM_SLICE, 10, 0, 100, 0)
 		
 		--[[ Misc menu ]]--
 		iARAM:addSubMenu("Miscelaneus Settings", "misc")
@@ -785,9 +1470,10 @@ function RangeCircles()
 	if iARAM.drawing.drawcircles and not myHero.dead then
 		DrawCircle(myHero.x,myHero.y,myHero.z,getTrueRange(),RGB(0,255,0))
 		DrawCircle(myHero.x,myHero.y,myHero.z,400,RGB(55,64,60))	
-		--for index, allyminion in pairs(allyMinions.objects) do
-		--DrawCircle(allyminion.x,allyminion.y,allyminion.z,100,RGB(0,255,0))
-		--end
+		-- DrawMinions
+		DrawCircle(edraw.x, myHero.y, edraw.z, 400, RGB(73,210,59))
+		DrawCircle(mdraw.x, myHero.y, mdraw.z, 400, RGB(255,0,0))
+		DrawCircle(mdraw.x, myHero.y, mdraw.z, 100, RGB(255,0,59))
 	end
 end
 
@@ -838,6 +1524,27 @@ MenuTextSize = 18
 		tempSetupDrawY = tempSetupDrawY + 0.03
 		DrawText("Logged as: ".. GetUser() .." ", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
 		tempSetupDrawY = tempSetupDrawY + 0.07
+		
+		-- Info Draw
+		DrawText(status, 15, 10, 500, 0xFFFFFF00)
+		if underT.AllyTower then
+			DrawText("Under ally tower: true ", 15, 10, 520, 0xFFFFFF00)
+		else
+			DrawText("Under ally tower: false", 15, 10, 520, 0xFFFFFF00)
+		end
+		if underT.EnemyTower then
+			DrawText("Under enemy tower: true", 15, 10, 540, 0xFFFFFF00)
+		else
+			DrawText("Under enemy tower: false", 15, 10, 540, 0xFFFFFF00)
+		end
+		
+		--DrawText("Combo: "..tostring(comboDmg), 15, 10, 560, 0xFFFFFF00)
+		local Height = 500
+		for _, str in pairs(tabclosed) do
+			if str.dead then return end
+			 DrawText(tostring(str.charName), 15, 200, Height, 0xFFFFFF00)
+			 Height = Height + 20
+		end
 	end
 end
 
@@ -1098,6 +1805,13 @@ function DebugCursorPos()
 	end
 end
 
+---------[[ Auto Zhonya ]]---------
+function FunctionAutoZhonya()
+  if iARAM.item.enableautozhonya then
+    if myHero.health <= (myHero.maxHealth * iARAM.item.autozhonya / 100) then CastItem(3157) 
+    end
+  end
+end
 
 ---------[[ Auto Ignite ]]---------
 function FunctionAutoIgnite()
@@ -1107,7 +1821,7 @@ function FunctionAutoIgnite()
 				if myHero:CanUseSpell(ignite) ~= READY then return end
 				if ValidTarget(enemy) and GetDistance(enemy) < 600 then
 					local dmg = getDmg("ignite",enemy,myHero)
-					if dmg > target.health then
+					if dmg >= target.health then
 						CastSpell(ignite, enemy)
 					end
 				end
@@ -1138,16 +1852,15 @@ local Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It d
 		distance1 = math.random(250,300)
 		distance2 = math.random(250,300)
 		neg1 = 1 
-		neg2 = 1 				
+		neg2 = 1
+		
 		if myHero.team == TEAM_BLUE then
-			myHero:MoveTo(myHero.x*5+distance1*neg1,myHero.z*5+distance2*neg2)
+			DelayAction(function() myHero:MoveTo(myHero.x*5+distance1*neg1,myHero.z*5+distance2*neg2) end, 10)
 		else
-			myHero:MoveTo(myHero.x*-5+distance1*neg1,myHero.z*-5+distance2*neg2)
-		end
-	end
-
-
+			DelayAction(function() myHero:MoveTo(myHero.x*-5+distance1*neg1,myHero.z*-5+distance2*neg2) end, 10)
 			
+		end
+	end	
 	--[[
 	if GetInGameTimer() < 333 then
 		DelayAction(function()
@@ -1230,73 +1943,6 @@ function shootARAM(unit)
 end
 
 
------[[ AutoFarm and harras ]]------
-function AutoAttackChamp()
-	range = myHero.range + myHero.boundingRadius - 3
-	ts.range = range
-	ts:update()
-	if iARAM.follow then
-		if not iARAM.misc.attackchamps then return end
-		local myTarget = ts.target
-		if myTarget ~=	nil then		
-			if timeToShoot() then
-				myHero:Attack(myTarget)
-				AttackChampion = true
-				elseif heroCanMove() then
-				AttackChampion = false
-				
-			end
-
-		end
-	end
-end
-
-function AutoFarm()
-	if iARAM.follow then
-		enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
-		enemyMinions:update()
-		local player = GetMyHero()
-		local tick = 0
-		local delay = 400
-		local myTarget = ts.target
-		  if iARAM.misc.farm and ranged == 1 then
-			for index, minion in pairs(enemyMinions.objects) do
-			  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > tick + delay then
-				local dmg = getDmg("AD", minion, myHero)
-				if dmg > minion.health then
-				  myHero:Attack(minion)
-				  tick = GetTickCount()
-				  AttackMinion = true
-				  else
-				  AttackMinion = false
-				end
-			  end
-			end
-		  end
-	end
-end
-
-function heroCanMove()
-	return (GetTickCount() + GetLatency()/2 > lastAttack + lastWindUpTime + 20)
-end 
- 
-function timeToShoot()
-	return (GetTickCount() + GetLatency()/2 > lastAttack + lastAttackCD)
-end 
-
-function OnProcessSpell(object, spell)
-	if object == myHero then
-		if spell.name:lower():find("attack") then
-			lastAttack = GetTickCount() - GetLatency()/2
-			lastWindUpTime = spell.windUpTime*1000
-			lastAttackCD = spell.animationTime*1000
-		end 
-	end
-end
-
-
-
-
 -----[[ PrintFloatText ]]------
 function ChampionFloatText()
 	ChampionCount = 0
@@ -1370,7 +2016,7 @@ function AutoPotions()
 		-- Health Potions
 		if myHero:GetSpellData(SLOT).name == "RegenerationPotion" and not RevenerationPotion then
 			-- Conditions
-			if myHero:CanUseSpell(SLOT) == READY and myHero.health / myHero.maxHealth < myHero:getItem(SLOT).stacks / 6 and myHero.maxHealth - myHero.health > 150 then
+			if myHero:CanUseSpell(SLOT) == READY and myHero.health / myHero.maxHealth < 50 then
 				-- Cast
 				CastSpell(SLOT)
 				if iARAM.misc.misc2 then _AutoupdaterMsg("Health Potion") end
@@ -1584,26 +2230,11 @@ end
 
 
 --[[ PrintFloatText Function ]]--
-function FloatTextStance()
-	if not myHero.dead and iARAM.follow then
-		if stance == 1 then
-			_MyHeroText("TF mode")
-		end
-		if stance == 2 then
-			_MyHeroText("Stance No Found")
-		end
-		if stance == 3 then
-			_MyHeroText("Enemy target")
-		end
-		if stance == 0 then
-			_MyHeroText("Alone Mode")
-		end
-	end	
-end
-
-function _MyHeroText(FloatTxt) 
-	local barPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
-	DrawText(FloatTxt, 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
+function _MyHeroText() 
+	if iARAM.follow and not myHero.dead then
+		local barPos = WorldToScreen(D3DXVECTOR3(myHero.x, myHero.y, myHero.z))
+		DrawText(status, 15, barPos.x - 35, barPos.y + 20, ARGB(255, 0, 255, 0))
+	end
 end
 
 
@@ -1649,21 +2280,7 @@ function GetAbilityFramePos(unit)
 end
 
 
---[[ Improving Function ]]--
-function TowerFocusPlayer()
-	_AutoupdaterMsg("Tower focus: Player")
-	if myHero.team == TEAM_BLUE then
-		myHero:MoveTo(myHero.x*-3,myHero.z*-3)
-	else
-		myHero:MoveTo(myHero.x*3,myHero.z*3)
-	end
-end
-
-
-
-
-
---[[ Alone Mode Function ]]--
+--[[ Print Function ]]--
 local lastPrint1 = ""
 function howling1(str)
    if str ~= lastPrint1 then
@@ -1730,8 +2347,13 @@ function FollowMinionAlly()
 					if iARAM.misc.misc2 then howling1(str) end
 					distance1 = math.random(130,250)
 					distance2 = math.random(130,250)
-					neg1 = -1 
-					neg2 = -1 
+					if ranged == 1 then
+						neg1 = -1 
+						neg2 = -1 
+					else
+						neg1 = 1 
+						neg2 = 1 
+					end
 					if (LastTick and (GetInGameTimer() < LastTick + 2)) then return end
 						LastTick = GetInGameTimer()						
 					if myHero.team == TEAM_BLUE then
@@ -1775,7 +2397,7 @@ function TowerFollowing()
 			if GetDistance(Towers) < 100 then
 				table.insert(FollowTurrets, {x = Towers.x, y = Towers.y, z = Towers.z, range = Towers.range, color = (enemyTurret and allyTurretColor), visibilityRange = Towers.visibilityRange})
 				myHero:MoveTo(Towers.x,Towers.z)
-				if iARAM.misc.misc2 then _AutoupdaterMsg("moving to tower") end
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Moving to Tower") end
 				
 			end
 		end
@@ -1783,7 +2405,7 @@ function TowerFollowing()
 end
 
 function HealthAlly()
-	if stance == 1 or stance == 3 and iARAM.follow and not myHero.dead then
+	if iARAM.follow and not myHero.dead then
 	local champ = player.charName
 	local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
@@ -1876,3 +2498,511 @@ function TowerRangers()
 	end
 end
 
+function OnGainTurretFocus(turret, unit)
+	if turret and unit and unit.team and unit.team ~= myHero.team and unit.type and unit.type == myHero.type and ValidTarget(unit) and UnderTurret(unit, true) then
+		if GetDistanceSqr(unit) <= 1000 then	
+		 	if myHero:CanUseSpell(_E) == READY and myHero.charName:lower() ~= "xerath" then
+		 		CastE(unit)
+		 	end
+		end
+	end
+end
+
+function TFMode()
+
+	KarmaTF()
+	KayleTF()
+	LuxTF()
+	WarwickTF()
+	
+	champ = player.charName
+	Allie = followHero()
+	allytofollow = followHero()
+	LastTickerless = nil
+	LastMoveInTFMode = 1
+	if (LastTickerless and (GetInGameTimer() < LastTickerless + 1)) then return end
+	LastTickerless = GetInGameTimer()
+	LastMoveInTFMode = LastMoveInTFMode * -1	
+	if allytofollow ~= nil and GetDistance(allytofollow,myHero) >= 350 then
+		--if heroType == 1 then --adc
+			distance1 = math.random(250,300)
+			distance2 = math.random(250,300)
+			neg1 = -1 
+			neg2 = -1 				
+		if myHero.team == TEAM_BLUE then
+			myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
+			--myHero:MoveTo(allytofollow.x,allytofollow.z)
+		else
+			myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
+			--myHero:MoveTo(allytofollow.x,allytofollow.z)
+	end
+	end
+end
+
+---[[Ahri]]---
+function AhriFarm()
+local champ = player.charName
+	if champ == "Ahri" then
+		-- Farm Q 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function AhriCombo()
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_W) end
+	end
+end
+
+---[[Ashe]]---
+function AsheFarm()
+local champ = player.charName
+	if champ == "Ashe" then
+		-- Farm W 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+			--myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("W", minion, myHero) then
+					if myHero:CanUseSpell(_W) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_W, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function AsheCombo()
+local champ = player.charName
+	if champ == "Ashe" then
+		if ts.target.visible == true then
+			if myHero:CanUseSpell(_R) == READY then CastSpell(_R, ts.target.x, ts.target.z) end
+			if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+			if myHero:CanUseSpell(_W) == READY then CastSpell(_W, ts.target.x, ts.target.z) end
+		end
+	end
+end
+
+
+---[[Caitlyn]]---
+function CaitlynFarm()
+local champ = player.charName
+	if champ == "Caitlyn" then
+		-- Farm Q 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+			--myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function CaitlynCombo()
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_W) end
+	end
+end
+
+---[[Karma]]---
+function KarmaFarm()
+local champ = player.charName
+	if champ == "Karma" then
+		-- Farm Q 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+			--myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function KarmaCombo()
+local champ = player.charName
+	if champ == "Karma" then
+		if ts.target.visible == true then
+			if myHero:CanUseSpell(_R) == READY then CastSpell(_R) end
+			if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+			if myHero:CanUseSpell(_W) == READY then CastSpell(_W, ts.target.x, ts.target.z) end
+		end
+	end
+end
+
+function KarmaTF()
+local champ = player.charName
+local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
+	if champ == "Karma" then
+		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
+			if myHero:CanUseSpell(_E) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting E to Ally") end
+				CastSpell(_E, ally)
+			end
+		end
+	end
+end
+
+
+---[[Kayle]]---
+function KayleFarm()
+local champ = player.charName
+	if champ == "Kayle" then
+		-- Farm Q 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function KayleCombo()
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_W) end
+	end
+end
+
+function KayleTF()
+local champ = player.charName
+local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
+	if champ == "Kayle" then
+		if ally ~= nil and ally.health <= ally.maxHealth * (80 / 100) then
+			if myHero:CanUseSpell(_W) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting W to Ally") end
+				CastSpell(_W, ally)
+			end
+		end
+		if ally ~= nil and ally.health <= ally.maxHealth * (30 / 100) then
+			if myHero:CanUseSpell(_R) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting R to Ally") end
+				CastSpell(_R, ally)
+			end
+		end
+	end
+end
+
+
+---[[Lux]]---
+function LuxFarm()
+local champ = player.charName
+	if champ == "Lux" then
+		-- Farm E 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+			--myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("E", minion, myHero) then
+					if myHero:CanUseSpell(_E) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_E, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function LuxCombo()
+	SkillR = { name = "Final Spark", range = 3340, delay = 1.0, speed = math.huge, width = 190, ready = false }
+	rDmg = getDmg("R", ts.target, myHero)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY and myHero.Health < myHero.Health * (50 / 100) then CastSpell(_W) end
+		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= SkillR.range then CastSpell(_R, ts.target.x, ts.target.z) end
+	end
+end
+
+function LuxTF()
+local champ = player.charName
+local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
+	if champ == "Lux" then
+		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
+			if myHero:CanUseSpell(_E) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting E to Ally") end
+				CastSpell(_E, ally)
+			end
+		end
+	end
+end
+
+
+---[[Morgana]]---
+function MorganaFarm()
+local champ = player.charName
+	if champ == "Morgana" then
+		-- Farm W 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+			--myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health >= getDmg("W", minion, myHero) then
+					if myHero:CanUseSpell(_W) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_W, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function MorganaCombo()
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_W, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_E) end
+	end
+end
+
+
+---[[Nidalee]]---
+function NidaleeFarm()
+local champ = player.charName
+	if champ == "Nidalee" then
+		-- Farm Q 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+			--myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function NidaleeCombo()
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_W) end
+	end
+end
+
+function NidaleeTF()
+local champ = player.charName
+local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
+	if champ == "Nidalee" then
+		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
+			if myHero:CanUseSpell(_E) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting E to Ally") end
+				CastSpell(_E, ally)
+			end
+		end
+	end
+end
+
+
+function NunuCombo()
+	if myHero:CanUseSpell(_W) == READY then		
+		CastSpell(_W, ts.target)
+	end
+end
+
+---[[Warwick]]---
+function WarwickFarm()
+local champ = player.charName
+	if champ == "Warwick" then
+		-- Farm Q 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+			--myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function WarwickCombo()
+	rDmg = getDmg("R", ts.target, myHero)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY and GetDistance(ts.target) <= 100 then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_W) end
+		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= 600 then CastSpell(_R, ts.target.x, ts.target.z) end
+	end
+end
+
+function WarwickTF()
+local champ = player.charName
+local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
+	if champ == "Warwick" then
+		if ally ~= nil then
+			if myHero:CanUseSpell(_W) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting W") end
+				CastSpell(_W)
+			end
+		end
+	end
+end
+
+
+
+--[[ NotificationLib Function ]]--
+class "NotificationLib"
+local Length = 276;
+local Thickness = 66;
+--local Position = {(WINDOW_W*0.995), (WINDOW_H*0.1)}
+local Position = {(WINDOW_W*0.58), (WINDOW_H*0.2)}
+local Tiles = {}
+
+function DrawNotificationLib()
+    local time = 0.5;
+    local gameTime = GetGameTimer();
+
+    if tablelength(Tiles) > GetMaxTileCount()
+    then
+        table.remove(Tiles, 1)
+    end
+
+    for i ,v in pairs(Tiles) do
+
+        if v[3] + v[4] + time <= gameTime
+        then
+            table.remove(Tiles, i)
+        end
+
+        v[5] = Position[1];
+        v[6] = Position[2] + (Thickness + 6) * (i - 1);
+
+        if time + v[4] >= gameTime
+        then
+            local percent = ((v[4] + time) - gameTime)/time
+            v[5] = Position[1] + Length * percent;
+        end
+
+        if v[3] + v[4] <= gameTime and v[3] + v[4] + time > gameTime
+        then
+            local percent = (gameTime - (v[4]+v[3]))/time;
+            v[5] = Position[1] + Length * percent;
+        end
+
+        DrawTile(v[5], v[6], v[1], v[2]);
+    end
+end
+
+function OnWndMsgNotificationLib(msg,wParam)
+        if msg ~= 513
+        then
+            return;
+        end
+
+        for i ,v in pairs(Tiles) do
+            if CursorisOverBox(v[5], v[6])
+            then
+                v[3] = GetGameTimer() - v[4];
+            end
+        end
+end
+
+function NotificationLib:AddTile(Header, Text, Duration)
+    Tiles[tablelength(Tiles) +1] = {Header, Text, Duration, GetGameTimer(), Position[1], Position[2]}
+end
+
+function DrawTile(x, y, header, text)
+            local lenghtHeader = GetTextArea(header, 25).x - 240;
+            local lenghtContext = GetTextArea(text, 20).x - 250;
+            local extraLenght = lenghtHeader > lenghtContext and lenghtHeader or lenghtContext;
+            local tileLenght = CursorIsOverTile(x, y) and Length + (extraLenght > 0 and extraLenght or 0) or Length;
+
+	        --Border
+            local borderColor = CursorIsOverTile(x, y) and ARGB(255,93,86,58) or ARGB(255*0.5,93,86,58);
+            local borderThickness = 4;
+            local borderYOffset = (Thickness * 0.5);
+            DrawLine(x - tileLenght, y - borderYOffset, x, y - borderYOffset, borderThickness, borderColor);
+            DrawLine(x - tileLenght, y + borderYOffset, x, y + borderYOffset, borderThickness, borderColor);
+            DrawLine(x - tileLenght + (borderThickness * 0.5), y - borderYOffset + (borderThickness * 0.5), x - tileLenght + (borderThickness * 0.5), y + borderYOffset - (borderThickness * 0.5), borderThickness, borderColor);
+            DrawLine(x - (borderThickness * 0.5), y - borderYOffset + (borderThickness * 0.5), x - (borderThickness * 0.5), y + borderYOffset - (borderThickness * 0.5), borderThickness, borderColor);
+
+            --Main
+            local mainColor = CursorIsOverTile(x, y) and ARGB(255,12,19,18) or ARGB(255*0.5,12,19,18);
+            local mainBorderOffset = (borderThickness*0.5);
+            DrawLine(x - tileLenght + borderThickness, y, x - borderThickness, y, Thickness - borderThickness, mainColor);
+
+            --CloseBox
+            local boxColor = ARGB(255, 35,65,63);
+            local boxHeight = 24;
+            local boxWidth = 24;
+            local boxYOffset = (Thickness*0.5-boxHeight*0.5);
+            if CursorisOverBox(x, y)
+            then
+                DrawLine(x - boxWidth - borderThickness, y - boxYOffset + mainBorderOffset, x - borderThickness, y - boxYOffset + mainBorderOffset, boxHeight, boxColor);
+            end
+
+            --Header
+            local headerYOffset = 30;
+            local fixedHeader = (not CursorIsOverTile(x, y) and GetTextArea(header, 25).x > 240) and header:sub(1, 20).." ..." or header;
+            DrawText(fixedHeader, 25, x - tileLenght + borderThickness*2, y - headerYOffset, ARGB(255, 127, 255, 212));
+
+            --Context
+            local contextYOffsetLine1 = 5;
+            local fixedContext = (not CursorIsOverTile(x, y) and GetTextArea(text, 20).x > 250) and text:sub(1, 25).." ..." or text;
+            DrawText(fixedContext, 20, x - tileLenght + borderThickness*2, y + contextYOffsetLine1, ARGB(255, 250, 235, 215));
+
+            --BoxX
+            DrawText("x",33,x - boxWidth, y -boxYOffset*2 +5,ARGB(255,143,188,143))
+end
+
+function CursorIsOverTile(posX, posY)
+	        local cursor = GetCursorPos();
+            local x = posX - cursor.x;
+            local y = posY - cursor.y;
+            return (x < Length and x > 0) and (y < 30 and y > -45);
+end
+
+function CursorisOverBox(posX, posY)
+            local cursor = GetCursorPos();
+            local x = posX - cursor.x;
+            local y = posY - cursor.y;
+            return (x < 28 and x > 0) and (y < 24 and y > -10);
+end
+
+function tablelength(T)
+  local count = 0
+  for _ in pairs(T) do count = count + 1 end
+  return count
+end
+
+local function round(num, idp)
+  local mult = 10^(idp or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
+function GetMaxTileCount()
+    return round((WINDOW_H / 108), 0)
+end
