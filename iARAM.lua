@@ -134,8 +134,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.00
-local UPDATE_CHANGE_LOG = "Updated for LoL version 5.20"
+local version = 6.10
+local UPDATE_CHANGE_LOG = "Update for 5.20 Minipatch, Fixed Ahri Farm"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -170,11 +170,12 @@ end
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
 	--print(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.20.0.284") then
+	if string.match(LoLVersion, "5.20.0.289") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
 		LoLVersionWorking = false
+		NotificationLib:AddTile("iARAM Outdated", "Script Outdated for this LoL version", 20)
 		 _AutoupdaterMsg("Script Outdated for this LoL version")
 	end
 end
@@ -454,7 +455,7 @@ end
 function OnTick()
 	startingTime = GetTickCount()
 	if LoLVersionWorking then
-	--	AutoBuy()
+		AutoBuy()
 		LFC()
 		--|> Poro Shouter
 		PoroCheck()
@@ -1413,6 +1414,7 @@ end
 
 --[[ AutoBuyItems ]]--
 function AutoBuy()
+BuyItem(1001)
 end
 
 
@@ -2032,7 +2034,6 @@ end
 
 
 --[[ AutoLevel Function ]]--
---[[
 AddLoadCallback(function()
 
 if not VIP_USER then return end
@@ -2205,26 +2206,31 @@ end
 
 function AutoLevel:LevelSpell(id)
 	if LoLVersionWorking then
-		local offsets = { 
-		[_Q] = 0x29,
-		[_W] = 0x49,
-		[_E] = 0x21,
-		[_R] = 0x41,
-		  }
-		  local p = CLoLPacket(0x114)
-		  p.vTable = 0xF0D574
-		  p:EncodeF(myHero.networkID)
-		  for i = 1, 4 do p:Encode1(0x2B) end
-		  p:Encode1(offsets[id])
-		  for i = 1, 4 do p:Encode1(0xE1) end
-		  for i = 1, 4 do p:Encode1(0x42) end
-		  p:Encode1(0x62)
-		  p:Encode1(0x01)
-		  for i = 1, 3 do p:Encode1(0x00) end
-		  SendPacket(p)
+		local offsets = {
+			[_Q] = 0x32,
+			[_W] = 0x78,
+			[_E] = 0xE7,
+			[_R] = 0xD5,
+		}
+		local p
+		p = CLoLPacket(21)
+		
+		if GetGameVersion():sub(1,10) == "5.20.0.284" then
+			p.vTable = 15151928
+		else
+			p.vTable = 15821468
+		end
+		p:EncodeF(myHero.networkID)
+		for i = 1, 4 do p:Encode1(0x04) end
+		p:Encode1(offsets[id])
+		for i = 1, 4 do p:Encode1(0x16) end
+		for i = 1, 4 do p:Encode1(0x1D) end
+		p:Encode1(0x4E)
+		p:Encode1(0x2C)
+		for i = 1, 3 do p:Encode1(0x00) end
+		SendPacket(p)
 	end
 end
-]]--
 
 --[[ PrintFloatText Function ]]--
 function _MyHeroText() 
@@ -2458,9 +2464,9 @@ local QRange = 900
 		-- Farm Q 
 		if not myHero:CanUseSpell(_Q) == READY then return end
 			for i, minion in pairs(enemyMinion.objects) do
-			local QMinionDmg = GetDmg("Q", minion)
-				if QMinionDmg >= minion.health and ValidTarget(minion,  QRange+100) and 50 >= ManaPercent() then
+				if ValidTarget(minion,  QRange+100) and 50 <= ManaPercent() then
 					CastSpell(_Q, minion.x,minion.z)
+					--myHero:MoveTo(myHero.x-50,myHero.z-50)
 				end 
 			end
 	end
