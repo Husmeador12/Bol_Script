@@ -134,8 +134,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.10
-local UPDATE_CHANGE_LOG = "Update for 5.20 Minipatch, Fixed Ahri Farm"
+local version = 6.20
+local UPDATE_CHANGE_LOG = "Fixed Ahri Combo, fixed Taric"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -192,8 +192,8 @@ do
 	assassins = {"Akali","Diana","Evelynn","Fizz","Katarina","Nidalee"}
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","JarvanIV","Nasus","Skarner","TahmKench","Thresh","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
-	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Zac"}
-	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Shaco","Sona","Soraka","Swain","Syndra","Taric","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
+	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Taric","Zac"}
+	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Shaco","Sona","Soraka","Swain","Syndra","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
 	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","RekSai","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","MonkeyKing","Zed","Yasuo"}
 	fighters = {"Aatrox","Fiora","Jax","Jayce","MasterYi","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
@@ -461,9 +461,6 @@ function OnTick()
 		PoroCheck()
 		--|>Autopotions
 		AutoPotions()
-		--|>Mode Alone
-		--FollowMinionAlly()
-		HealthAlly()
 		TowerRangers()
 		--TowerFollowing()
 		FunctionAutoZhonya()
@@ -808,7 +805,7 @@ local champ = player.charName
 		elseif champ == "Syndra" then       ComboFull() harass(ts.target)
 		elseif champ == "TahmKench" then   	ComboFull() harass(ts.target)
 		elseif champ == "Talon" then        ComboFull() harass(ts.target)
-		elseif champ == "Taric" then        ComboFull() harass(ts.target)
+		elseif champ == "Taric" then        TaricCombo() harass(ts.target)
 		elseif champ == "Teemo" then        ComboFull() harass(ts.target)
 		elseif champ == "Thresh" then       ComboFull() harass(ts.target)
 		elseif champ == "Tristana" then     ComboFull() harass(ts.target)
@@ -971,6 +968,7 @@ if player.dead or GetGame().isOver then return end
 	LuxFarm()
 	MorganaFarm()
 	NidaleeFarm()
+	TaricFarm()
 	WarwickFarm()
 
 	-- moveLastFollowingMinion
@@ -1073,7 +1071,7 @@ function NormalMode()
 	LastTickaro = GetInGameTimer()
 	LastMoveInNormalMode = LastMoveInNormalMode * -1
 		if heroType == 1 then --adc
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 80 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) > 80 then
 					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
@@ -1124,13 +1122,13 @@ function NormalMode()
 						end
 				end	
 		elseif heroType == 7 then --mage
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 80 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) > 50 then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
 						else
 							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
 						end
-				--elseif GetDistance(enemyminions, player) > 100 and GetDistance(Vector(edraw.x, edraw.z), player) > 100 then
+				--elseif GetDistance(Vector(edraw.x, edraw.z), player) > 100 then
 				--		if myHero.team == TEAM_BLUE then
 				--			myHero:MoveTo(edraw.x-190,edraw.z-190)
 				--		else
@@ -2317,43 +2315,6 @@ function TowerFollowing()
 	end
 end
 
-function HealthAlly()
-	if iARAM.follow and not myHero.dead then
-	local champ = player.charName
-	local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
-		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
-			if champ == "Soraka" then
-				if myHero:CanUseSpell(_W) == READY then
-					if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
-					CastSpell(_W, ally)
-				end
-			elseif champ == "Taric" then
-					if myHero:CanUseSpell(_Q) == READY then
-						if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
-						CastSpell(_Q, ally)
-					end
-			elseif champ == "Nami" then 
-					if myHero:CanUseSpell(_W) == READY then
-						if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end			
-						CastSpell(_W, ally)
-					end
-					if myHero:CanUseSpell(_E) == READY then
-						if iARAM.misc.misc2 then _AutoupdaterMsg("Casting E to Ally") end			
-						CastSpell(_E, ally)
-					end
-			elseif champ == "Sona" then
-					if myHero:CanUseSpell(_W) == READY then			
-						if iARAM.misc.misc2 then _AutoupdaterMsg("Healing Ally") end
-						CastSpell(_W, ally)
-					end
-					if myHero:CanUseSpell(_E) == READY then			
-						if iARAM.misc.misc2 then _AutoupdaterMsg("Casting E to Ally") end
-						CastSpell(_E, ally)
-					end
-			end
-		end
-	end
-end
 
 function GetPlayer(team, includeDead, includeSelf, distanceTo, distanceAmount, resource)
 	local target = nil
@@ -2429,6 +2390,7 @@ function TFMode()
 	KayleTF()
 	LuluTF()
 	LuxTF()
+	TaricTF()
 	WarwickTF()
 	
 	
@@ -2477,9 +2439,9 @@ local ERANGE = 975
 local RandomUlt1 = math.random(130,250)
 local RandomUlt2 = math.random(130,250)
 local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(ts.target, .25, 75, ERANGE, 1200, myHero, true)
-		
 	if ts.target.visible == true then
-		if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) < ERANGE and not minionCollision(ts.target, ERANGE) then 
+		if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) < ERANGE  then 
+		--if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) < ERANGE and not minionCollision(ts.target, ERANGE) then 
 			if CastPosition and Hitchance >= 2 then
 			d = CastPosition
 			CastSpell(_E, CastPosition.x, CastPosition.z)
@@ -2493,6 +2455,7 @@ local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(ts.target, .
 end
 
 --[[Minion Collsion]]--		
+--[[
 function minionCollision(target, range)
 	for _, minionObjectE in pairs(enemyMinions.objects) do
 		if target ~= nil and player:GetDistance(minionObjectE) < range then
@@ -2516,7 +2479,7 @@ function minionCollision(target, range)
         end
     return false
 end
-
+]]--
 function ManaPercent()
   return (myHero.mana/myHero.maxMana)*100
 end
@@ -2921,6 +2884,43 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 end
 
 
+---[[Taric]]---
+function TaricFarm()
+local champ = player.charName
+	if champ == "Taric" then
+		-- Farm W 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("W", minion, myHero) then
+				if myHero:CanUseSpell(_W) == READY and GetDistance(minion) <= 200then
+					CastSpell(_W, minion)
+				end
+			end
+		end	
+	end
+end
+
+function TaricCombo()
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_W) end
+		if myHero:CanUseSpell(_R) == READY then CastSpell(_R) end
+	end
+end
+
+function TaricTF()
+local champ = player.charName
+local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
+	if champ == "Taric" then
+		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
+			if myHero:CanUseSpell(_Q) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting Q to Ally") end
+				CastSpell(_Q, ally)
+			end
+		end
+	end
+end
+
+
 function NunuCombo()
 	if myHero:CanUseSpell(_W) == READY then		
 		CastSpell(_W, ts.target)
@@ -2933,15 +2933,14 @@ local champ = player.charName
 	if champ == "Warwick" then
 		-- Farm Q 
 		for index,minion in pairs(enemyMinion.objects) do
-			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
-			--myHero:Attack(minion)
+
 				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
 					if myHero:CanUseSpell(_Q) == READY then
 						--myHero:HoldPosition()
 						CastSpell(_Q, minion)
 					end
 				end
-			end
+
 		end	
 	end
 end
