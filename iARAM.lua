@@ -91,14 +91,7 @@ local lastCast = 0
 require 'VPrediction'
 lastsend = 0
 -----[[ Buyer Globals ]]------
-nextbuyIndex = 1
-lastBuy = 0
-lastBoughtItem = nil
-UP_TO_DATE = true
-buyDelay = 100 --default 100
-local buyIndex = 1
-local lastGold = 0
-local lastBuy = -501
+
 
 -----[[ Auto ward Globals ]]------
 local drawWardSpots = false
@@ -134,8 +127,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.21
-local UPDATE_CHANGE_LOG = "Fixed Normal Mode and Janna Farm"
+local version = 6.22
+local UPDATE_CHANGE_LOG = "Fixed Mode Alone. Added Kindred"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -143,7 +136,6 @@ local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
 
 
 -----[[ Auto Update Function ]]------
-
 if AUTOUPDATE then
 	local ServerData = GetWebResult(UPDATE_HOST, "/Husmeador12/Bol_Script/master/version/iARAM.version")
 	if ServerData then
@@ -166,6 +158,7 @@ if AUTOUPDATE then
 	end
 end
 
+
 --[[ CheckLoLVersion Function ]]--
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
@@ -181,15 +174,13 @@ function CheckLoLVersion()
 end
 
 
-
-
 -----[[ Build and defining Champion Class ]]------
 do
 	myHero = GetMyHero()
 	Target = nil
 	spawnpos  = { x = myHero.x, z = myHero.z}
 	ranged = 0
-	assassins = {"Akali","Diana","Evelynn","Fizz","Katarina","Nidalee"}
+	assassins = {"Akali","Diana","Evelynn","Fizz","Katarina","Kindred","Nidalee"}
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","JarvanIV","Nasus","Skarner","TahmKench","Thresh","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Taric","Zac"}
@@ -281,85 +272,6 @@ do
 	if myHero.range > 400 then
 		ranged = 1
 	end
-	
-
-	--[[ ItemsList ]]--
-	itemCosts = {
-										[3340]=0,--trinket
-                                        [3352]=865,--Nomad's Medallion
-										[1001]=325,--Boots
-										[1298]=450,--Dagger
-										[1293]=875,--Pickaxe
-										[3024]=950,--Glacial Shroud
-                                        [3801]=600,--Crystalline Bracer
-										[1282]=850,--Blasting Wand
-										[3364]=820,--Fiendish Codex
-                                        [1287]=750,--Chain Vest
-										[3028]=900,--ºChalice of Harmony
-										[1313]=850,--Negatron Cloak
-                                        [3339]=300,--Warmog's Armor
-										[1309]=800,--Vampiric Scepter
-										[1011]=1000,--ºGiant's Belt
-                                        [3190]=2800,--ºLocket of the Iron Solari
-                                        [3331]=2100,--Thornmail
-                                        [3068]=2600,--Sunfire Cape
-                                        [3328]=1950,--Bloodthirster
-                                        [3069]=1235,--ºTalisman of Ascension
-                                        [1294]=1550,--B.F. Sword
-                                        [3031]=2250,--ºInfinity Edge
-                                        [3395]=2150,--Mercurial Scimitar
-                                        [3507]=1650,--Essence Reaver
-                                        [3411]=1450,--Hexdrinker
-                                        [3412]=1750,--Maw of Malmortius
-                                        [3338]=1050,--Warden's Mail
-                                        [3366]=1400,--Frozen Heart
-                                        [3211]=1200,--Spectre's Cowl
-                                        [3065]=1550,--ºSpirit Visage
-                                        [3358]=1550,--Banshee's Veil
-                                        [1314]=1600,--Needlessly Large Rod
-                                        [3345]=1700,--Rabadon's Deathcap
-                                        [3413]=1700,--Zhonya's Hourglass
-                                        [3285]=1500,--Luden's Echo
-                                        [3001]=2440,--ºAbyssal Scepter
-                                        [3357]=1250,--Stinger
-                                        [3371]=1670,--Nashor's Tooth
-                                        [3392]=1485,--Haunting Guise
-                                        [3407]=1415,--Liandry's Torment
-										[3057]=1200,--ºSheen
-                                        [3356]=3000,--Lich Bane
-                                        [3044]=1325,--ºPhage
-                                        [3071]=3000,--ºThe Black Cleaver       
-                                        [3165]=2300,--ºMorellonomicon
-										[3006]=1000,--Berserker's Greaves
-										[3342]=1100,--Zeal
-										[3400]=1400,--Bilgewater Cutlass
-										[3409]=3200,--Blade of the Ruined King
-										[3181]=2275,--Sanguine Blade
-										[3035]=2300,--ºLast Whisper
-										[3026]=2800,--Guardian Angel
-										[3047]=1000,--ºNinja Tabi
-										[3390]=1337,--The Brutalizer
-										[3025]=2900,--Iceborn Gauntlet
-										[3367]=1200,--Mercury's Treads
-										[3372]=3000,--Rylai's Crystal Scepter
-										[1299]=1100,--Recurve Bow
-										[3020]=1100,--ºSorcerer's Shoes
-										[3347]=2600,--Wit's End
-										[3408]=2500,--Will of the Ancients
-										[3330]=3300,--Ravenous Hydra 
-										[3391]=2500,--Void Staff
-										[3401]=1200,--Hextech Revolver
-										[3334]=3703,--Trinity Force
-										[3174]=2700,--Athene's Unholy Grail
-										[3343]=2500,--Statikk Shiv
-										[3399]=2850,--Randuin's Omen
-										[3005]=2250,--Atma's Impaler
-										[3380]=2590,--Guinsoo's Rageblade
-										[3046]=2800,--ºPhantom Dancer
-										[3402]=3400,--Hextech Gunblade
-										[3333]=1900--Tiamat
-                                }
-       
         if heroType == 1 then --ADC
 			--shopList = {3006,3342,3343,3400,3409,1294,3181,1293,3035,3026,0}
 			shopList = {1001,3006,3342,3343,3400,3409,1294,3181,1293,3035,3026,0}
@@ -497,6 +409,232 @@ function OnWndMsg(msg, keycode)
 end
 
 
+function ChampionesDraw()
+	if iARAM.misc.misc2 then
+		if player.dead or GetGame().isOver then return end
+			--for index,minion in pairs(enemyMinion.objects) do
+				--if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("W", minion, myHero) then
+				--	DrawCircle3D(minion.x, minion.y, minion.z, 30, 1, RGB(255,0,255), 100)
+				--	DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 1, 0x7FFF00)
+				--end
+			--end
+		-- Draw Enemy
+		for _, str in pairs(tabget) do
+			if myHero:GetDistance(tabget[_]) < 800 and not tabget[_].dead and tabget[_] ~= nil and tabget[_].valid and tabget[_].visible and tabget[_].health > 1 then
+				DrawLine3D(myHero.x, myHero.y, myHero.z, tabget[_].x, tabget[_].y, tabget[_].z, 1, RGB(255,255,255))
+				DrawCircle3D(tabget[_].x, tabget[_].y, tabget[_].z, 100, 1, RGB(255,255,255), 100)
+			end
+		end
+		-- Target Draw
+		if ts.target then
+			hp = ((ts.target.health * 100) / ts.target.maxHealth) * 2
+			DrawText(ts.target.charName, 20, 15, 150, RGB(255,255,255))
+			DrawLine(15, 200, 200 + 15, 200, 10, RGB(255,105,105))
+			if ts.target.health < ts.target.maxHealth /2 then
+				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,255,215))
+			elseif ts.target.health > ts.target.maxHealth /2 then
+				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,0,255))
+			elseif ts.target.health < comboDmg then
+				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,255,95))
+			end
+		end		
+	end
+end
+
+
+function CheckStatus() 
+	eTurret = GetCloseTower(player, TEAM_ENEMY)
+	aTurret = GetCloseTower(player, player.team)
+	AllyNotAFK = followHero()
+	if iARAM.follow then
+		if safe == false then
+			status = "Not Safe"
+			DefensiveMode()
+		elseif myHero.health < myHero.maxHealth/4 and summonersRiftMap then -- Back to Base
+			status = "LowHP"
+			lowHP()
+		elseif myHero.health < myHero.maxHealth/4 and myHero.x >= 2880 and myHero.z >= 2880 and howlingAbyssMap == true then -- HP Relics
+			status = "Loking for Relic"
+			TakingRelic()
+		elseif onbase == true then 
+			status = "On Base"
+			if myHero.health == myHero.maxHealth then
+				onbase = false
+			end
+		elseif #eTab > 0 and ts.target ~= nil and ts.target.valid and not ts.target.dead and ts.target.visible then
+			status = "Fight"
+			Fight()
+		elseif #allyMinion.objects > 1 and #enemyMinion.objects >= 1 then -- Farming
+			status = "Farming"
+			FarmMode()
+		elseif Allies() >= 2 and not AllyNotAFK ~= nil then
+			status = "TF Mode"
+			TFMode()
+		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and howlingAbyssMap then
+			status = "Moving"
+			DelayAction(function() MoveMode() end, 2)
+			elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and summonersRiftMap then
+			status = "Moving"
+			DelayAction(function() MoveMode() end, 2)
+		elseif #allyMinion.objects <= 1 and GetDistance(aTurret, player) >= 800 and summonersRiftMap then -- Alone
+			status = "Alone"
+			AloneMode()
+		elseif #allyMinion.objects <= 1 and GetDistance(aTurret, player) >= 800 and howlingAbyssMap then -- Alone
+			status = "Alone"
+			AloneMode()
+		else
+			status = "Normal"
+			NormalMode()
+		end
+	end
+end
+
+function Fight()
+local champ = player.charName
+	if ts.target then
+	if champ == "Aatrox" then           harass(ts.target)
+		elseif champ == "Ahri" then         AhriCombo() harass(ts.target)
+		elseif champ == "Akali" then        ComboFull() harass(ts.target)
+		elseif champ == "Alistar" then      ComboFull() harass(ts.target)
+		elseif champ == "Amumu" then        ComboFull() harass(ts.target)
+		elseif champ == "Anivia" then       ComboFull() harass(ts.target)
+		elseif champ == "Annie" then        ComboFull() harass(ts.target)
+		elseif champ == "Ashe" then         AsheCombo() harass(ts.target)
+		elseif champ == "Azir" then         ComboFull() harass(ts.target)
+		elseif champ == "Blitzcrank" then   ComboFull() harass(ts.target)
+		elseif champ == "Brand" then        ComboFull() harass(ts.target)
+		elseif champ == "Bard" then         ComboFull() harass(ts.target)
+		elseif champ == "Braum" then        ComboFull() harass(ts.target)
+		elseif champ == "Caitlyn" then      CaitlynCombo() harass(ts.target)
+		elseif champ == "Cassiopeia" then   ComboFull() harass(ts.target)
+		elseif champ == "Chogath" then      ComboFull()
+		elseif champ == "Corki" then        ComboFull() harass(ts.target)
+		elseif champ == "Darius" then       ComboFull()
+		elseif champ == "Diana" then        ComboFull() harass(ts.target)
+		elseif champ == "DrMundo" then      ComboFull() harass(ts.target)
+		elseif champ == "Draven" then       ComboFull() harass(ts.target)
+		elseif champ == "Ekko" then      	ComboFull() harass(ts.target)
+		elseif champ == "Elise" then        ComboFull() harass(ts.target)
+		elseif champ == "Evelynn" then      ComboFull() harass(ts.target)
+		elseif champ == "Ezreal" then       ComboFull() harass(ts.target)
+		elseif champ == "FiddleSticks" then ComboFull() harass(ts.target)
+		elseif champ == "Fiora" then        ComboFull() harass(ts.target)
+		elseif champ == "Fizz" then         ComboFull() harass(ts.target)
+		elseif champ == "Galio" then        ComboFull() harass(ts.target)
+		elseif champ == "Gangplank" then    ComboFull() harass(ts.target)
+		elseif champ == "Garen" then        ComboFull()
+		elseif champ == "Gragas" then       ComboFull() harass(ts.target)
+		elseif champ == "Graves" then       ComboFull() harass(ts.target)
+		elseif champ == "Gnar" then         ComboFull() harass(ts.target)
+		elseif champ == "Hecarim" then      ComboFull() harass(ts.target)
+		elseif champ == "Heimerdinger" then ComboFull() harass(ts.target)
+		elseif champ == "Irelia" then       ComboFull() harass(ts.target)
+		elseif champ == "Janna" then        JannaCombo() harass(ts.target)
+		elseif champ == "JarvanIV" then     ComboFull() harass(ts.target)
+		elseif champ == "Jax" then          ComboFull() harass(ts.target)
+		elseif champ == "Jayce" then        ComboFull() harass(ts.target)
+		elseif champ == "Jinx" then         ComboFull() harass(ts.target)
+		elseif champ == "Kalista" then      ComboFull() harass(ts.target)
+		elseif champ == "Karma" then        KarmaCombo() harass(ts.target)
+		elseif champ == "Karthus" then      ComboFull() harass(ts.target)
+		elseif champ == "Kassadin" then     ComboFull() harass(ts.target)
+		elseif champ == "Katarina" then     ComboFull() harass(ts.target)
+		elseif champ == "Kayle" then        KayleCombo() harass(ts.target)
+		elseif champ == "Kennen" then       ComboFull() harass(ts.target)
+		elseif champ == "Kindred" then      KindredCombo() harass(ts.target)
+		elseif champ == "Khazix" then       ComboFull() harass(ts.target)
+		elseif champ == "KogMaw" then       ComboFull() harass(ts.target)
+		elseif champ == "Leblanc" then      ComboFull() harass(ts.target)
+		elseif champ == "LeeSin" then       ComboFull() harass(ts.target)
+		elseif champ == "Leona" then       	LeonaCombo()
+		elseif champ == "Lissandra" then    ComboFull() harass(ts.target)
+		elseif champ == "Lucian" then       ComboFull() harass(ts.target)
+		elseif champ == "Lulu" then         LuluCombo() harass(ts.target)
+		elseif champ == "Lux" then          LuxCombo() harass(ts.target)
+		elseif champ == "Malphite" then     ComboFull() harass(ts.target)
+		elseif champ == "Malzahar" then     ComboFull() harass(ts.target)
+		elseif champ == "Maokai" then       ComboFull() harass(ts.target)
+		elseif champ == "MasterYi" then     ComboFull() harass(ts.target)
+		elseif champ == "MissFortune" then  ComboFull() harass(ts.target)
+		elseif champ == "MonkeyKing" then   ComboFull() harass(ts.target)
+		elseif champ == "Mordekaiser" then  ComboFull() harass(ts.target)
+		elseif champ == "Morgana" then      MorganaCombo() harass(ts.target)
+		elseif champ == "Nami" then         ComboFull() harass(ts.target)
+		elseif champ == "Nasus" then        ComboFull() harass(ts.target)
+		elseif champ == "Nautilus" then     ComboFull() harass(ts.target)
+		elseif champ == "Nidalee" then      NidaleeCombo() harass(ts.target)
+		elseif champ == "Nocturne" then     ComboFull() harass(ts.target)
+		elseif champ == "Nunu" then         NunuCombo()
+		elseif champ == "Olaf" then         ComboFull() harass(ts.target)
+		elseif champ == "Orianna" then      ComboFull() harass(ts.target)
+		elseif champ == "Pantheon" then     ComboFull() harass(ts.target)
+		elseif champ == "Poppy" then        ComboFull() harass(ts.target)
+		elseif champ == "Quinn" then        ComboFull() harass(ts.target)
+		elseif champ == "Rammus" then       ComboFull() harass(ts.target)
+		elseif champ == "RekSai" then       ComboFull() harass(ts.target)
+		elseif champ == "Renekton" then     ComboFull() harass(ts.target)
+		elseif champ == "Rengar" then       ComboFull() harass(ts.target)
+		elseif champ == "Riven" then        ComboFull() harass(ts.target)
+		elseif champ == "Rumble" then       ComboFull() harass(ts.target)
+		elseif champ == "Ryze" then         RyzeCombo() harass(ts.target)
+		elseif champ == "Sejuani" then      ComboFull() harass(ts.target)
+		elseif champ == "Shaco" then        ComboFull() harass(ts.target)
+		elseif champ == "Shen" then         ComboFull() harass(ts.target)
+		elseif champ == "Shyvana" then      ComboFull() harass(ts.target)
+		elseif champ == "Singed" then       ComboFull() harass(ts.target)
+		elseif champ == "Sion" then         ComboFull() harass(ts.target)
+		elseif champ == "Sivir" then        ComboFull() harass(ts.target)
+		elseif champ == "Skarner" then      ComboFull() harass(ts.target)
+		elseif champ == "Sona" then         ComboFull() harass(ts.target)
+		elseif champ == "Soraka" then       ComboFull() harass(ts.target)
+		elseif champ == "Swain" then        ComboFull() harass(ts.target)
+		elseif champ == "Syndra" then       ComboFull() harass(ts.target)
+		elseif champ == "TahmKench" then   	ComboFull() harass(ts.target)
+		elseif champ == "Talon" then        ComboFull() harass(ts.target)
+		elseif champ == "Taric" then        TaricCombo() harass(ts.target)
+		elseif champ == "Teemo" then        ComboFull() harass(ts.target)
+		elseif champ == "Thresh" then       ComboFull() harass(ts.target)
+		elseif champ == "Tristana" then     ComboFull() harass(ts.target)
+		elseif champ == "Trundle" then      ComboFull() harass(ts.target)
+		elseif champ == "Tryndamere" then   ComboFull() harass(ts.target)
+		elseif champ == "TwistedFate" then  ComboFull() harass(ts.target)
+		elseif champ == "Twitch" then       ComboFull() harass(ts.target)
+		elseif champ == "Udyr" then         ComboFull() harass(ts.target)
+		elseif champ == "Urgot" then        ComboFull() harass(ts.target)
+		elseif champ == "Varus" then        ComboFull() harass(ts.target)
+		elseif champ == "Vayne" then        ComboFull() harass(ts.target)
+		elseif champ == "Veigar" then       ComboFull() harass(ts.target)
+		elseif champ == "Velkoz" then       ComboFull() harass(ts.target)
+		elseif champ == "Vi" then           ComboFull() harass(ts.target)
+		elseif champ == "Viktor" then       ComboFull() harass(ts.target)
+		elseif champ == "Vladimir" then     ComboFull() harass(ts.target)
+		elseif champ == "Volibear" then     ComboFull() harass(ts.target)
+		elseif champ == "Warwick" then      WarwickCombo()
+		elseif champ == "Xerath" then       ComboFull() harass(ts.target)
+		elseif champ == "XinZhao" then      ComboFull() harass(ts.target)
+		elseif champ == "Yorick" then       ComboFull() harass(ts.target)
+		elseif champ == "Yasuo" then        ComboFull() harass(ts.target)
+		elseif champ == "Zac" then          ComboFull() harass(ts.target)
+		elseif champ == "Zed" then          ComboFull() harass(ts.target)
+		elseif champ == "Ziggs" then        ComboFull() harass(ts.target)
+		elseif champ == "Zilean" then       ComboFull() harass(ts.target)
+		elseif champ == "Zyra" then         ComboFull() harass(ts.target)
+		else harass(ts.target)
+			ComboFull()
+			comboDmg = getDmg("Q", ts.target, myHero) + getDmg("W", ts.target, myHero) + getDmg("R", ts.target, myHero)
+			RDmg = getDmg("R", ts.target, myHero)
+			ts.targetSelected = true
+			if RDmg > ts.target.health and Rready then
+				CastSpell(_R, ts.target.x, ts.target.z)
+			elseif comboDmg >= ts.target.health then
+				Combo(ts.target)
+			end
+			 _AutoupdaterMsg(string.format(" >> No mode Fight for %s", champ))
+		end
+	end
+end
+
+
 function EnemyTabFunction()
 local champ = player.charName
 if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
@@ -548,6 +686,7 @@ if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if ene
     elseif champ == "Katarina" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Kayle" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
     elseif champ == "Kennen" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+	elseif champ == "Kindred" then      eTab = GetEnemiesInRange(1250, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1000, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
     elseif champ == "Khazix" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "KogMaw" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
     elseif champ == "Leblanc" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
@@ -631,223 +770,6 @@ if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if ene
     end
 end
 
-function ChampionesDraw()
-	if iARAM.misc.misc2 then
-		if player.dead or GetGame().isOver then return end
-			--for index,minion in pairs(enemyMinion.objects) do
-				--if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("W", minion, myHero) then
-				--	DrawCircle3D(minion.x, minion.y, minion.z, 30, 1, RGB(255,0,255), 100)
-				--	DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 1, 0x7FFF00)
-				--end
-			--end
-		-- Draw Enemy
-		for _, str in pairs(tabget) do
-			if myHero:GetDistance(tabget[_]) < 800 and not tabget[_].dead and tabget[_] ~= nil and tabget[_].valid and tabget[_].visible and tabget[_].health > 1 then
-				DrawLine3D(myHero.x, myHero.y, myHero.z, tabget[_].x, tabget[_].y, tabget[_].z, 1, RGB(255,255,255))
-				DrawCircle3D(tabget[_].x, tabget[_].y, tabget[_].z, 100, 1, RGB(255,255,255), 100)
-			end
-		end
-		-- Target Draw
-		if ts.target then
-			hp = ((ts.target.health * 100) / ts.target.maxHealth) * 2
-			DrawText(ts.target.charName, 20, 15, 150, RGB(255,255,255))
-			DrawLine(15, 200, 200 + 15, 200, 10, RGB(255,105,105))
-			if ts.target.health < ts.target.maxHealth /2 then
-				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,255,215))
-			elseif ts.target.health > ts.target.maxHealth /2 then
-				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,0,255))
-			elseif ts.target.health < comboDmg then
-				DrawLine(15, 200, hp + 15, 200, 10, RGB(255,255,95))
-			end
-		end		
-	end
-end
-
-
-function CheckStatus() 
-	eTurret = GetCloseTower(player, TEAM_ENEMY)
-	aTurret = GetCloseTower(player, player.team)
-	if iARAM.follow then
-		if safe == false then
-			status = "Not Safe"
-			SuportingMode()
-		elseif myHero.health < myHero.maxHealth/4 and summonersRiftMap then -- Back to Base
-			status = "LowHP"
-			lowHP()
-		elseif myHero.health < myHero.maxHealth/4 and myHero.x >= 2880 and myHero.z >= 2880 and howlingAbyssMap == true then -- HP Relics
-			status = "Loking for Relic"
-			TakingRelic()
-		elseif onbase == true then 
-			status = "On Base"
-			if myHero.health == myHero.maxHealth then
-				onbase = false
-			end
-		elseif #eTab > 0 and ts.target ~= nil and ts.target.valid and not ts.target.dead and ts.target.visible then
-			status = "Fight"
-			Fight()
-		elseif #allyMinion.objects > 1 and #enemyMinion.objects >= 1 then -- Farming
-			status = "Farming"
-			FarmMode()
-		elseif Allies() >= 2 and frontally() then
-			status = "TF Mode"
-			TFMode()
-		elseif GetDistance(eTurret, player) > 1100 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 then
-			status = "Moving"
-			DelayAction(function() MoveMode() end, 2)
-		elseif #allyMinion.objects <= 1 and GetDistance(aTurret, player) >= 1500 then -- Alone
-			status = "Alone"
-			AloneMode()
-		else
-			status = "Normal"
-			NormalMode()
-		end
-	end
-end
-
-function Fight()
-local champ = player.charName
-	if ts.target then
-	if champ == "Aatrox" then           harass(ts.target)
-		elseif champ == "Ahri" then         AhriCombo() harass(ts.target)
-		elseif champ == "Akali" then        ComboFull() harass(ts.target)
-		elseif champ == "Alistar" then      ComboFull() harass(ts.target)
-		elseif champ == "Amumu" then        ComboFull() harass(ts.target)
-		elseif champ == "Anivia" then       ComboFull() harass(ts.target)
-		elseif champ == "Annie" then        ComboFull() harass(ts.target)
-		elseif champ == "Ashe" then         AsheCombo() harass(ts.target)
-		elseif champ == "Azir" then         ComboFull() harass(ts.target)
-		elseif champ == "Blitzcrank" then   ComboFull() harass(ts.target)
-		elseif champ == "Brand" then        ComboFull() harass(ts.target)
-		elseif champ == "Bard" then         ComboFull() harass(ts.target)
-		elseif champ == "Braum" then        ComboFull() harass(ts.target)
-		elseif champ == "Caitlyn" then      CaitlynCombo() harass(ts.target)
-		elseif champ == "Cassiopeia" then   ComboFull() harass(ts.target)
-		elseif champ == "Chogath" then      ComboFull()
-		elseif champ == "Corki" then        ComboFull() harass(ts.target)
-		elseif champ == "Darius" then       ComboFull()
-		elseif champ == "Diana" then        ComboFull() harass(ts.target)
-		elseif champ == "DrMundo" then      ComboFull() harass(ts.target)
-		elseif champ == "Draven" then       ComboFull() harass(ts.target)
-		elseif champ == "Ekko" then      	ComboFull() harass(ts.target)
-		elseif champ == "Elise" then        ComboFull() harass(ts.target)
-		elseif champ == "Evelynn" then      ComboFull() harass(ts.target)
-		elseif champ == "Ezreal" then       ComboFull() harass(ts.target)
-		elseif champ == "FiddleSticks" then ComboFull() harass(ts.target)
-		elseif champ == "Fiora" then        ComboFull() harass(ts.target)
-		elseif champ == "Fizz" then         ComboFull() harass(ts.target)
-		elseif champ == "Galio" then        ComboFull() harass(ts.target)
-		elseif champ == "Gangplank" then    ComboFull() harass(ts.target)
-		elseif champ == "Garen" then        ComboFull()
-		elseif champ == "Gragas" then       ComboFull() harass(ts.target)
-		elseif champ == "Graves" then       ComboFull() harass(ts.target)
-		elseif champ == "Gnar" then         ComboFull() harass(ts.target)
-		elseif champ == "Hecarim" then      ComboFull() harass(ts.target)
-		elseif champ == "Heimerdinger" then ComboFull() harass(ts.target)
-		elseif champ == "Irelia" then       ComboFull() harass(ts.target)
-		elseif champ == "Janna" then        JannaCombo() harass(ts.target)
-		elseif champ == "JarvanIV" then     ComboFull() harass(ts.target)
-		elseif champ == "Jax" then          ComboFull() harass(ts.target)
-		elseif champ == "Jayce" then        ComboFull() harass(ts.target)
-		elseif champ == "Jinx" then         ComboFull() harass(ts.target)
-		elseif champ == "Kalista" then      ComboFull() harass(ts.target)
-		elseif champ == "Karma" then        KarmaCombo() harass(ts.target)
-		elseif champ == "Karthus" then      ComboFull() harass(ts.target)
-		elseif champ == "Kassadin" then     ComboFull() harass(ts.target)
-		elseif champ == "Katarina" then     ComboFull() harass(ts.target)
-		elseif champ == "Kayle" then        KayleCombo() harass(ts.target)
-		elseif champ == "Kennen" then       ComboFull() harass(ts.target)
-		elseif champ == "Khazix" then       ComboFull() harass(ts.target)
-		elseif champ == "KogMaw" then       ComboFull() harass(ts.target)
-		elseif champ == "Leblanc" then      ComboFull() harass(ts.target)
-		elseif champ == "LeeSin" then       ComboFull() harass(ts.target)
-		elseif champ == "Leona" then       	LeonaCombo()
-		elseif champ == "Lissandra" then    ComboFull() harass(ts.target)
-		elseif champ == "Lucian" then       ComboFull() harass(ts.target)
-		elseif champ == "Lulu" then         LuluCombo() harass(ts.target)
-		elseif champ == "Lux" then          LuxCombo() harass(ts.target)
-		elseif champ == "Malphite" then     ComboFull() harass(ts.target)
-		elseif champ == "Malzahar" then     ComboFull() harass(ts.target)
-		elseif champ == "Maokai" then       ComboFull() harass(ts.target)
-		elseif champ == "MasterYi" then     ComboFull() harass(ts.target)
-		elseif champ == "MissFortune" then  ComboFull() harass(ts.target)
-		elseif champ == "MonkeyKing" then   ComboFull() harass(ts.target)
-		elseif champ == "Mordekaiser" then  ComboFull() harass(ts.target)
-		elseif champ == "Morgana" then      MorganaCombo() harass(ts.target)
-		elseif champ == "Nami" then         ComboFull() harass(ts.target)
-		elseif champ == "Nasus" then        ComboFull() harass(ts.target)
-		elseif champ == "Nautilus" then     ComboFull() harass(ts.target)
-		elseif champ == "Nidalee" then      NidaleeCombo() harass(ts.target)
-		elseif champ == "Nocturne" then     ComboFull() harass(ts.target)
-		elseif champ == "Nunu" then         NunuCombo()
-		elseif champ == "Olaf" then         ComboFull() harass(ts.target)
-		elseif champ == "Orianna" then      ComboFull() harass(ts.target)
-		elseif champ == "Pantheon" then     ComboFull() harass(ts.target)
-		elseif champ == "Poppy" then        ComboFull() harass(ts.target)
-		elseif champ == "Quinn" then        ComboFull() harass(ts.target)
-		elseif champ == "Rammus" then       ComboFull() harass(ts.target)
-		elseif champ == "RekSai" then       ComboFull() harass(ts.target)
-		elseif champ == "Renekton" then     ComboFull() harass(ts.target)
-		elseif champ == "Rengar" then       ComboFull() harass(ts.target)
-		elseif champ == "Riven" then        ComboFull() harass(ts.target)
-		elseif champ == "Rumble" then       ComboFull() harass(ts.target)
-		elseif champ == "Ryze" then         ComboFull() harass(ts.target)
-		elseif champ == "Sejuani" then      ComboFull() harass(ts.target)
-		elseif champ == "Shaco" then        ComboFull() harass(ts.target)
-		elseif champ == "Shen" then         ComboFull() harass(ts.target)
-		elseif champ == "Shyvana" then      ComboFull() harass(ts.target)
-		elseif champ == "Singed" then       ComboFull() harass(ts.target)
-		elseif champ == "Sion" then         ComboFull() harass(ts.target)
-		elseif champ == "Sivir" then        ComboFull() harass(ts.target)
-		elseif champ == "Skarner" then      ComboFull() harass(ts.target)
-		elseif champ == "Sona" then         ComboFull() harass(ts.target)
-		elseif champ == "Soraka" then       ComboFull() harass(ts.target)
-		elseif champ == "Swain" then        ComboFull() harass(ts.target)
-		elseif champ == "Syndra" then       ComboFull() harass(ts.target)
-		elseif champ == "TahmKench" then   	ComboFull() harass(ts.target)
-		elseif champ == "Talon" then        ComboFull() harass(ts.target)
-		elseif champ == "Taric" then        TaricCombo() harass(ts.target)
-		elseif champ == "Teemo" then        ComboFull() harass(ts.target)
-		elseif champ == "Thresh" then       ComboFull() harass(ts.target)
-		elseif champ == "Tristana" then     ComboFull() harass(ts.target)
-		elseif champ == "Trundle" then      ComboFull() harass(ts.target)
-		elseif champ == "Tryndamere" then   ComboFull() harass(ts.target)
-		elseif champ == "TwistedFate" then  ComboFull() harass(ts.target)
-		elseif champ == "Twitch" then       ComboFull() harass(ts.target)
-		elseif champ == "Udyr" then         ComboFull() harass(ts.target)
-		elseif champ == "Urgot" then        ComboFull() harass(ts.target)
-		elseif champ == "Varus" then        ComboFull() harass(ts.target)
-		elseif champ == "Vayne" then        ComboFull() harass(ts.target)
-		elseif champ == "Veigar" then       ComboFull() harass(ts.target)
-		elseif champ == "Velkoz" then       ComboFull() harass(ts.target)
-		elseif champ == "Vi" then           ComboFull() harass(ts.target)
-		elseif champ == "Viktor" then       ComboFull() harass(ts.target)
-		elseif champ == "Vladimir" then     ComboFull() harass(ts.target)
-		elseif champ == "Volibear" then     ComboFull() harass(ts.target)
-		elseif champ == "Warwick" then      WarwickCombo()
-		elseif champ == "Xerath" then       ComboFull() harass(ts.target)
-		elseif champ == "XinZhao" then      ComboFull() harass(ts.target)
-		elseif champ == "Yorick" then       ComboFull() harass(ts.target)
-		elseif champ == "Yasuo" then        ComboFull() harass(ts.target)
-		elseif champ == "Zac" then          ComboFull() harass(ts.target)
-		elseif champ == "Zed" then          ComboFull() harass(ts.target)
-		elseif champ == "Ziggs" then        ComboFull() harass(ts.target)
-		elseif champ == "Zilean" then       ComboFull() harass(ts.target)
-		elseif champ == "Zyra" then         ComboFull() harass(ts.target)
-		else harass(ts.target)
-			ComboFull()
-			comboDmg = getDmg("Q", ts.target, myHero) + getDmg("W", ts.target, myHero) + getDmg("R", ts.target, myHero)
-			RDmg = getDmg("R", ts.target, myHero)
-			ts.targetSelected = true
-			if RDmg > ts.target.health and Rready then
-				CastSpell(_R, ts.target.x, ts.target.z)
-			elseif comboDmg >= ts.target.health then
-				Combo(ts.target)
-			end
-			 _AutoupdaterMsg(string.format(" >> No mode Fight for %s", champ))
-		end
-	end
-end
-
 
 function getsafe()
 	local q = {}
@@ -898,7 +820,7 @@ function lowHP()
 	else if myHero.team == TEAM_BLUE then
 				myHero:MoveTo(400,400)
 			else
-				myHero:MoveTo(14300,myTurret.z+14300)
+				myHero:MoveTo(14300,14300)
 			end
 	end
 end
@@ -963,11 +885,13 @@ if player.dead or GetGame().isOver then return end
 	JannaFarm()
 	KarmaFarm()
 	KayleFarm()
+	KindredFarm()
 	LeonaFarm()
 	LuluFarm()
 	LuxFarm()
 	MorganaFarm()
 	NidaleeFarm()
+	RyzeFarm()
 	TaricFarm()
 	WarwickFarm()
 
@@ -2079,6 +2003,7 @@ if not VIP_USER then return end
     elseif champ == "Katarina" then     AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 3, 2, 1, 4, 1, 1, 1, 3, 4, 3, 3, })
     elseif champ == "Kayle" then        AutoLevel({ 3, 2, 3, 1, 3, 4, 3, 2, 3, 2, 4, 2, 2, 1, 1, 4, 1, 1, })
     elseif champ == "Kennen" then       AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
+	elseif champ == "Kindred" then       AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Khazix" then       AutoLevel({ 1, 3, 1, 2 ,1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, })
     elseif champ == "KogMaw" then       AutoLevel({ 2, 3, 2, 1, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Leblanc" then      AutoLevel({ 1, 2, 3, 1, 1, 4, 1, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, })
@@ -2389,14 +2314,8 @@ function TFMode()
 	
 	
 	champ = player.charName
-	Allie = followHero()
 	allytofollow = followHero()
-	LastTickerless = nil
-	LastMoveInTFMode = 1
-	if (LastTickerless and (GetInGameTimer() < LastTickerless + 1)) then return end
-	LastTickerless = GetInGameTimer()
-	LastMoveInTFMode = LastMoveInTFMode * -1	
-	if allytofollow ~= nil and GetDistance(allytofollow,myHero) >= 250 then
+	if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 270 then
 		--if heroType == 1 then --adc
 			distance1 = math.random(250,300)
 			distance2 = math.random(250,300)
@@ -2408,7 +2327,7 @@ function TFMode()
 		else
 			myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
 			--myHero:MoveTo(allytofollow.x,allytofollow.z)
-	end
+		end
 	end
 end
 
@@ -2532,7 +2451,7 @@ function CaitlynCombo()
 	rDmg = getDmg("R", ts.target, myHero)
 	if ts.target.visible == true then
 		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
-		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) <= 200 then CastSpell(_E, ts.target.x, ts.target.z) end
 		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= SkillR.range then CastSpell(_R, ts.target.x, ts.target.z) end
 		 for i, enemy in ipairs(GetEnemyHeroes()) do
           if enemy and GetDistance(enemy) < 400 then
@@ -2683,6 +2602,49 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 end
 
 
+---[[Kindred]]---
+function KindredFarm()
+local champ = player.charName
+local QRange = 800
+local RandomUlt2 = math.random(130,250)
+	if champ == "Kindred" then
+		-- Farm Q 
+		if not myHero:CanUseSpell(_Q) == READY then return end
+			for i, minion in pairs(enemyMinion.objects) do
+				if ValidTarget(minion, QRange) and 50 <= ManaPercent() then
+					CastSpell(_Q, minion.x,minion.z)
+					--DelayAction(function() myHero:MoveTo(myHero.x-50,myHero.z-50) end, 3)
+				end 
+			end
+	end
+end
+
+function KindredCombo()
+local QRANGE = 975
+local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(ts.target, .25, 75, QRANGE, 800, myHero, true)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_Q) == READY and GetDistance(ts.target) < QRANGE  then 
+			if CastPosition and Hitchance >= 2 then
+			d = CastPosition
+			CastSpell(_Q, CastPosition.x, CastPosition.z)
+			end
+		end
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 and myHero.mana / myHero.maxMana < 50 then CastSpell(_W, ts.target) end
+		if myHero:CanUseSpell(_R) == READY then CastSpell(_R, myHero) end
+	end
+end
+
+function KindredDefensive()
+local champ = player.charName
+	if champ == "Kindred" then
+		if ts.target.visible == true then
+			if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) < 500 and 30 <= ManaPercent() then CastSpell(_E, ts.target) end
+		end
+	end
+end
+
+
 ---[[Leona]]---
 function LeonaFarm()
 local champ = player.charName
@@ -2728,12 +2690,9 @@ local champ = player.charName
 	if champ == "Lulu" then
 		-- Farm Q 
 		for index,minion in pairs(enemyMinion.objects) do
-			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
-			--myHero:Attack(minion)
-				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
-					if myHero:CanUseSpell(_Q) == READY then
-						CastSpell(_Q, minion)
-					end
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+				if myHero:CanUseSpell(_Q) == READY then
+					CastSpell(_Q, minion)
 				end
 			end
 		end	
@@ -2885,6 +2844,49 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
+---[[Ryze]]---
+function RyzeFarm()
+local champ = player.charName
+local QRange = 800
+local RandomUlt2 = math.random(130,250)
+	if champ == "Ryze" then
+		-- Farm Q 
+		if not myHero:CanUseSpell(_Q) == READY then return end
+			for i, minion in pairs(enemyMinion.objects) do
+				if ValidTarget(minion, QRange) and 50 <= ManaPercent() then
+					CastSpell(_Q, minion.x,minion.z)
+					--DelayAction(function() myHero:MoveTo(myHero.x-50,myHero.z-50) end, 3)
+				end 
+			end
+	end
+end
+
+function RyzeCombo()
+local QRANGE = 975
+local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(ts.target, .25, 75, QRANGE, 800, myHero, true)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_Q) == READY and GetDistance(ts.target) < QRANGE  then 
+			if CastPosition and Hitchance >= 2 then
+			d = CastPosition
+			CastSpell(_Q, CastPosition.x, CastPosition.z)
+			end
+		end
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 and myHero.mana / myHero.maxMana < 50 then CastSpell(_W, ts.target) end
+		if myHero:CanUseSpell(_R) == READY then CastSpell(_R, myHero) end
+	end
+end
+
+function RyzeDefensive()
+local champ = player.charName
+	if champ == "Ryze" then
+		if ts.target.visible == true then
+			if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 and 50 <= ManaPercent() then CastSpell(_W, ts.target) end
+			if myHero:CanUseSpell(_R) == READY and GetDistance(ts.target) < 400 then CastSpell(_R, myHero) end
+		end
+	end
+end
+
 
 ---[[Taric]]---
 function TaricFarm()
@@ -2904,8 +2906,8 @@ end
 function TaricCombo()
 	if ts.target.visible == true then
 		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
-		if myHero:CanUseSpell(_W) == READY then CastSpell(_W) end
-		if myHero:CanUseSpell(_R) == READY then CastSpell(_R) end
+		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) <= 200 then CastSpell(_W) end
+		if myHero:CanUseSpell(_R) == READY and GetDistance(ts.target) <= 200 then CastSpell(_R) end
 	end
 end
 
@@ -2970,9 +2972,13 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
-function SuportingMode()
+function DefensiveMode()
+if player.dead or GetGame().isOver then return end
 	JannaTF()
 	KayleTF()
+	TaricTF()
+	RyzeDefensive()
+	KindredDefensive()
 end
 
 --[[ NotificationLib Function ]]--
