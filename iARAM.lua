@@ -134,8 +134,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.20
-local UPDATE_CHANGE_LOG = "Fixed Ahri Combo, fixed Taric"
+local version = 6.21
+local UPDATE_CHANGE_LOG = "Fixed Normal Mode and Janna Farm"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -634,12 +634,12 @@ end
 function ChampionesDraw()
 	if iARAM.misc.misc2 then
 		if player.dead or GetGame().isOver then return end
-			for index,minion in pairs(enemyMinion.objects) do
-			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("W", minion, myHero) then
-				DrawCircle3D(minion.x, minion.y, minion.z, 30, 1, RGB(255,0,255), 100)
-				--DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 1, 0x7FFF00)
-			end
-		end
+			--for index,minion in pairs(enemyMinion.objects) do
+				--if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("W", minion, myHero) then
+				--	DrawCircle3D(minion.x, minion.y, minion.z, 30, 1, RGB(255,0,255), 100)
+				--	DrawLine3D(myHero.x, myHero.y, myHero.z, minion.x, minion.y, minion.z, 1, 0x7FFF00)
+				--end
+			--end
 		-- Draw Enemy
 		for _, str in pairs(tabget) do
 			if myHero:GetDistance(tabget[_]) < 800 and not tabget[_].dead and tabget[_] ~= nil and tabget[_].valid and tabget[_].visible and tabget[_].health > 1 then
@@ -980,34 +980,33 @@ if player.dead or GetGame().isOver then return end
 		end
 		end
 	elseif heroType == 2 then --tank
-		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
-			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
+			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
 		end
 	elseif heroType == 3 then --tank
-		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
-			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
+			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
 		end
-
 	elseif heroType == 4 then --Fighter
-		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
-			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
+			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
 		end
 	elseif heroType == 5 then --Fighter
-		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
-			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
+			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
-		end	
+		end
 	elseif heroType == 6 then --Fighter
 		if(GetDistance(Vector(mdraw.x, mdraw.z), player) >= 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
@@ -1023,15 +1022,15 @@ if player.dead or GetGame().isOver then return end
 		end
 		end	
 	elseif heroType == 8 then --Fighter
-		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
-			myHero:MoveTo(edraw.x+100,edraw.z+100) 
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
+			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
 		end
 	elseif heroType == 9 then --Fighter
-		if(GetDistance(Vector(edraw.x, edraw.z), player) >= 400) then
-			myHero:MoveTo(edraw.x-100,edraw.z-100) 
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
+			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
@@ -1065,68 +1064,63 @@ end
 
 function NormalMode()
 	if myHero.x >= 2880 and myHero.z >= 2880 then
-	local LastTickaro = nil
-	local LastMoveInNormalMode = 1
-	if (LastTickaro and (GetInGameTimer() < LastTickaro + 1)) then return end
-	LastTickaro = GetInGameTimer()
-	LastMoveInNormalMode = LastMoveInNormalMode * -1
 		if heroType == 1 then --adc
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) > 80 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 80 then
 					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+							myHero:MoveTo(mdraw.x+60,mdraw.z+60)
 						else
-							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+							myHero:MoveTo(mdraw.x-60,mdraw.z-60)
 						end
 				end	
 		elseif heroType == 2 then --tank
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) > 200 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 200 then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+							myHero:MoveTo(mdraw.x+180,mdraw.z+180)
 						else
-							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+							myHero:MoveTo(mdraw.x-180,mdraw.z-180)
 						end
 				end	
 		elseif heroType == 3 then --tank
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
-							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
 		elseif heroType == 4 then 
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
-							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
 		elseif heroType==5 then
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+800,mdraw.z+800)
+							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
-							myHero:MoveTo(mdraw.x-800,mdraw.z-800)
+							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
 		elseif heroType == 6 then 
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
-							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
 		elseif heroType == 7 then --mage
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) > 50 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 70 then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+							myHero:MoveTo(mdraw.x+60,mdraw.z+60)
 						else
-							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+							myHero:MoveTo(mdraw.x-60,mdraw.z-60)
 						end
 				--elseif GetDistance(Vector(edraw.x, edraw.z), player) > 100 then
 				--		if myHero.team == TEAM_BLUE then
@@ -1136,21 +1130,21 @@ function NormalMode()
 				--		end		
 				end	
 		elseif heroType == 8 then 
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) < 100 then
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+190,mdraw.z+190)
+							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
-							myHero:MoveTo(mdraw.x-190,mdraw.z-190)
+							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
 		elseif heroType == 9 then --fighter
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+800,mdraw.z+800)
+							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
-							myHero:MoveTo(mdraw.x-800,mdraw.z-800)
+							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
 		end			
@@ -2522,13 +2516,11 @@ local champ = player.charName
 	if champ == "Caitlyn" then
 		-- Farm Q 
 		for index,minion in pairs(enemyMinion.objects) do
-			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
 			--myHero:Attack(minion)
-				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
-					if myHero:CanUseSpell(_Q) == READY then
-						--myHero:HoldPosition()
-						CastSpell(_Q, minion.x,minion.z)
-					end
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+				if myHero:CanUseSpell(_Q) == READY and 50 <= ManaPercent() then
+					--myHero:HoldPosition()
+					CastSpell(_Q, minion.x,minion.z)
 				end
 			end
 		end	
@@ -2554,11 +2546,21 @@ end
 function JannaFarm()
 local champ = player.charName
 	if champ == "Janna" then
-		-- Farm Q 
+		-- Farm W 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("W", minion, myHero) then
+				if myHero:CanUseSpell(_W) == READY and 50 <= ManaPercent() then
+					CastSpell(_W, minion)
+					DelayAction(function() myHero:Attack(minion) end, 3)  
+				end
+			end
+		end	
+		-- Farm Q
 		for index,minion in pairs(enemyMinion.objects) do
 			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
-				if myHero:CanUseSpell(_Q) == READY then
-					CastSpell(_Q, minion.x,minion.z)
+				if myHero:CanUseSpell(_Q) == READY and 30 <= ManaPercent() then
+					CastSpell(_Q, minion.x, minion.z)
+					DelayAction(function() CastSpell(_Q, minion.x, minion.z) end, 3)  
 				end
 			end
 		end	
