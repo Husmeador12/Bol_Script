@@ -3,7 +3,7 @@ Bol_Scripts
 
 ----------
 
-I´m working as an unofficial scripture. Do not expect that I will do an awesome script althought I will try it. >.<
+I´m working as scripter. I will try to do a good script. >.<
 
 See you later!
 
