@@ -127,8 +127,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.22
-local UPDATE_CHANGE_LOG = "Fixed Mode Alone. Added Kindred"
+local version = 6.23
+local UPDATE_CHANGE_LOG = "Fixed TFMode in fountain. Added a delay action to start. Fixed problems in summoner Rift"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -169,7 +169,7 @@ function CheckLoLVersion()
 	else
 		LoLVersionWorking = false
 		NotificationLib:AddTile("iARAM Outdated", "Script Outdated for this LoL version", 20)
-		 _AutoupdaterMsg("Script Outdated for this LoL version")
+		 _AutoupdaterMsg("iARAM is outdated for this LoL version")
 	end
 end
 
@@ -446,6 +446,8 @@ function CheckStatus()
 	eTurret = GetCloseTower(player, TEAM_ENEMY)
 	aTurret = GetCloseTower(player, player.team)
 	AllyNotAFK = followHero()
+	TimeToStart = 20
+if TimeToStart > os.clock() then return end
 	if iARAM.follow then
 		if safe == false then
 			status = "Not Safe"
@@ -467,27 +469,39 @@ function CheckStatus()
 		elseif #allyMinion.objects > 1 and #enemyMinion.objects >= 1 then -- Farming
 			status = "Farming"
 			FarmMode()
-		elseif Allies() >= 2 and not AllyNotAFK ~= nil then
+			
+			
+		elseif Allies() >= 2 and myHero.x >= 2880 and myHero.z >= 2880 and myHero.team == TEAM_BLUE then
 			status = "TF Mode"
 			TFMode()
+		elseif Allies() >= 2 and myHero.x <= 12880 and myHero.z >= 12880 and myHero.team == TEAM_RED then
+			status = "TF Mode"
+			TFMode()	
+		
+		
 		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and howlingAbyssMap then
 			status = "Moving"
-			DelayAction(function() MoveMode() end, 2)
+			DelayAction(function() MoveModeHA() end, 2)
 			elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and summonersRiftMap then
 			status = "Moving"
-			DelayAction(function() MoveMode() end, 2)
+			DelayAction(function() MoveModeSR() end, 2)
+			
+			
 		elseif #allyMinion.objects <= 1 and GetDistance(aTurret, player) >= 800 and summonersRiftMap then -- Alone
 			status = "Alone"
-			AloneMode()
+			AloneModeSR()
 		elseif #allyMinion.objects <= 1 and GetDistance(aTurret, player) >= 800 and howlingAbyssMap then -- Alone
 			status = "Alone"
-			AloneMode()
+			AloneModeHA()
+			
+			
 		else
 			status = "Normal"
 			NormalMode()
 		end
 	end
 end
+
 
 function Fight()
 local champ = player.charName
@@ -836,44 +850,56 @@ function TakingRelic()
 	end
 end
 
-function MoveMode()
+function MoveModeHA()
+	local EnemyTurret = GetCloseTower(player, TEAM_ENEMY)
+	local AllyTurret = GetCloseTower(player, player.team)
+	if myHero.team == TEAM_BLUE then
+		myHero:MoveTo(myHero.x+800, myHero.z+800)
+	else
+		myHero:MoveTo(myHero.x-800, myHero.z-800)
+	end
+end
+
+function MoveModeSR()
 	local Turret = GetCloseTower(player, TEAM_ENEMY)
 	local aTurret = GetCloseTower(player, player.team)
-	local LastTickerone = nil
-	local LastMoveInMoveMode = 1
-
-	if (LastTickerone and (GetInGameTimer() < LastTickerone + 1)) then return end
-		LastTickerone = GetInGameTimer()
-		LastMoveInMoveMode = LastMoveInMoveMode * -1
-	if myHero.team == TEAM_BLUE then
-		--myHero:HoldPosition()
-		myHero:MoveTo(myHero.x+800, myHero.z+800)
-	else
-			--myHero:HoldPosition()
-		myHero:MoveTo(myHero.x-800, myHero.z-800)
+	if myHero.x >= 2880 and myHero.z >= 2880 then
+			if myHero.team == TEAM_BLUE then
+				myHero:MoveTo(aTurret.x+600, aTurret.z+600)
+			else
+				myHero:MoveTo(aTurret.x-600, aTurret.z-600)
+			end
+		else if myHero.team == TEAM_BLUE then
+				myHero:MoveTo(5852, 6232)
+			else
+				myHero:MoveTo(8600, myHero.z-8600)
+			end
 	end
 end
 
-function AloneMode()
+function AloneModeSR()
 	local myTurret = GetCloseTower(player, player.team)
 	local EnemyTurret = GetCloseTower(player, TEAM_ENEMY)
-	local LastTickore = nil
-	local LastMoveInAloneMode = 1
 	
 	if myHero.team == TEAM_BLUE then
-		if (LastTickore and (GetInGameTimer() < LastTickore + 1)) then return end
-		LastTickore = GetInGameTimer()
-		LastMoveInAloneMode = LastMoveInAloneMode * -1
-		--myHero:HoldPosition()
+		myHero:MoveTo(myTurret.x-200, myTurret.z-200)
+	else
+		myHero:MoveTo(myTurret.x+200, myTurret.z+200)
+	end
+end
+
+
+function AloneModeHA()
+	local myTurret = GetCloseTower(player, player.team)
+	local EnemyTurret = GetCloseTower(player, TEAM_ENEMY)
+	
+	if myHero.team == TEAM_BLUE then
 		myHero:MoveTo(myHero.x-800, myHero.z-800)
 	else
-		if (LastTickore and (GetInGameTimer() < LastTickore + 1)) then return end
-		LastTickore = GetInGameTimer()
-		LastMoveInAloneMode = LastMoveInAloneMode * -1
-		--myHero:HoldPosition()
 		myHero:MoveTo(myHero.x+800, myHero.z+800)
 	end
 end
+
 
 function FarmMode()
 if player.dead or GetGame().isOver then return end
@@ -932,7 +958,7 @@ if player.dead or GetGame().isOver then return end
 		end
 		end
 	elseif heroType == 6 then --Fighter
-		if(GetDistance(Vector(mdraw.x, mdraw.z), player) >= 400) then
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
@@ -945,7 +971,7 @@ if player.dead or GetGame().isOver then return end
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
 		end	
-	elseif heroType == 8 then --Fighter
+	elseif heroType == 8 then --
 		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
@@ -953,8 +979,8 @@ if player.dead or GetGame().isOver then return end
 		end
 		end
 	elseif heroType == 9 then --Fighter
-		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
-			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
+		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 700) then
+			myHero:MoveTo(mdraw.x+400,mdraw.z+400) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
@@ -976,9 +1002,9 @@ if player.dead or GetGame().isOver then return end
 				local dmg = getDmg("AD", minion, myHero)
 					if dmg > minion.health and timeToShoot() then
 					  myHero:Attack(minion)
+					  DelayAction(function() myHero:MoveTo(mdraw.x+3,mdraw.z+3) end, 1.5)	
 					  ticking = GetTickCount()
 					  else if heroCanMove() then
-					  --myHero:MoveTo(mdraw.x+3,mdraw.z+3)					  
 					end
 				end
 			end
@@ -1013,13 +1039,12 @@ function NormalMode()
 							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
-		elseif heroType == 4 then 
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
-					--if not timeToShoot() then
+		elseif heroType == 4 then --fighter
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 800 then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
+							myHero:MoveTo(mdraw.x+400,mdraw.z+400)
 						else
-							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
+							myHero:MoveTo(mdraw.x-400,mdraw.z-400)
 						end
 				end	
 		elseif heroType==5 then
@@ -1772,6 +1797,20 @@ function AutoChat()
 local Text1 = {"Good luck and have fun", "gl hf", "gl hf", "Good luck have fun", "Good luck and have fun guys", "gl hf guys", "gl and have fun", "good luck and hf" } 
 local Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt matter", "let´s go", "team work is OP" }
 
+	if GetInGameTimer() < 33 then
+		DelayAction(function()
+			print("Time to playt")
+
+		end, 33-GetInGameTimer()) --5:35
+	end
+
+	
+	if GetInGameTimer() < 33 then
+		DelayAction(function()
+			print("Time to playt")
+
+		end, 33-GetInGameTimer()) --5:35
+	end
 
 		--SendChat(Phrases2[math.random(#Phrases2)])
 
@@ -2228,7 +2267,6 @@ function TowerFollowing()
 				table.insert(FollowTurrets, {x = Towers.x, y = Towers.y, z = Towers.z, range = Towers.range, color = (enemyTurret and allyTurretColor), visibilityRange = Towers.visibilityRange})
 				myHero:MoveTo(Towers.x,Towers.z)
 				if iARAM.misc.misc2 then _AutoupdaterMsg("Moving to Tower") end
-				
 			end
 		end
 	end
@@ -2323,7 +2361,8 @@ function TFMode()
 			neg2 = -1 				
 		if myHero.team == TEAM_BLUE then
 			myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
-			--myHero:MoveTo(allytofollow.x,allytofollow.z)
+			DelayAction(function() myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2) end, 3)  
+			
 		else
 			myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
 			--myHero:MoveTo(allytofollow.x,allytofollow.z)
