@@ -127,8 +127,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.24
-local UPDATE_CHANGE_LOG = "Fixed problems with Defensive Mode. Added Map Twisted Tree Line."
+local version = 6.25
+local UPDATE_CHANGE_LOG = "Fixing problems with castspell"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -451,7 +451,7 @@ if TimeToStart > os.clock() then return end
 	if iARAM.follow then
 		if safe == false then
 			status = "Not Safe"
-			DefensiveMode()
+			--DefensiveMode()
 		elseif myHero.health < myHero.maxHealth/4 and summonersRiftMap then -- Back to Base
 			status = "LowHP"
 			lowHP()
@@ -2935,22 +2935,22 @@ local QRange = 800
 end
 
 function RyzeCombo()
-	if ts.target.visible == true then
+	if ts.target.visible == true and Target ~= nil then
 		if myHero:CanUseSpell(_Q) == READY and GetDistance(ts.target) < 700  then 
 			CastSpell(_Q, ts.target, ts.target)
 		end
 		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target) end
 		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 and myHero.mana / myHero.maxMana < 50 then CastSpell(_W, ts.target) end
-		if myHero:CanUseSpell(_R) == READY then CastSpell(_R, myHero) end
+		if myHero:CanUseSpell(_R) == READY then CastSpell(_R) end
 	end
 end
 
 function RyzeDefensive()
 local champ = player.charName
 	if champ == "Ryze" then
-		if ts.target.visible == true then
+		if ts.target.visible == true and Target ~= nil then
 			if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 then CastSpell(_W, ts.target) end
-			if myHero:CanUseSpell(_R) == READY then CastSpell(_R, myHero) end
+			if myHero:CanUseSpell(_R) == READY then CastSpell(_R) end
 		end
 	end
 end
@@ -3042,7 +3042,7 @@ end
 
 function DefensiveMode()
 if player.dead or GetGame().isOver then return end
-	if ts.target ~= nil then
+	if ts.target ~= nil and Target ~= nil then
 		JannaTF()
 		KayleTF()
 		TaricTF()
