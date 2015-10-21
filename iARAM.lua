@@ -27,15 +27,15 @@
 
 --[[
 	   SOON:
-	    -Debug Option
-	    -Drawcircles allies
 		-Remake Menu Function.
 		-Auto Barrier, health and clarity.
+		-TowerClose
 ]]--
 --[[
 	   Problems:
 	   It dies undertower >.<
-	   pairs withs Relics
+	   pairs withs Relicsç
+	   Ryze problems with target
 		──|> AutoLevel with ROff doesnt work.
 ]]--
 
@@ -127,8 +127,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.23
-local UPDATE_CHANGE_LOG = "Fixed TFMode in fountain. Added a delay action to start. Fixed problems in summoner Rift"
+local version = 6.24
+local UPDATE_CHANGE_LOG = "Fixed problems with Defensive Mode. Added Map Twisted Tree Line."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -482,9 +482,12 @@ if TimeToStart > os.clock() then return end
 		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and howlingAbyssMap then
 			status = "Moving"
 			DelayAction(function() MoveModeHA() end, 2)
-			elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and summonersRiftMap then
+		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and summonersRiftMap then
 			status = "Moving"
 			DelayAction(function() MoveModeSR() end, 2)
+		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and twistedTreeLineMap then
+			status = "Moving"
+			DelayAction(function() MoveModeTT() end, 2)
 			
 			
 		elseif #allyMinion.objects <= 1 and GetDistance(aTurret, player) >= 800 and summonersRiftMap then -- Alone
@@ -512,7 +515,7 @@ local champ = player.charName
 		elseif champ == "Alistar" then      ComboFull() harass(ts.target)
 		elseif champ == "Amumu" then        ComboFull() harass(ts.target)
 		elseif champ == "Anivia" then       ComboFull() harass(ts.target)
-		elseif champ == "Annie" then        ComboFull() harass(ts.target)
+		elseif champ == "Annie" then        AnnieCombo() harass(ts.target)
 		elseif champ == "Ashe" then         AsheCombo() harass(ts.target)
 		elseif champ == "Azir" then         ComboFull() harass(ts.target)
 		elseif champ == "Blitzcrank" then   ComboFull() harass(ts.target)
@@ -877,6 +880,23 @@ function MoveModeSR()
 	end
 end
 
+function MoveModeTT()
+	local Turret = GetCloseTower(player, TEAM_ENEMY)
+	local aTurret = GetCloseTower(player, player.team)
+	if myHero.x >= 2880 and myHero.z >= 2880 then
+			if myHero.team == TEAM_BLUE then
+				myHero:MoveTo(aTurret.x+600, aTurret.z+600)
+			else
+				myHero:MoveTo(aTurret.x-600, aTurret.z-600)
+			end
+		else if myHero.team == TEAM_BLUE then
+				myHero:MoveTo(4252, 9532)
+			else
+				myHero:MoveTo(8600, myHero.z-8600)
+			end
+	end
+end
+
 function AloneModeSR()
 	local myTurret = GetCloseTower(player, player.team)
 	local EnemyTurret = GetCloseTower(player, TEAM_ENEMY)
@@ -906,6 +926,7 @@ if player.dead or GetGame().isOver then return end
 
 
 	AhriFarm()
+	AnnieFarm()
 	AsheFarm()
 	CaitlynFarm()
 	JannaFarm()
@@ -1799,16 +1820,7 @@ local Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It d
 
 	if GetInGameTimer() < 33 then
 		DelayAction(function()
-			print("Time to playt")
-
-		end, 33-GetInGameTimer()) --5:35
-	end
-
-	
-	if GetInGameTimer() < 33 then
-		DelayAction(function()
-			print("Time to playt")
-
+			SendChat(Text1[math.random(#Text1)])
 		end, 33-GetInGameTimer()) --5:35
 	end
 
@@ -2355,14 +2367,13 @@ function TFMode()
 	allytofollow = followHero()
 	if allytofollow ~= nil and GetDistance(allytofollow,myHero) > 270 then
 		--if heroType == 1 then --adc
-			distance1 = math.random(250,300)
-			distance2 = math.random(250,300)
+			distance1 = math.random(150,200)
+			distance2 = math.random(150,200)
 			neg1 = -1 
 			neg2 = -1 				
 		if myHero.team == TEAM_BLUE then
 			myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2)
-			DelayAction(function() myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2) end, 3)  
-			
+			--DelayAction(function() myHero:MoveTo(allytofollow.x-distance1*neg1,allytofollow.z-distance2*neg2) end, 3)  
 		else
 			myHero:MoveTo(allytofollow.x+distance1*neg1,allytofollow.z+distance2*neg2)
 			--myHero:MoveTo(allytofollow.x,allytofollow.z)
@@ -2434,6 +2445,31 @@ end
 ]]--
 function ManaPercent()
   return (myHero.mana/myHero.maxMana)*100
+end
+
+
+---[[Annie]]---
+function AnnieFarm()
+local champ = player.charName
+local QRange = 700
+	if champ == "Annie" then
+		-- Farm Q 
+		if not myHero:CanUseSpell(_Q) == READY then return end
+			for i, minion in pairs(enemyMinion.objects) do
+				if ValidTarget(minion,  QRange) and 50 <= ManaPercent() then
+					CastSpell(_Q, minion.x,minion.z)
+				end 
+			end
+	end
+end
+
+function AnnieCombo()
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY and myHero.mana / myHero.maxMana < 30 then CastSpell(_E, myhero) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target) end
+		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 and myHero.mana / myHero.maxMana < 50 then CastSpell(_W, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_R) == READY and GetDistance(ts.target) < 400 and myHero.mana / myHero.maxMana < 10 then CastSpell(_R, ts.target.x, ts.target.z) end
+	end
 end
 
 
@@ -2887,30 +2923,23 @@ end
 function RyzeFarm()
 local champ = player.charName
 local QRange = 800
-local RandomUlt2 = math.random(130,250)
 	if champ == "Ryze" then
 		-- Farm Q 
 		if not myHero:CanUseSpell(_Q) == READY then return end
 			for i, minion in pairs(enemyMinion.objects) do
 				if ValidTarget(minion, QRange) and 50 <= ManaPercent() then
 					CastSpell(_Q, minion.x,minion.z)
-					--DelayAction(function() myHero:MoveTo(myHero.x-50,myHero.z-50) end, 3)
 				end 
 			end
 	end
 end
 
 function RyzeCombo()
-local QRANGE = 975
-local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(ts.target, .25, 75, QRANGE, 800, myHero, true)
 	if ts.target.visible == true then
-		if myHero:CanUseSpell(_Q) == READY and GetDistance(ts.target) < QRANGE  then 
-			if CastPosition and Hitchance >= 2 then
-			d = CastPosition
-			CastSpell(_Q, CastPosition.x, CastPosition.z)
-			end
+		if myHero:CanUseSpell(_Q) == READY and GetDistance(ts.target) < 700  then 
+			CastSpell(_Q, ts.target, ts.target)
 		end
-		if myHero:CanUseSpell(_E) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target) end
 		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 and myHero.mana / myHero.maxMana < 50 then CastSpell(_W, ts.target) end
 		if myHero:CanUseSpell(_R) == READY then CastSpell(_R, myHero) end
 	end
@@ -2920,8 +2949,8 @@ function RyzeDefensive()
 local champ = player.charName
 	if champ == "Ryze" then
 		if ts.target.visible == true then
-			if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 and 50 <= ManaPercent() then CastSpell(_W, ts.target) end
-			if myHero:CanUseSpell(_R) == READY and GetDistance(ts.target) < 400 then CastSpell(_R, myHero) end
+			if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 then CastSpell(_W, ts.target) end
+			if myHero:CanUseSpell(_R) == READY then CastSpell(_R, myHero) end
 		end
 	end
 end
@@ -3013,11 +3042,13 @@ end
 
 function DefensiveMode()
 if player.dead or GetGame().isOver then return end
-	JannaTF()
-	KayleTF()
-	TaricTF()
-	RyzeDefensive()
-	KindredDefensive()
+	if ts.target ~= nil then
+		JannaTF()
+		KayleTF()
+		TaricTF()
+		RyzeDefensive()
+		KindredDefensive()
+	end
 end
 
 --[[ NotificationLib Function ]]--
@@ -3154,20 +3185,4 @@ function GetMaxTileCount()
     return round((WINDOW_H / 108), 0)
 end
 
---[[ TowerCloser Function ]]--
-class "TowerCloser"
 
-function TowerCloser:TowerFocusPlayer()
-	print("Tower focus: Player")
-		if myHero.team == TEAM_BLUE then
-			myHero:MoveTo(myHero.x-100,myHero.z-100)
-		else
-			myHero:MoveTo(myHero.x+100,myHero.z+100)
-		end
-end
-
-function TowerCloser:OnProcessSpell(unit, spell)
-	if unit.type == "obj_AI_Turret" and spell.name:lower():find("attack") and spell.target == player then 
-		TowerCloser:TowerFocusPlayer()
-	end
-end
