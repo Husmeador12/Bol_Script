@@ -51,10 +51,7 @@ function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#
 
 -----[[ Auto Download Required LIBS ]]------
 
-function OnLoad()
-	CheckLib()
-	_OnLoad()
-end
+
 --if not FileExist(LIB_PATH.."VPrediction.lua") then return _AutoupdaterMsg("Please download VPrediction before running this script, thank you. Make sure it is in your common folder.") end
 function CheckLib()
 local SOURCELIB_URL = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua"
@@ -126,8 +123,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.26
-local UPDATE_CHANGE_LOG = "Fixing problems with Ryze. Sumonner Rift is a bit bugged."
+local version = 6.27
+local UPDATE_CHANGE_LOG = "Fixing problems with Ryze and Autoupdate Sumonner Rift is a bit bugged."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -172,6 +169,10 @@ function CheckLoLVersion()
 	end
 end
 
+function OnLoad()
+	CheckLib()
+	_OnLoad()
+end
 
 -----[[ Build and defining Champion Class ]]------
 do
