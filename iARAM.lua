@@ -53,7 +53,6 @@ function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#
 
 function OnLoad()
 	CheckLib()
-	--DelayAction(function() _OnLoad() end, 2)  
 	_OnLoad()
 end
 --if not FileExist(LIB_PATH.."VPrediction.lua") then return _AutoupdaterMsg("Please download VPrediction before running this script, thank you. Make sure it is in your common folder.") end
@@ -127,8 +126,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.25
-local UPDATE_CHANGE_LOG = "Fixing problems with castspell"
+local version = 6.26
+local UPDATE_CHANGE_LOG = "Fixing problems with Ryze. Sumonner Rift is a bit bugged."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -451,7 +450,7 @@ if TimeToStart > os.clock() then return end
 	if iARAM.follow then
 		if safe == false then
 			status = "Not Safe"
-			--DefensiveMode()
+			DefensiveMode()
 		elseif myHero.health < myHero.maxHealth/4 and summonersRiftMap then -- Back to Base
 			status = "LowHP"
 			lowHP()
@@ -593,7 +592,7 @@ local champ = player.charName
 		elseif champ == "Rengar" then       ComboFull() harass(ts.target)
 		elseif champ == "Riven" then        ComboFull() harass(ts.target)
 		elseif champ == "Rumble" then       ComboFull() harass(ts.target)
-		elseif champ == "Ryze" then         RyzeCombo() harass(ts.target)
+		elseif champ == "Ryze" then         --RyzeCombo() harass(ts.target)
 		elseif champ == "Sejuani" then      ComboFull() harass(ts.target)
 		elseif champ == "Shaco" then        ComboFull() harass(ts.target)
 		elseif champ == "Shen" then         ComboFull() harass(ts.target)
@@ -654,133 +653,133 @@ end
 
 function EnemyTabFunction()
 local champ = player.charName
-if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Ahri" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Akali" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Alistar" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Amumu" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Anivia" then       eTab = GetEnemiesInRange(900, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1050, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Annie" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Ashe" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-	elseif champ == "Azir" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Blitzcrank" then   eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Brand" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(950, myHero) else tabclosed = GetEnemiesInRange(490, myHero) end 
-    elseif champ == "Bard" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-	elseif champ == "Braum" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Caitlyn" then      eTab = GetEnemiesInRange(1030, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1000, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Cassiopeia" then   eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Chogath" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Corki" then        eTab = GetEnemiesInRange(900, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1050, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Darius" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Diana" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "DrMundo" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Draven" then       eTab = GetEnemiesInRange(900, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1250, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
-	elseif champ == "Ekko" then      	eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Elise" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Evelynn" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Ezreal" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "FiddleSticks" then eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Fiora" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Fizz" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Galio" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Gangplank" then    eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Garen" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Gragas" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(750, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
-    elseif champ == "Graves" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-	elseif champ == "Gnar" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Hecarim" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Heimerdinger" then eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Irelia" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Janna" then        eTab = GetEnemiesInRange(900, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(900, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "JarvanIV" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Jax" then          eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Jayce" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-	elseif champ == "Jinx" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-	elseif champ == "Kalista" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Karma" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Karthus" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Kassadin" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Katarina" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Kayle" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Kennen" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-	elseif champ == "Kindred" then      eTab = GetEnemiesInRange(1250, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1000, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Khazix" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "KogMaw" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Leblanc" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "LeeSin" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Leona" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Lissandra" then    eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Lucian" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Lulu" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(700, myHero) end
-    elseif champ == "Lux" then          eTab = GetEnemiesInRange(830, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
-    elseif champ == "Malphite" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Malzahar" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Maokai" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "MasterYi" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "MissFortune" then  eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "MonkeyKing" then   eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Mordekaiser" then  eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Morgana" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Nami" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Nasus" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Nautilus" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Nidalee" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Nocturne" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Nunu" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Olaf" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Orianna" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Pantheon" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Poppy" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Quinn" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Rammus" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-	elseif champ == "RekSai" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Renekton" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Rengar" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Riven" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Rumble" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Ryze" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Sejuani" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Shaco" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Shen" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Shyvana" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Singed" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Sion" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Sivir" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Skarner" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Sona" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Soraka" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(700, myHero) end 
-    elseif champ == "Swain" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Syndra" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-	elseif champ == "TahmKench" then   	eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Talon" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Taric" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Teemo" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Thresh" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Tristana" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Trundle" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Tryndamere" then   eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "TwistedFate" then  eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Twitch" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Udyr" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Urgot" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Varus" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Vayne" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Veigar" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-	elseif champ == "Velkoz" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Vi" then           eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Viktor" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Vladimir" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Volibear" then     eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "Warwick" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Xerath" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-    elseif champ == "XinZhao" then      eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Yorick" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-	elseif champ == "Yasuo" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Zac" then          eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Zed" then          eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Ziggs" then        eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Zilean" then       eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Zyra" then         eTab = GetEnemiesInRange(800, myHero) if enemiescount == true then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Ahri" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Akali" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Alistar" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Amumu" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Anivia" then       eTab = GetEnemiesInRange(900, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1050, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Annie" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Ashe" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+	elseif champ == "Azir" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Blitzcrank" then   eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Brand" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(950, myHero) else tabclosed = GetEnemiesInRange(490, myHero) end 
+    elseif champ == "Bard" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+	elseif champ == "Braum" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Caitlyn" then      eTab = GetEnemiesInRange(1030, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1000, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Cassiopeia" then   eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Chogath" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Corki" then        eTab = GetEnemiesInRange(900, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1050, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Darius" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Diana" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "DrMundo" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Draven" then       eTab = GetEnemiesInRange(900, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1250, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+	elseif champ == "Ekko" then      	eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Elise" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Evelynn" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Ezreal" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "FiddleSticks" then eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Fiora" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Fizz" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Galio" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Gangplank" then    eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Garen" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Gragas" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(750, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
+    elseif champ == "Graves" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+	elseif champ == "Gnar" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Hecarim" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Heimerdinger" then eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Irelia" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Janna" then        eTab = GetEnemiesInRange(900, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(900, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "JarvanIV" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Jax" then          eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Jayce" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+	elseif champ == "Jinx" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+	elseif champ == "Kalista" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Karma" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Karthus" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Kassadin" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Katarina" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Kayle" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Kennen" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+	elseif champ == "Kindred" then      eTab = GetEnemiesInRange(1250, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1000, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Khazix" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "KogMaw" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Leblanc" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "LeeSin" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Leona" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Lissandra" then    eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Lucian" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Lulu" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(700, myHero) end
+    elseif champ == "Lux" then          eTab = GetEnemiesInRange(830, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(850, myHero) else tabclosed = GetEnemiesInRange(100, myHero) end 
+    elseif champ == "Malphite" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Malzahar" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Maokai" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "MasterYi" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "MissFortune" then  eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "MonkeyKing" then   eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Mordekaiser" then  eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Morgana" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Nami" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Nasus" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Nautilus" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Nidalee" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Nocturne" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Nunu" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Olaf" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Orianna" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Pantheon" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Poppy" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Quinn" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Rammus" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+	elseif champ == "RekSai" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Renekton" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Rengar" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Riven" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Rumble" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Ryze" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Sejuani" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Shaco" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Shen" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Shyvana" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Singed" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Sion" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Sivir" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Skarner" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Sona" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Soraka" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(700, myHero) end 
+    elseif champ == "Swain" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Syndra" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+	elseif champ == "TahmKench" then   	eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Talon" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Taric" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Teemo" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Thresh" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Tristana" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Trundle" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Tryndamere" then   eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "TwistedFate" then  eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Twitch" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Udyr" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Urgot" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Varus" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Vayne" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Veigar" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+	elseif champ == "Velkoz" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Vi" then           eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Viktor" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Vladimir" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Volibear" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Warwick" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Xerath" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "XinZhao" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Yorick" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+	elseif champ == "Yasuo" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Zac" then          eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Zed" then          eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Ziggs" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Zilean" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Zyra" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     else eTab = GetEnemiesInRange(630, myHero)
 		 tabclosed = GetEnemiesInRange(800, myHero)
 		 _AutoupdaterMsg(string.format(" >> Get Range Enemies disabled for %s", champ))
@@ -833,7 +832,10 @@ function lowHP()
 		--CastSpell(RECALL)
 		if myHero.x >= 400 and myHero.x >= 182 then
 			onbase = true
+		elseif myHero.x >= 14260 and myHero.x >= 14382 then
+			onbase = true
 		end
+		
 	else if myHero.team == TEAM_BLUE then
 				myHero:MoveTo(400,400)
 			else
@@ -877,7 +879,21 @@ function MoveModeSR()
 			else
 				myHero:MoveTo(8600, myHero.z-8600)
 			end
+		end
+	if myHero.x >= 10000 and myHero.z >= 10000 and myHero.team == TEAM_RED then
+			if myHero.team == TEAM_BLUE then
+				myHero:MoveTo(eTurret.x+600, eTurret.z+600)
+			else
+				myHero:MoveTo(eTurret.x-600, eTurret.z-600)
+			end
+		else if myHero.team == TEAM_BLUE then
+				myHero:MoveTo(5852, 6232)
+			else
+				myHero:MoveTo(8600, myHero.z-8600)
+			end
+		
 	end
+
 end
 
 function MoveModeTT()
@@ -938,7 +954,7 @@ if player.dead or GetGame().isOver then return end
 	LuxFarm()
 	MorganaFarm()
 	NidaleeFarm()
-	RyzeFarm()
+	--RyzeFarm()
 	TaricFarm()
 	WarwickFarm()
 
@@ -1036,8 +1052,7 @@ end
 function NormalMode()
 	if myHero.x >= 2880 and myHero.z >= 2880 then
 		if heroType == 1 then --adc
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 80 then
-					--if not timeToShoot() then
+			if GetDistance(Vector(mdraw.x, mdraw.z), player) > 70 then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+60,mdraw.z+60)
 						else
@@ -1317,6 +1332,7 @@ function findLowHp()
 	end
 end
 
+--[[
 function EnemyCount() 
 	for i = 1, heroManager.iCount do
 		local MyEnemy = heroManager:getHero(i)	
@@ -1330,6 +1346,19 @@ function EnemyCount()
 			end
 		end
 	end
+end
+]]--
+function EnemyCount(unit, range)
+local sEnemies = GetEnemyHeroes()
+	local count = 0
+	for i, enemy in pairs(sEnemies) do
+		if not enemy.dead and enemy.visible then
+			--if  GetDistanceSqr(unit, enemy) < range * range  then 
+				count = count + 1 
+			--end
+		end
+	end
+	return count
 end
 
 function Allies()
@@ -2919,7 +2948,7 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
----[[Ryze]]---
+--[[ Ryze
 function RyzeFarm()
 local champ = player.charName
 local QRange = 800
@@ -2954,7 +2983,7 @@ local champ = player.charName
 		end
 	end
 end
-
+]]---
 
 ---[[Taric]]---
 function TaricFarm()
@@ -3046,7 +3075,7 @@ if player.dead or GetGame().isOver then return end
 		JannaTF()
 		KayleTF()
 		TaricTF()
-		RyzeDefensive()
+		--RyzeDefensive()
 		KindredDefensive()
 	end
 end
