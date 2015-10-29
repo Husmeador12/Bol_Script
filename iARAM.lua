@@ -123,8 +123,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.27
-local UPDATE_CHANGE_LOG = "Fixing problems with Ryze and Autoupdate Sumonner Rift is a bit bugged."
+local version = 6.30
+local UPDATE_CHANGE_LOG = "Updated for 5.21. AutoLevel Disabled"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -158,8 +158,8 @@ end
 --[[ CheckLoLVersion Function ]]--
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
-	--print(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.20.0.289") then
+		--_AutoupdaterMsg(""..GetGameVersion().."")
+	if string.match(LoLVersion, "5.21.0.297") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
@@ -608,7 +608,7 @@ local champ = player.charName
 		elseif champ == "Syndra" then       ComboFull() harass(ts.target)
 		elseif champ == "TahmKench" then   	ComboFull() harass(ts.target)
 		elseif champ == "Talon" then        ComboFull() harass(ts.target)
-		elseif champ == "Taric" then        TaricCombo() harass(ts.target)
+		elseif champ == "Taric" then        TaricCombo() TaricDefensive() harass(ts.target)
 		elseif champ == "Teemo" then        ComboFull() harass(ts.target)
 		elseif champ == "Thresh" then       ComboFull() harass(ts.target)
 		elseif champ == "Tristana" then     ComboFull() harass(ts.target)
@@ -2030,7 +2030,7 @@ function AutoPotions()
 end
 
 
---[[ AutoLevel Function ]]--
+--[[ AutoLevel Function 
 AddLoadCallback(function()
 
 if not VIP_USER then return end
@@ -2229,7 +2229,7 @@ function AutoLevel:LevelSpell(id)
 		SendPacket(p)
 	end
 end
-
+]]--
 --[[ PrintFloatText Function ]]--
 function _MyHeroText() 
 	if iARAM.follow and not myHero.dead then
@@ -3017,6 +3017,25 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 			if myHero:CanUseSpell(_Q) == READY then			
 				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting Q to Ally") end
 				CastSpell(_Q, ally)
+			end
+		end
+	end
+end
+
+function TaricDefensive()
+local champ = player.charName
+local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
+	if champ == "Taric" then
+		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
+			if myHero:CanUseSpell(_Q) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting Q to Ally") end
+				CastSpell(_Q, ally)
+			end
+		end
+	if myHero.health <= myHero.maxHealth * (70 / 100) then
+			if myHero:CanUseSpell(_Q) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting Q to Taric") end
+				CastSpell(_Q, myHero)
 			end
 		end
 	end
