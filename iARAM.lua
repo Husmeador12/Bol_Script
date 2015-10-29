@@ -61,10 +61,10 @@ local DownloadSourceLib = false
 		require("VPrediction")
 	else
 		DownloadSourceLib = true
-		DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() _AutoupdaterMsg("VPrediction downloaded, please reload (F9)") NotificationLib:AddTile("VPrediction", "VPrediction downloaded, please reload (F9)", 10)	 end)
+		DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() _AutoupdaterMsg("VPrediction downloaded, please reload (F9)")	 end)
 	end
 	if DownloadSourceLib then
-		NotificationLib:AddTile("VPrediction", "Downloading required libraries, please wait...", 10)	
+		--NotificationLib:AddTile("VPrediction", "Downloading required libraries, please wait...", 10)	
 		_AutoupdaterMsg("Downloading required libraries, please wait...") return end
 end
 
@@ -123,8 +123,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.30
-local UPDATE_CHANGE_LOG = "Updated for 5.21. AutoLevel Disabled"
+local version = 6.31
+local UPDATE_CHANGE_LOG = "Fixed problems with AutoUpdate. AutoLevel Disabled"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -139,10 +139,10 @@ if AUTOUPDATE then
 		if ServerVersion then
 			if tonumber(version) < ServerVersion then
 				_AutoupdaterMsg("New version available "..ServerVersion)
-				NotificationLib:AddTile("Updating iARAM", "Updating, please don't press F9", 10)
+				--NotificationLib:AddTile("Updating iARAM", "Updating, please don't press F9", 10)
 				_AutoupdaterMsg("Updating, please don't press F9")
 				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") 
-				NotificationLib:AddTile("Successfully updated", "Press F9 twice to load the updated version.", 10)
+				--NotificationLib:AddTile("Successfully updated", "Press F9 twice to load the updated version.", 10)
 				end) end, 3)
 			else
 				_AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
