@@ -32,25 +32,23 @@
 		-TowerClose
 ]]--
 --[[
-	   Problems:
+	   Issues:
 	   It dies undertower >.<
-	   pairs withs Relicsç
+	   Pairs withs Relics
 	   Ryze problems with target
+	   SummonerRift is in Beta
 		──|> AutoLevel with ROff doesnt work.
 ]]--
 
 --[[ SETTINGS ]]--
-local HotKey = 115 --F4 = 115, F6 = 117 default
-local AutomaticChat = true --If is in true mode, then it will say "gl and hf" when the game starts.
-local AUTOUPDATE = true --change to false to disable auto update
-local SummonerName = myHero.charName
+local HotKey = 115 --F4 = 115, F6 = 117 
+local AUTOUPDATE = true  --|>Change to false to disable auto update.
+local SummonerName = myHero.charName --|>Change myHero.charName for other name that you want.
 
---[[ GLOBALS [Do Not Change] ]]--
 
 function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
 
 -----[[ Auto Download Required LIBS ]]------
-
 
 --if not FileExist(LIB_PATH.."VPrediction.lua") then return _AutoupdaterMsg("Please download VPrediction before running this script, thank you. Make sure it is in your common folder.") end
 function CheckLib()
@@ -68,6 +66,7 @@ local DownloadSourceLib = false
 		_AutoupdaterMsg("Downloading required libraries, please wait...") return end
 end
 
+--[[ GLOBALS [Do Not Change] ]]--
 
 -----[[ Delay ]]------
 local LastTick = nil
@@ -123,8 +122,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.31
-local UPDATE_CHANGE_LOG = "Fixed problems with AutoUpdate. AutoLevel Disabled"
+local version = 6.32
+local UPDATE_CHANGE_LOG = "Optimized Menu. AutoLevel Enabled"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -342,9 +341,7 @@ end
 		heroCanMove()
 		OnWndMsg()
 		OnWndMsgNotificationLib()
-		if AutomaticChat then
-			AutoChat()
-		end
+		AutoChat()
 		--|>Auto Ward
 		AutoWard()
 		--|>Auto Ignite
@@ -374,7 +371,6 @@ function OnTick()
 		--|>Autopotions
 		AutoPotions()
 		TowerRangers()
-		--TowerFollowing()
 		FunctionAutoZhonya()
 		Allie = followHero()
 		EnemyTabFunction()
@@ -787,7 +783,6 @@ if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if Ene
     end
 end
 
-
 function getsafe()
 	local q = {}
 	for i, str in pairs(tabclosed) do
@@ -924,7 +919,6 @@ function AloneModeSR()
 		myHero:MoveTo(myTurret.x+200, myTurret.z+200)
 	end
 end
-
 
 function AloneModeHA()
 	local myTurret = GetCloseTower(player, player.team)
@@ -1406,7 +1400,7 @@ end
 
 --[[ AutoBuyItems ]]--
 function AutoBuy()
-BuyItem(1001)
+	BuyItem(1001)
 end
 
 
@@ -1443,8 +1437,8 @@ function Menu()
 		iARAM:addSubMenu("Miscelaneus Settings", "misc")
 			iARAM.misc:addParam("misc2", "Debug Mode", SCRIPT_PARAM_ONOFF, false)
 			--iARAM.misc:addParam("permanshow", "See Permashow", SCRIPT_PARAM_ONOFF, true)
-			iARAM.misc:addParam("farm", "Last Hit Farm", SCRIPT_PARAM_ONOFF, true)	
-			iARAM.misc:addParam("attackchamps", "Auto Attack champs", SCRIPT_PARAM_ONOFF, true)
+			iARAM.misc:addParam("farm", "Last Hit Minions", SCRIPT_PARAM_ONOFF, true)	
+			iARAM.misc:addParam("autochatenabled", "Auto Chat", SCRIPT_PARAM_ONOFF, true)
 			iARAM.misc:addParam("autobuy", "Auto Buy Items (Broken)", SCRIPT_PARAM_ONOFF, true)
 			iARAM.misc:addParam("useAutoPots", "Auto Potions", SCRIPT_PARAM_ONOFF, true)
 			--Ignite
@@ -1845,6 +1839,8 @@ end
 
 ---------[[ Auto Good luck and have fun ]]---------
 function AutoChat()
+if not iARAM.misc.autochatenabled then return end
+
 local Text1 = {"Good luck and have fun", "gl hf", "gl hf", "Good luck have fun", "Good luck and have fun guys", "gl hf guys", "gl and have fun", "good luck and hf" } 
 local Phrases2 = {"c´mon guys", "we can do it", "This is my winner team", "It doesnt matter", "let´s go", "team work is OP" }
 
@@ -1994,9 +1990,7 @@ end
 
 -----[[ AutoPotions ]]------
 function AutoPotions()
-	if not iARAM.misc.useAutoPots then
-		return
-	end
+	if not iARAM.misc.useAutoPots then return end
 	for SLOT = ITEM_1, ITEM_6 do
 		--if iARAM.misc.misc2 then _AutoupdaterMsg("ITEM : "..myHero:GetSpellData(SLOT).name.."") end
 		-- Crystalline Flash
@@ -2030,7 +2024,7 @@ function AutoPotions()
 end
 
 
---[[ AutoLevel Function 
+--[[ AutoLevel Function ]]--
 AddLoadCallback(function()
 
 if not VIP_USER then return end
@@ -2205,31 +2199,26 @@ end
 function AutoLevel:LevelSpell(id)
 	if LoLVersionWorking then
 		local offsets = {
-			[_Q] = 0x32,
-			[_W] = 0x78,
-			[_E] = 0xE7,
-			[_R] = 0xD5,
-		}
-		local p
-		p = CLoLPacket(21)
-		
-		if GetGameVersion():sub(1,10) == "5.20.0.284" then
-			p.vTable = 15151928
-		else
-			p.vTable = 15821468
-		end
-		p:EncodeF(myHero.networkID)
-		for i = 1, 4 do p:Encode1(0x04) end
-		p:Encode1(offsets[id])
-		for i = 1, 4 do p:Encode1(0x16) end
-		for i = 1, 4 do p:Encode1(0x1D) end
-		p:Encode1(0x4E)
-		p:Encode1(0x2C)
-		for i = 1, 3 do p:Encode1(0x00) end
-		SendPacket(p)
+	   [_Q] = 0x85,
+	   [_W] = 0x45,
+	   [_E] = 0x15,
+	   [_R] = 0xC5,
+	   }
+	   local p
+	   p = CLoLPacket(0x130)
+	   p.vTable = 0xEDB360
+	   p:EncodeF(myHero.networkID)
+	   for i = 1, 4 do p:Encode1(0x55) end
+	   for i = 1, 4 do p:Encode1(0x74) end
+	   p:Encode1(offsets[id])
+	   p:Encode1(0xB3)
+	   for i = 1, 4 do p:Encode1(0x4F) end
+	   p:Encode1(0x01)
+	   for i = 1, 3 do p:Encode1(0x00) end
+	   SendPacket(p)
 	end
 end
-]]--
+
 --[[ PrintFloatText Function ]]--
 function _MyHeroText() 
 	if iARAM.follow and not myHero.dead then
@@ -2296,22 +2285,6 @@ function PrintSumonerRift(SRM)
     _AutoupdaterMsg("Following Minion in Summoners Rift Map")
       lastPrintSRM = SRM
    end
-end
-
-
-function TowerFollowing()
-	FollowTurrets = {}
-	if ChampionBusy then return end
-	for name, Towers in pairs(GetTurrets()) do
-		if Towers ~= nil then
-			local enemyTurret = Towers.team ~= player.team
-			if GetDistance(Towers) < 100 then
-				table.insert(FollowTurrets, {x = Towers.x, y = Towers.y, z = Towers.z, range = Towers.range, color = (enemyTurret and allyTurretColor), visibilityRange = Towers.visibilityRange})
-				myHero:MoveTo(Towers.x,Towers.z)
-				if iARAM.misc.misc2 then _AutoupdaterMsg("Moving to Tower") end
-			end
-		end
-	end
 end
 
 
