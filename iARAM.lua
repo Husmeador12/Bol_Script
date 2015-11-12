@@ -38,6 +38,7 @@
 	   Ryze problems with target
 	   SummonerRift is in Beta
 		──|> AutoLevel with ROff doesnt work.
+		Error send it when you use left click.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -122,8 +123,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 6.32
-local UPDATE_CHANGE_LOG = "Optimized Menu. AutoLevel Enabled"
+local version = 7.00
+local UPDATE_CHANGE_LOG = "Update to 5.22, AutoLevel Disabled"
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -158,7 +159,7 @@ end
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
 		--_AutoupdaterMsg(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.21.0.297") then
+	if string.match(LoLVersion, "5.22.0.289") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
@@ -2198,7 +2199,8 @@ end
 
 function AutoLevel:LevelSpell(id)
 	if LoLVersionWorking then
-		local offsets = {
+	--[[
+	   local offsets = {
 	   [_Q] = 0x85,
 	   [_W] = 0x45,
 	   [_E] = 0x15,
@@ -2216,6 +2218,7 @@ function AutoLevel:LevelSpell(id)
 	   p:Encode1(0x01)
 	   for i = 1, 3 do p:Encode1(0x00) end
 	   SendPacket(p)
+	   ]]--
 	end
 end
 
