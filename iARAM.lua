@@ -123,8 +123,8 @@ local range = myHero.range
 
 
 -----[[ Auto Update Globals ]]------
-local version = 7.00
-local UPDATE_CHANGE_LOG = "Update to 5.22, AutoLevel Disabled"
+local version = 7.10
+local UPDATE_CHANGE_LOG = "AutoLevel Enabled. Fixed IsKeyDown spam."
 local UPDATE_HOST = "raw.githubusercontent.com"
 local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
 local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
@@ -329,10 +329,10 @@ end
 
 --[[ On Load Function ]]--
  function _OnLoad()
-		startingTime = GetTickCount()
-		CheckLoLVersion()
-		Menu()
-		if LoLVersionWorking then
+startingTime = GetTickCount()
+CheckLoLVersion()
+Menu()
+	if LoLVersionWorking then
 		NotificationLib:AddTile("Welcome to iARAM", "".. UPDATE_CHANGE_LOG .." Version: "..version.."", 10)
 		gete()
 		enemyMinion = minionManager(MINION_ENEMY, 800, player, MINION_SORT_HEALTH_ASC)
@@ -351,6 +351,7 @@ end
 		end
 		--|>Mode Alone
 		LoadMapVariables()
+		KeyDownFix()
 	end
 end
 
@@ -2199,26 +2200,25 @@ end
 
 function AutoLevel:LevelSpell(id)
 	if LoLVersionWorking then
-	--[[
-	   local offsets = {
-	   [_Q] = 0x85,
-	   [_W] = 0x45,
-	   [_E] = 0x15,
-	   [_R] = 0xC5,
-	   }
-	   local p
-	   p = CLoLPacket(0x130)
-	   p.vTable = 0xEDB360
-	   p:EncodeF(myHero.networkID)
-	   for i = 1, 4 do p:Encode1(0x55) end
-	   for i = 1, 4 do p:Encode1(0x74) end
-	   p:Encode1(offsets[id])
-	   p:Encode1(0xB3)
-	   for i = 1, 4 do p:Encode1(0x4F) end
-	   p:Encode1(0x01)
-	   for i = 1, 3 do p:Encode1(0x00) end
-	   SendPacket(p)
-	   ]]--
+	  local offsets = { 
+		[_Q] = 0xB8,
+		[_W] = 0xBA,
+		[_E] = 0x79,
+		[_R] = 0x7B,
+	  }
+	  local p = CLoLPacket(0x0050)
+	  p.vTable = 0xF38DAC
+	  p:EncodeF(myHero.networkID)
+	  p:Encode1(offsets[id])
+	  p:Encode1(0x3C)
+	  for i = 1, 4 do p:Encode1(0xF6) end
+	  for i = 1, 4 do p:Encode1(0x5E) end
+	  for i = 1, 4 do p:Encode1(0xE0) end
+	  p:Encode1(0x24)
+	  p:Encode1(0xF1)
+	  p:Encode1(0x27)
+	  p:Encode1(0x00)
+	  SendPacket(p)
 	end
 end
 
@@ -3209,5 +3209,23 @@ end
 function GetMaxTileCount()
     return round((WINDOW_H / 108), 0)
 end
+
+
+function KeyDownFix()
+	local originalKD = _G.IsKeyDown
+	_G.IsKeyDown = function(theKey)
+		if (type(theKey) ~= 'number') then
+			local theNumber = tonumber(theKey)
+			if (theNumber ~= nil) then
+				return originalKD(theNumber)
+			else
+				return originalKD(GetKey(theKey))
+			end
+		else
+			return originalKD(theKey)
+		end
+	end
+end
+
 
 
