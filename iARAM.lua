@@ -38,7 +38,6 @@
 	   Ryze problems with target
 	   SummonerRift is in Beta
 		──|> AutoLevel with ROff doesnt work.
-		Error send it when you use left click.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -48,216 +47,6 @@ local SummonerName = myHero.charName --|>Change myHero.charName for other name t
 
 
 function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
-
------[[ Auto Update Function ]]------
-class "ScriptUpdate"
-function ScriptUpdate:__init(LocalVersion,UseHttps, Host, VersionPath, ScriptPath, SavePath, CallbackUpdate, CallbackNoUpdate, CallbackNewVersion,CallbackError)
-    self.LocalVersion = LocalVersion
-    self.Host = Host
-    self.VersionPath = '/BoL/TCPUpdater/GetScript'..(UseHttps and '5' or '6')..'.php?script='..self:Base64Encode(self.Host..VersionPath)..'&rand='..math.random(99999999)
-    self.ScriptPath = '/BoL/TCPUpdater/GetScript'..(UseHttps and '5' or '6')..'.php?script='..self:Base64Encode(self.Host..ScriptPath)..'&rand='..math.random(99999999)
-    self.SavePath = SavePath
-    self.CallbackUpdate = CallbackUpdate
-    self.CallbackNoUpdate = CallbackNoUpdate
-    self.CallbackNewVersion = CallbackNewVersion
-    self.CallbackError = CallbackError
-    AddDrawCallback(function() self:OnDraw() end)
-    self:CreateSocket(self.VersionPath)
-    self.DownloadStatus = 'Connect to Server for VersionInfo'
-    AddTickCallback(function() self:GetOnlineVersion() end)
-end
-
-function ScriptUpdate:print(str)
-    print('<font color="#FFFFFF">'..os.clock()..': '..str)
-end
-
-function ScriptUpdate:OnDraw()
-    if self.DownloadStatus ~= 'Downloading Script (100%)' and self.DownloadStatus ~= 'Downloading VersionInfo (100%)'then
-        DrawText('Download Status: '..(self.DownloadStatus or 'Unknown'),50,10,50,ARGB(0xFF,0xFF,0xFF,0xFF))
-    end
-end
-
-function ScriptUpdate:CreateSocket(url)
-    if not self.LuaSocket then
-        self.LuaSocket = require("socket")
-    else
-        self.Socket:close()
-        self.Socket = nil
-        self.Size = nil
-        self.RecvStarted = false
-    end
-    self.LuaSocket = require("socket")
-    self.Socket = self.LuaSocket.tcp()
-    self.Socket:settimeout(0, 'b')
-    self.Socket:settimeout(99999999, 't')
-    self.Socket:connect('sx-bol.eu', 80)
-    self.Url = url
-    self.Started = false
-    self.LastPrint = ""
-    self.File = ""
-end
-
-function ScriptUpdate:Base64Encode(data)
-    local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-    return ((data:gsub('.', function(x)
-        local r,b='',x:byte()
-        for i=8,1,-1 do r=r..(b%2^i-b%2^(i-1)>0 and '1' or '0') end
-        return r;
-    end)..'0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-        if (#x < 6) then return '' end
-        local c=0
-        for i=1,6 do c=c+(x:sub(i,i)=='1' and 2^(6-i) or 0) end
-        return b:sub(c+1,c+1)
-    end)..({ '', '==', '=' })[#data%3+1])
-end
-
-function ScriptUpdate:GetOnlineVersion()
-    if self.GotScriptVersion then return end
-
-    self.Receive, self.Status, self.Snipped = self.Socket:receive(1024)
-    if self.Status == 'timeout' and not self.Started then
-        self.Started = true
-        self.Socket:send("GET "..self.Url.." HTTP/1.1\r\nHost: sx-bol.eu\r\n\r\n")
-    end
-    if (self.Receive or (#self.Snipped > 0)) and not self.RecvStarted then
-        self.RecvStarted = true
-        self.DownloadStatus = 'Downloading VersionInfo (0%)'
-    end
-
-    self.File = self.File .. (self.Receive or self.Snipped)
-    if self.File:find('</s'..'ize>') then
-        if not self.Size then
-            self.Size = tonumber(self.File:sub(self.File:find('<si'..'ze>')+6,self.File:find('</si'..'ze>')-1))
-        end
-        if self.File:find('<scr'..'ipt>') then
-            local _,ScriptFind = self.File:find('<scr'..'ipt>')
-            local ScriptEnd = self.File:find('</scr'..'ipt>')
-            if ScriptEnd then ScriptEnd = ScriptEnd - 1 end
-            local DownloadedSize = self.File:sub(ScriptFind+1,ScriptEnd or -1):len()
-            self.DownloadStatus = 'Downloading VersionInfo ('..math.round(100/self.Size*DownloadedSize,2)..'%)'
-        end
-    end
-    if self.File:find('</scr'..'ipt>') then
-        self.DownloadStatus = 'Downloading VersionInfo (100%)'
-        local a,b = self.File:find('\r\n\r\n')
-        self.File = self.File:sub(a,-1)
-        self.NewFile = ''
-        for line,content in ipairs(self.File:split('\n')) do
-            if content:len() > 5 then
-                self.NewFile = self.NewFile .. content
-            end
-        end
-        local HeaderEnd, ContentStart = self.File:find('<scr'..'ipt>')
-        local ContentEnd, _ = self.File:find('</sc'..'ript>')
-        if not ContentStart or not ContentEnd then
-            if self.CallbackError and type(self.CallbackError) == 'function' then
-                self.CallbackError()
-            end
-        else
-            self.OnlineVersion = (Base64Decode(self.File:sub(ContentStart + 1,ContentEnd-1)))
-            self.OnlineVersion = tonumber(self.OnlineVersion)
-            if self.OnlineVersion > self.LocalVersion then
-                if self.CallbackNewVersion and type(self.CallbackNewVersion) == 'function' then
-                    self.CallbackNewVersion(self.OnlineVersion,self.LocalVersion)
-                end
-                self:CreateSocket(self.ScriptPath)
-                self.DownloadStatus = 'Connect to Server for ScriptDownload'
-                AddTickCallback(function() self:DownloadUpdate() end)
-            else
-                if self.CallbackNoUpdate and type(self.CallbackNoUpdate) == 'function' then
-                    self.CallbackNoUpdate(self.LocalVersion)
-                end
-            end
-        end
-        self.GotScriptVersion = true
-    end
-end
-
-function ScriptUpdate:DownloadUpdate()
-    if self.GotScriptUpdate then return end
-    self.Receive, self.Status, self.Snipped = self.Socket:receive(1024)
-    if self.Status == 'timeout' and not self.Started then
-        self.Started = true
-        self.Socket:send("GET "..self.Url.." HTTP/1.1\r\nHost: sx-bol.eu\r\n\r\n")
-    end
-    if (self.Receive or (#self.Snipped > 0)) and not self.RecvStarted then
-        self.RecvStarted = true
-        self.DownloadStatus = 'Downloading Script (0%)'
-    end
-
-    self.File = self.File .. (self.Receive or self.Snipped)
-    if self.File:find('</si'..'ze>') then
-        if not self.Size then
-            self.Size = tonumber(self.File:sub(self.File:find('<si'..'ze>')+6,self.File:find('</si'..'ze>')-1))
-        end
-        if self.File:find('<scr'..'ipt>') then
-            local _,ScriptFind = self.File:find('<scr'..'ipt>')
-            local ScriptEnd = self.File:find('</scr'..'ipt>')
-            if ScriptEnd then ScriptEnd = ScriptEnd - 1 end
-            local DownloadedSize = self.File:sub(ScriptFind+1,ScriptEnd or -1):len()
-            self.DownloadStatus = 'Downloading Script ('..math.round(100/self.Size*DownloadedSize,2)..'%)'
-        end
-    end
-    if self.File:find('</scr'..'ipt>') then
-        self.DownloadStatus = 'Downloading Script (100%)'
-        local a,b = self.File:find('\r\n\r\n')
-        self.File = self.File:sub(a,-1)
-        self.NewFile = ''
-        for line,content in ipairs(self.File:split('\n')) do
-            if content:len() > 5 then
-                self.NewFile = self.NewFile .. content
-            end
-        end
-        local HeaderEnd, ContentStart = self.NewFile:find('<sc'..'ript>')
-        local ContentEnd, _ = self.NewFile:find('</scr'..'ipt>')
-        if not ContentStart or not ContentEnd then
-            if self.CallbackError and type(self.CallbackError) == 'function' then
-                self.CallbackError()
-            end
-        else
-            local newf = self.NewFile:sub(ContentStart+1,ContentEnd-1)
-            local newf = newf:gsub('\r','')
-            if newf:len() ~= self.Size then
-                if self.CallbackError and type(self.CallbackError) == 'function' then
-                    self.CallbackError()
-                end
-                return
-            end
-            local newf = Base64Decode(newf)
-            if type(load(newf)) ~= 'function' then
-                if self.CallbackError and type(self.CallbackError) == 'function' then
-                    self.CallbackError()
-                end
-            else
-                local f = io.open(self.SavePath,"w+b")
-                f:write(newf)
-                f:close()
-                if self.CallbackUpdate and type(self.CallbackUpdate) == 'function' then
-                    self.CallbackUpdate(self.OnlineVersion,self.LocalVersion)
-                end
-            end
-        end
-        self.GotScriptUpdate = true
-    end
-end
-
-
------[[ Auto Update Globals ]]------
-local ToUpdate = {}
-ToUpdate.Version = 8.0
-ToUpdate.Update_Change_Log = "Updated for LoL Version 5.23. Added Illaoi as a mage."
-ToUpdate.UseHttps = true
-ToUpdate.Host = "raw.githubusercontent.com"
-ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
-ToUpdate.ScriptPath =  "/Husmeador12/Bol_Script/master/iARAM.lua"
-ToUpdate.SavePath = SCRIPT_PATH.._ENV.FILE_NAME
-ToUpdate.CallbackUpdate = function(NewVersion,OldVersion) _AutoupdaterMsg("Updated to "..NewVersion..". ") end
-ToUpdate.CallbackNoUpdate = function(OldVersion) _AutoupdaterMsg("Notes: "..ToUpdate.Update_Change_Log.."") end
-ToUpdate.CallbackNewVersion = function(NewVersion) _AutoupdaterMsg("New Version found ("..NewVersion.."). Please wait until its downloaded") end
-ToUpdate.CallbackError = function(NewVersion) _AutoupdaterMsg("Error while Downloading. Please try again.") end
-ScriptUpdate(ToUpdate.Version,ToUpdate.UseHttps, ToUpdate.Host, ToUpdate.VersionPath, ToUpdate.ScriptPath, ToUpdate.SavePath, ToUpdate.CallbackUpdate,ToUpdate.CallbackNoUpdate, ToUpdate.CallbackNewVersion,ToUpdate.CallbackError)
-
-
 
 -----[[ Auto Download Required LIBS ]]------
 
@@ -332,11 +121,44 @@ local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local range = myHero.range
 
 
+-----[[ Auto Update Globals ]]------
+local version = 6.32
+local UPDATE_CHANGE_LOG = "Optimized Menu. AutoLevel Enabled"
+local UPDATE_HOST = "raw.githubusercontent.com"
+local UPDATE_PATH = "/Husmeador12/Bol_Script/master/iARAM.lua".."?rand="..math.random(1,10000)
+local UPDATE_FILE_PATH = SCRIPT_PATH..GetCurrentEnv().FILE_NAME
+local UPDATE_URL = "https://"..UPDATE_HOST..UPDATE_PATH
+
+
+-----[[ Auto Update Function ]]------
+if AUTOUPDATE then
+	local ServerData = GetWebResult(UPDATE_HOST, "/Husmeador12/Bol_Script/master/version/iARAM.version")
+	if ServerData then
+		ServerVersion = type(tonumber(ServerData)) == "number" and tonumber(ServerData) or nil
+		if ServerVersion then
+			if tonumber(version) < ServerVersion then
+				_AutoupdaterMsg("New version available "..ServerVersion)
+				--NotificationLib:AddTile("Updating iARAM", "Updating, please don't press F9", 10)
+				_AutoupdaterMsg("Updating, please don't press F9")
+				DelayAction(function() DownloadFile(UPDATE_URL, UPDATE_FILE_PATH, function () _AutoupdaterMsg("Successfully updated. ("..version.." => "..ServerVersion.."), press F9 twice to load the updated version.") 
+				--NotificationLib:AddTile("Successfully updated", "Press F9 twice to load the updated version.", 10)
+				end) end, 3)
+			else
+				_AutoupdaterMsg("You have got the latest version ("..ServerVersion..")")
+				_AutoupdaterMsg("<font color=\"#81BEF7\">Update Notes: </font>".. UPDATE_CHANGE_LOG .."")
+			end
+		end
+	else
+		_AutoupdaterMsg("Error downloading version info")
+	end
+end
+
+
 --[[ CheckLoLVersion Function ]]--
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
 		--_AutoupdaterMsg(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.23.0.239") then
+	if string.match(LoLVersion, "5.21.0.297") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
@@ -346,12 +168,10 @@ function CheckLoLVersion()
 	end
 end
 
-
 function OnLoad()
 	CheckLib()
 	_OnLoad()
 end
-
 
 -----[[ Build and defining Champion Class ]]------
 do
@@ -363,7 +183,7 @@ do
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","JarvanIV","Nasus","Skarner","TahmKench","Thresh","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Taric","Zac"}
-	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Illaoi","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Shaco","Sona","Soraka","Swain","Syndra","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
+	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Shaco","Sona","Soraka","Swain","Syndra","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
 	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","RekSai","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","MonkeyKing","Zed","Yasuo"}
 	fighters = {"Aatrox","Fiora","Jax","Jayce","MasterYi","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
@@ -508,11 +328,11 @@ end
 
 --[[ On Load Function ]]--
  function _OnLoad()
-startingTime = GetTickCount()
-CheckLoLVersion()
-Menu()
-	if LoLVersionWorking then
-		NotificationLib:AddTile("Welcome to iARAM", ""..ToUpdate.Update_Change_Log.." Version: "..ToUpdate.Version.."", 10)
+		startingTime = GetTickCount()
+		CheckLoLVersion()
+		Menu()
+		if LoLVersionWorking then
+		NotificationLib:AddTile("Welcome to iARAM", "".. UPDATE_CHANGE_LOG .." Version: "..version.."", 10)
 		gete()
 		enemyMinion = minionManager(MINION_ENEMY, 800, player, MINION_SORT_HEALTH_ASC)
 		allyMinion = minionManager(MINION_ALLY, 800, player, MINION_SORT_HEALTH_ASC)
@@ -530,7 +350,6 @@ Menu()
 		end
 		--|>Mode Alone
 		LoadMapVariables()
-		KeyDownFix()
 	end
 end
 
@@ -688,7 +507,7 @@ local champ = player.charName
 	if ts.target then
 	if champ == "Aatrox" then           harass(ts.target)
 		elseif champ == "Ahri" then         AhriCombo() harass(ts.target)
-		elseif champ == "Akali" then        AkaliCombo() harass(ts.target)
+		elseif champ == "Akali" then        ComboFull() harass(ts.target)
 		elseif champ == "Alistar" then      ComboFull() harass(ts.target)
 		elseif champ == "Amumu" then        ComboFull() harass(ts.target)
 		elseif champ == "Anivia" then       ComboFull() harass(ts.target)
@@ -717,12 +536,11 @@ local champ = player.charName
 		elseif champ == "Galio" then        ComboFull() harass(ts.target)
 		elseif champ == "Gangplank" then    ComboFull() harass(ts.target)
 		elseif champ == "Garen" then        ComboFull()
-		elseif champ == "Gragas" then       GragasCombo() harass(ts.target)
+		elseif champ == "Gragas" then       ComboFull() harass(ts.target)
 		elseif champ == "Graves" then       ComboFull() harass(ts.target)
 		elseif champ == "Gnar" then         ComboFull() harass(ts.target)
 		elseif champ == "Hecarim" then      ComboFull() harass(ts.target)
 		elseif champ == "Heimerdinger" then ComboFull() harass(ts.target)
-		elseif champ == "Illaoi" then		ComboFull() harass(ts.target)
 		elseif champ == "Irelia" then       ComboFull() harass(ts.target)
 		elseif champ == "Janna" then        JannaCombo() harass(ts.target)
 		elseif champ == "JarvanIV" then     ComboFull() harass(ts.target)
@@ -867,8 +685,7 @@ if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if Ene
     elseif champ == "Graves" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
 	elseif champ == "Gnar" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Hecarim" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Heimerdinger" then eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
-	elseif champ == "Illaoi" then		eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Heimerdinger" then eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Irelia" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Janna" then        eTab = GetEnemiesInRange(900, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(900, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "JarvanIV" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
@@ -1120,11 +937,9 @@ if player.dead or GetGame().isOver then return end
 
 
 	AhriFarm()
-	AkaliFarm()
 	AnnieFarm()
 	AsheFarm()
 	CaitlynFarm()
-	GragasFarm()
 	JannaFarm()
 	KarmaFarm()
 	KayleFarm()
@@ -1137,6 +952,8 @@ if player.dead or GetGame().isOver then return end
 	--RyzeFarm()
 	TaricFarm()
 	WarwickFarm()
+
+	-- moveLastFollowingMinion
 	if heroType == 1 then --adc
 		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
@@ -1271,6 +1088,7 @@ function NormalMode()
 				end	
 		elseif heroType == 6 then 
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
+					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
@@ -1293,6 +1111,7 @@ function NormalMode()
 				end	
 		elseif heroType == 8 then 
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
+					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
@@ -1301,6 +1120,7 @@ function NormalMode()
 				end	
 		elseif heroType == 9 then --fighter
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
+					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
@@ -1635,7 +1455,7 @@ function Menu()
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", "edited by ", SCRIPT_PARAM_INFO, "Husmeador12") 
-		iARAM:addParam("info2", "iARAM Version : ", SCRIPT_PARAM_INFO, ToUpdate.Version)
+		iARAM:addParam("info2", "iARAM Version : ", SCRIPT_PARAM_INFO, version)
 		
 end
 
@@ -2245,7 +2065,6 @@ if not VIP_USER then return end
 	elseif champ == "Gnar" then         AutoLevel({ 1, 2, 1, 3, 1, 4, 1, 2, 1, 2, 4, 3, 3, 2, 2, 4, 3, 3, })
     elseif champ == "Hecarim" then      AutoLevel({ 1, 2, 1, 3, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, })
     elseif champ == "Heimerdinger" then AutoLevel({ 1, 2, 2, 1, 1, 4, 3, 2, 2, 2, 4, 1, 1, 3, 3, 4, 1, 1, })
-	elseif champ == "Illaoi" then		AutoLevel({ 3, 1, 2, 2, 2, 4, 2, 3, 2, 3, 4, 1, 1, 3, 1, 4, 3, 1, })
     elseif champ == "Irelia" then       AutoLevel({ 3, 1, 2, 2, 2, 4, 2, 3, 2, 3, 4, 1, 1, 3, 1, 4, 3, 1, })
     elseif champ == "Janna" then        AutoLevel({ 3, 1, 3, 2, 3, 4, 3, 2, 3, 2, 1, 2, 2, 1, 1, 1, 4, 4, })
     elseif champ == "JarvanIV" then     AutoLevel({ 1, 3, 1, 2, 1, 4, 1, 3, 2, 1, 4, 3, 3, 3, 2, 4, 2, 2, })
@@ -2259,7 +2078,7 @@ if not VIP_USER then return end
     elseif champ == "Katarina" then     AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 3, 2, 1, 4, 1, 1, 1, 3, 4, 3, 3, })
     elseif champ == "Kayle" then        AutoLevel({ 3, 2, 3, 1, 3, 4, 3, 2, 3, 2, 4, 2, 2, 1, 1, 4, 1, 1, })
     elseif champ == "Kennen" then       AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
-	elseif champ == "Kindred" then      AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
+	elseif champ == "Kindred" then       AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Khazix" then       AutoLevel({ 1, 3, 1, 2 ,1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, })
     elseif champ == "KogMaw" then       AutoLevel({ 2, 3, 2, 1, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Leblanc" then      AutoLevel({ 1, 2, 3, 1, 1, 4, 1, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, })
@@ -2379,22 +2198,24 @@ end
 
 function AutoLevel:LevelSpell(id)
 	if LoLVersionWorking then
-	  local offsets = { 
-		[_Q] = 0x61,
-		[_W] = 0x81,
-		[_E] = 0xA1,
-		[_R] = 0xC1,
-	  }
-	  local p = CLoLPacket(0x0033)
-	  p.vTable = 0xE556E8
-	  p:EncodeF(myHero.networkID)
-	  p:Encode1(0x73)
-	  for i = 1, 4 do p:Encode1(0xF9) end
-	  for i = 1, 4 do p:Encode1(0x1E) end
-	  p:Encode1(offsets[id])
-	  for i = 1, 4 do p:Encode1(0x99) end
-	  for i = 1, 4 do p:Encode1(0x00) end
-	  SendPacket(p)
+		local offsets = {
+	   [_Q] = 0x85,
+	   [_W] = 0x45,
+	   [_E] = 0x15,
+	   [_R] = 0xC5,
+	   }
+	   local p
+	   p = CLoLPacket(0x130)
+	   p.vTable = 0xEDB360
+	   p:EncodeF(myHero.networkID)
+	   for i = 1, 4 do p:Encode1(0x55) end
+	   for i = 1, 4 do p:Encode1(0x74) end
+	   p:Encode1(offsets[id])
+	   p:Encode1(0xB3)
+	   for i = 1, 4 do p:Encode1(0x4F) end
+	   p:Encode1(0x01)
+	   for i = 1, 3 do p:Encode1(0x00) end
+	   SendPacket(p)
 	end
 end
 
@@ -2630,42 +2451,6 @@ function ManaPercent()
 end
 
 
----[[Akali]]---
-function AkaliFarm()
-local champ = player.charName
-local QRange = 900
-	if champ == "Akali" then
-		-- Farm Q 
-		if not myHero:CanUseSpell(_Q) == READY then return end
-			for i, minion in pairs(enemyMinion.objects) do
-				if ValidTarget(minion,  QRange+100) then
-					CastSpell(_Q, minion.x,minion.z)
-				end 
-			end
-	end
-end
-
-function AkaliCombo()
-local ERANGE = 975
-local RandomUlt1 = math.random(130,250)
-local RandomUlt2 = math.random(130,250)
-local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(ts.target, .25, 75, ERANGE, 1200, myHero, true)
-	if ts.target.visible == true then
-		if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) < ERANGE  then 
-		--if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) < ERANGE and not minionCollision(ts.target, ERANGE) then 
-			if CastPosition and Hitchance >= 2 then
-			d = CastPosition
-			CastSpell(_E, CastPosition.x, CastPosition.z)
-			end
-		end
-		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
-		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 then CastSpell(_W, myHero) end
-		if myHero:CanUseSpell(_R) == READY and GetDistance(ts.target) < 400 then 
-		CastSpell(_R, myHero.x +RandomUlt1, myHero.y + RandomUlt2) end
-	end
-end
-
-
 ---[[Annie]]---
 function AnnieFarm()
 local champ = player.charName
@@ -2753,36 +2538,6 @@ function CaitlynCombo()
         end
 	end
 end
-
-
----[[Gragas]]---
-function GragasFarm()
-local champ = player.charName
-	if champ == "Gragas" then
-		-- Farm Q
-		for index,minion in pairs(enemyMinion.objects) do
-			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
-				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
-					if myHero:CanUseSpell(_Q) == READY then
-						CastSpell(_Q, minion)
-					end
-				end
-			end
-		end	
-	end
-end
-
-function GragasCombo()
-	SkillR = { range = 740, delay = 1.0 }
-	rDmg = getDmg("R", ts.target, myHero)
-	if ts.target.visible == true then
-		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
-		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
-		if myHero:CanUseSpell(_W) == READY and myHero.Health < myHero.Health * (50 / 100) then CastSpell(_W) end
-		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= SkillR.range then CastSpell(_R, ts.target.x, ts.target.z) end
-	end
-end
-
 
 ---[[Janna]]---
 function JannaFarm()
@@ -3259,7 +3014,7 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
----[[Nunu]]---
+
 function NunuCombo()
 	if myHero:CanUseSpell(_W) == READY then		
 		CastSpell(_W, ts.target)
@@ -3307,8 +3062,6 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
-
---[[ DefensiveMode Function ]]--
 function DefensiveMode()
 if player.dead or GetGame().isOver then return end
 	if ts.target ~= nil and Target ~= nil then
@@ -3455,19 +3208,3 @@ function GetMaxTileCount()
 end
 
 
---[[ KeyDownFix Function ]]--
-function KeyDownFix()
-	local originalKD = _G.IsKeyDown
-	_G.IsKeyDown = function(theKey)
-		if (type(theKey) ~= 'number') then
-			local theNumber = tonumber(theKey)
-			if (theNumber ~= nil) then
-				return originalKD(theNumber)
-			else
-				return originalKD(GetKey(theKey))
-			end
-		else
-			return originalKD(theKey)
-		end
-	end
-end
