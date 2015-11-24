@@ -244,8 +244,8 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 7.20
-ToUpdate.Update_Change_Log = "Updated AutoUpdater"
+ToUpdate.Version = 8.0
+ToUpdate.Update_Change_Log = "Updated for LoL Version 5.23. Added Illaoi as a mage."
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
 ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
@@ -336,7 +336,7 @@ local range = myHero.range
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
 		--_AutoupdaterMsg(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.22.0.289") then
+	if string.match(LoLVersion, "5.23.0.239") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
@@ -363,7 +363,7 @@ do
 	adtanks = {"Braum","DrMundo","Garen","Gnar","Hecarim","JarvanIV","Nasus","Skarner","TahmKench","Thresh","Volibear","Yorick"}
 	adcs = {"Ashe","Caitlyn","Corki","Draven","Ezreal","Gangplank","Graves","Jinx","Kalista","KogMaw","Lucian","MissFortune","Quinn","Sivir","Tristana","Tryndamere","Twitch","Urgot","Varus","Vayne"}
 	aptanks = {"Alistar","Amumu","Blitzcrank","Chogath","Leona","Malphite","Maokai","Nautilus","Rammus","Sejuani","Shen","Singed","Taric","Zac"}
-	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Shaco","Sona","Soraka","Swain","Syndra","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
+	mages = {"Ahri","Anivia","Annie","Azir","Bard","Brand","Cassiopeia","Ekko","Galio","Gragas","Heimerdinger","Illaoi","Janna","Karma","Karthus","LeBlanc","Lissandra","Lulu","Lux","Malzahar","Morgana","Nami","Nunu","Orianna","Ryze","Shaco","Sona","Soraka","Swain","Syndra","TwistedFate","Veigar","Velkoz","Viktor","Xerath","Ziggs","Zilean","Zyra"}
 	hybrids = {"Kayle","Teemo"}
 	bruisers = {"Darius","Irelia","Khazix","LeeSin","Olaf","Pantheon","RekSai","Renekton","Rengar","Riven","Shyvana","Talon","Trundle","Vi","MonkeyKing","Zed","Yasuo"}
 	fighters = {"Aatrox","Fiora","Jax","Jayce","MasterYi","Nocturne","Poppy","Sion","Udyr","Warwick","XinZhao"}
@@ -688,7 +688,7 @@ local champ = player.charName
 	if ts.target then
 	if champ == "Aatrox" then           harass(ts.target)
 		elseif champ == "Ahri" then         AhriCombo() harass(ts.target)
-		elseif champ == "Akali" then        ComboFull() harass(ts.target)
+		elseif champ == "Akali" then        AkaliCombo() harass(ts.target)
 		elseif champ == "Alistar" then      ComboFull() harass(ts.target)
 		elseif champ == "Amumu" then        ComboFull() harass(ts.target)
 		elseif champ == "Anivia" then       ComboFull() harass(ts.target)
@@ -717,11 +717,12 @@ local champ = player.charName
 		elseif champ == "Galio" then        ComboFull() harass(ts.target)
 		elseif champ == "Gangplank" then    ComboFull() harass(ts.target)
 		elseif champ == "Garen" then        ComboFull()
-		elseif champ == "Gragas" then       ComboFull() harass(ts.target)
+		elseif champ == "Gragas" then       GragasCombo() harass(ts.target)
 		elseif champ == "Graves" then       ComboFull() harass(ts.target)
 		elseif champ == "Gnar" then         ComboFull() harass(ts.target)
 		elseif champ == "Hecarim" then      ComboFull() harass(ts.target)
 		elseif champ == "Heimerdinger" then ComboFull() harass(ts.target)
+		elseif champ == "Illaoi" then		ComboFull() harass(ts.target)
 		elseif champ == "Irelia" then       ComboFull() harass(ts.target)
 		elseif champ == "Janna" then        JannaCombo() harass(ts.target)
 		elseif champ == "JarvanIV" then     ComboFull() harass(ts.target)
@@ -866,7 +867,8 @@ if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if Ene
     elseif champ == "Graves" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
 	elseif champ == "Gnar" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Hecarim" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Heimerdinger" then eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Heimerdinger" then eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+	elseif champ == "Illaoi" then		eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
     elseif champ == "Irelia" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Janna" then        eTab = GetEnemiesInRange(900, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(900, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "JarvanIV" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
@@ -1118,9 +1120,11 @@ if player.dead or GetGame().isOver then return end
 
 
 	AhriFarm()
+	AkaliFarm()
 	AnnieFarm()
 	AsheFarm()
 	CaitlynFarm()
+	GragasFarm()
 	JannaFarm()
 	KarmaFarm()
 	KayleFarm()
@@ -1133,8 +1137,6 @@ if player.dead or GetGame().isOver then return end
 	--RyzeFarm()
 	TaricFarm()
 	WarwickFarm()
-
-	-- moveLastFollowingMinion
 	if heroType == 1 then --adc
 		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
@@ -1269,7 +1271,6 @@ function NormalMode()
 				end	
 		elseif heroType == 6 then 
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
-					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
@@ -1292,7 +1293,6 @@ function NormalMode()
 				end	
 		elseif heroType == 8 then 
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
-					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
@@ -1301,7 +1301,6 @@ function NormalMode()
 				end	
 		elseif heroType == 9 then --fighter
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
-					--if not timeToShoot() then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
 						else
@@ -2246,6 +2245,7 @@ if not VIP_USER then return end
 	elseif champ == "Gnar" then         AutoLevel({ 1, 2, 1, 3, 1, 4, 1, 2, 1, 2, 4, 3, 3, 2, 2, 4, 3, 3, })
     elseif champ == "Hecarim" then      AutoLevel({ 1, 2, 1, 3, 1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, })
     elseif champ == "Heimerdinger" then AutoLevel({ 1, 2, 2, 1, 1, 4, 3, 2, 2, 2, 4, 1, 1, 3, 3, 4, 1, 1, })
+	elseif champ == "Illaoi" then		AutoLevel({ 3, 1, 2, 2, 2, 4, 2, 3, 2, 3, 4, 1, 1, 3, 1, 4, 3, 1, })
     elseif champ == "Irelia" then       AutoLevel({ 3, 1, 2, 2, 2, 4, 2, 3, 2, 3, 4, 1, 1, 3, 1, 4, 3, 1, })
     elseif champ == "Janna" then        AutoLevel({ 3, 1, 3, 2, 3, 4, 3, 2, 3, 2, 1, 2, 2, 1, 1, 1, 4, 4, })
     elseif champ == "JarvanIV" then     AutoLevel({ 1, 3, 1, 2, 1, 4, 1, 3, 2, 1, 4, 3, 3, 3, 2, 4, 2, 2, })
@@ -2259,7 +2259,7 @@ if not VIP_USER then return end
     elseif champ == "Katarina" then     AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 3, 2, 1, 4, 1, 1, 1, 3, 4, 3, 3, })
     elseif champ == "Kayle" then        AutoLevel({ 3, 2, 3, 1, 3, 4, 3, 2, 3, 2, 4, 2, 2, 1, 1, 4, 1, 1, })
     elseif champ == "Kennen" then       AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
-	elseif champ == "Kindred" then       AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
+	elseif champ == "Kindred" then      AutoLevel({ 1, 3, 2, 2, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Khazix" then       AutoLevel({ 1, 3, 1, 2 ,1, 4, 1, 2, 1, 2, 4, 2, 2, 3, 3, 4, 3, 3, })
     elseif champ == "KogMaw" then       AutoLevel({ 2, 3, 2, 1, 2, 4, 2, 1, 2, 1, 4, 1, 1, 3, 3, 4, 3, 3, })
     elseif champ == "Leblanc" then      AutoLevel({ 1, 2, 3, 1, 1, 4, 1, 2, 1, 2, 4, 2, 3, 2, 3, 4, 3, 3, })
@@ -2380,23 +2380,20 @@ end
 function AutoLevel:LevelSpell(id)
 	if LoLVersionWorking then
 	  local offsets = { 
-		[_Q] = 0xB8,
-		[_W] = 0xBA,
-		[_E] = 0x79,
-		[_R] = 0x7B,
+		[_Q] = 0x61,
+		[_W] = 0x81,
+		[_E] = 0xA1,
+		[_R] = 0xC1,
 	  }
-	  local p = CLoLPacket(0x0050)
-	  p.vTable = 0xF38DAC
+	  local p = CLoLPacket(0x0033)
+	  p.vTable = 0xE556E8
 	  p:EncodeF(myHero.networkID)
+	  p:Encode1(0x73)
+	  for i = 1, 4 do p:Encode1(0xF9) end
+	  for i = 1, 4 do p:Encode1(0x1E) end
 	  p:Encode1(offsets[id])
-	  p:Encode1(0x3C)
-	  for i = 1, 4 do p:Encode1(0xF6) end
-	  for i = 1, 4 do p:Encode1(0x5E) end
-	  for i = 1, 4 do p:Encode1(0xE0) end
-	  p:Encode1(0x24)
-	  p:Encode1(0xF1)
-	  p:Encode1(0x27)
-	  p:Encode1(0x00)
+	  for i = 1, 4 do p:Encode1(0x99) end
+	  for i = 1, 4 do p:Encode1(0x00) end
 	  SendPacket(p)
 	end
 end
@@ -2633,6 +2630,42 @@ function ManaPercent()
 end
 
 
+---[[Akali]]---
+function AkaliFarm()
+local champ = player.charName
+local QRange = 900
+	if champ == "Akali" then
+		-- Farm Q 
+		if not myHero:CanUseSpell(_Q) == READY then return end
+			for i, minion in pairs(enemyMinion.objects) do
+				if ValidTarget(minion,  QRange+100) then
+					CastSpell(_Q, minion.x,minion.z)
+				end 
+			end
+	end
+end
+
+function AkaliCombo()
+local ERANGE = 975
+local RandomUlt1 = math.random(130,250)
+local RandomUlt2 = math.random(130,250)
+local CastPosition, Hitchance, Position = vPred:GetLineCastPosition(ts.target, .25, 75, ERANGE, 1200, myHero, true)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) < ERANGE  then 
+		--if myHero:CanUseSpell(_E) == READY and GetDistance(ts.target) < ERANGE and not minionCollision(ts.target, ERANGE) then 
+			if CastPosition and Hitchance >= 2 then
+			d = CastPosition
+			CastSpell(_E, CastPosition.x, CastPosition.z)
+			end
+		end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 then CastSpell(_W, myHero) end
+		if myHero:CanUseSpell(_R) == READY and GetDistance(ts.target) < 400 then 
+		CastSpell(_R, myHero.x +RandomUlt1, myHero.y + RandomUlt2) end
+	end
+end
+
+
 ---[[Annie]]---
 function AnnieFarm()
 local champ = player.charName
@@ -2720,6 +2753,36 @@ function CaitlynCombo()
         end
 	end
 end
+
+
+---[[Gragas]]---
+function GragasFarm()
+local champ = player.charName
+	if champ == "Gragas" then
+		-- Farm Q
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function GragasCombo()
+	SkillR = { range = 740, delay = 1.0 }
+	rDmg = getDmg("R", ts.target, myHero)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY and myHero.Health < myHero.Health * (50 / 100) then CastSpell(_W) end
+		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= SkillR.range then CastSpell(_R, ts.target.x, ts.target.z) end
+	end
+end
+
 
 ---[[Janna]]---
 function JannaFarm()
@@ -3196,7 +3259,7 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
-
+---[[Nunu]]---
 function NunuCombo()
 	if myHero:CanUseSpell(_W) == READY then		
 		CastSpell(_W, ts.target)
@@ -3244,6 +3307,8 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
+
+--[[ DefensiveMode Function ]]--
 function DefensiveMode()
 if player.dead or GetGame().isOver then return end
 	if ts.target ~= nil and Target ~= nil then
