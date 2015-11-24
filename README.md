@@ -11,19 +11,23 @@ Husmeador
 
 iARAM Script
 ==========
-![gui](https://cloud.githubusercontent.com/assets/7702430/8150952/62d37dc2-12fe-11e5-87d7-453bb60fdb68.png)
+![gui](https://camo.nulled.io/?url=http://i.imgur.com/qALmHig.png)
 See the [iARAM.lua](https://github.com/Husmeador12/Bol_Script/blob/master/iARAM.lua)
 
 ####Features:
  
-- Auto Buy.
-- Auto Chat.
-- Auto Cast Spells.
-- Auto Level Up.
-- Auto Update.
+- Auto Buy
+- Auto Level Up
+- Welcome Message
+- Auto Chat
 - Auto Ignite
-- Auto Poro thrower.
-- Auto Potions.
-- It builds for especific classes of champs: mage, adc, tank ap...
+- Auto Potions
+- Auto Update
+- Auto Poro thrower
+- Auto Cast Spells
+- Fake Name
+- Supports Summoner Rift, ARAM and Twisted Tree lines.
+- PrintFloatText Function
+- It builds for specific classes of champs: mage, adc, tank ap...
 - Works with every champions.
-- Activate or disable script: F4.
+- Activate or disable script: F4
