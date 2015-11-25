@@ -244,8 +244,8 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 8.0
-ToUpdate.Update_Change_Log = "Updated for LoL Version 5.23. Added Illaoi as a mage."
+ToUpdate.Version = 8.1
+ToUpdate.Update_Change_Log = "Added a WaterMark."
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
 ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
@@ -3471,3 +3471,102 @@ function KeyDownFix()
 		end
 	end
 end
+
+
+
+local FolderOfSprites = { }
+local updated = false
+
+
+-- Made by Nebelwolfi to make classes local and not global
+function Class(name)
+    _ENV[name] = { }
+    _ENV[name].__index = _ENV[name]
+    local mt = { __call = function(self, ...) local b = { } setmetatable(b, _ENV[name]) b:__init(...) return b end }
+    setmetatable(_ENV[name], mt)
+end
+
+DelayAction( function() if not _G.DrawLogoLoaded then DrawLogo() end end, 0.05)
+
+class "DrawLogo"
+function DrawLogo:__init(cfg)
+    if _G.DrawLogoLoaded then return end
+    _G.givenConfig = cfg
+    _G.DrawLogoLoaded = true
+    _Tech:LoadSprites()
+    _Tech:LoadMenu()
+    AddMsgCallback( function(a, b) self:WndMsg(a, b) end)
+    AddDrawCallback( function() self:Draw() end)
+    AddUnloadCallback( function() self:Unload() end)
+end
+
+function DrawLogo:Draw()
+    if not _Tech.Conf then return end
+    if updated == false then return end
+		_Tech:Draw() --drawing
+end
+
+function DrawLogo:WndMsg(a, b)
+    if not _Tech.Conf then return end
+    if _Tech.Conf.SpriteSettings.UpdateSprites and updated == true then
+		_AutoupdaterMsg("Loaded sprites.")
+        _Tech:ReloadSprites()
+        _Tech.Conf.SpriteSettings.UpdateSprites = false
+    end
+end
+
+function DrawLogo:Unload()
+    for i = 1, #FolderOfSprites do
+        FolderOfSprites[i]:Release();
+    end
+end
+
+
+Class("_Tech")
+function _Tech:LoadMenu()
+    self.Conf = givenConfig or scriptConfig("iARAM", "iARAMMenu")
+    self.Conf:addSubMenu("> Sprites", "SpriteSettings")
+    self.Conf.SpriteSettings:addParam("UpdateSprites", "Reload sprites", SCRIPT_PARAM_ONOFF, false)
+end
+
+
+function _Tech:LoadSprites()
+    updated = false
+	--Which folder we want to create.
+    for _, k in pairs( { "", "Logotype" }) do
+        if not DirectoryExist(SPRITE_PATH .. "iARAM//" .. k) then
+            CreateDirectory(SPRITE_PATH .. "iARAM//" .. k)
+        end
+    end
+    self:LoadOtherSprites()
+end
+
+function _Tech:LoadOtherSprites()
+    -- Load icons
+    for i = 1, 2 do
+        -- We have 2 sprites so we run it 2 times
+        if FileExist(SPRITE_PATH .. "iARAM//Logotype//" .. i .. ".png") then
+            table.insert(FolderOfSprites, createSprite(SPRITE_PATH .. "\\iARAM\\Logotype\\" .. i .. ".png"))
+        else
+            _AutoupdaterMsg("Downloading missing sprite in folder: Logotype " .. i .. " / 2, DO NOT RELOAD THE SCRIPT!")
+            DownloadFile("https://raw.githubusercontent.com/Husmeador12/Bol_Script/master/Sprites/" .. i .. ".png?no-cache=" .. math.random(1, 25000), SPRITE_PATH .. "iARAM//Logotype//" .. i .. ".png", function() DelayAction( function() self:LoadOtherSprites() end, 0.15) end)
+            FolderOfSprites = { }
+            return;
+        end
+    end
+    updated = true
+end
+
+function _Tech:ReloadSprites()
+    if updated == false then return end
+    for i = 1, #FolderOfSprites do
+        FolderOfSprites[i]:Release();
+    end
+    FolderOfSprites = { }
+    self:LoadSprites()
+end
+
+function _Tech:Draw()
+	FolderOfSprites[1]:Draw(900, 700, 255)
+end
+
