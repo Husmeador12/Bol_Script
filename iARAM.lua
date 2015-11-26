@@ -244,8 +244,8 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 8.20
-ToUpdate.Update_Change_Log = "Fixed Menu."
+ToUpdate.Version = 8.22
+ToUpdate.Update_Change_Log = "Fixed a bug when champion dies"
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
 ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
@@ -646,16 +646,13 @@ if TimeToStart > os.clock() then return end
 		elseif #allyMinion.objects > 1 and #enemyMinion.objects >= 1 then -- Farming
 			status = "Farming"
 			FarmMode()
-			
-			
 		elseif Allies() >= 2 and myHero.x >= 2880 and myHero.z >= 2880 and myHero.team == TEAM_BLUE then
 			status = "TF Mode"
 			TFMode()
 		elseif Allies() >= 2 and myHero.x <= 12880 and myHero.z >= 12880 and myHero.team == TEAM_RED then
 			status = "TF Mode"
 			TFMode()	
-		
-		
+			
 		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and howlingAbyssMap then
 			status = "Moving"
 			DelayAction(function() MoveModeHA() end, 2)
@@ -1997,8 +1994,8 @@ end
 ---------[[ Auto Zhonya ]]---------
 function FunctionAutoZhonya()
   if iARAM.item.enableautozhonya then
-    if myHero.health <= (myHero.maxHealth * iARAM.item.autozhonya / 100) then CastItem(3157) 
-    end
+    --if myHero.health <= (myHero.maxHealth * iARAM.item.autozhonya / 100) then CastItem(3157) 
+    --end
   end
 end
 
