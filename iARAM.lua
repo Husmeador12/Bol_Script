@@ -244,8 +244,8 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 8.1
-ToUpdate.Update_Change_Log = "Added a WaterMark."
+ToUpdate.Version = 8.20
+ToUpdate.Update_Change_Log = "Fixed Menu."
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
 ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
@@ -1144,20 +1144,23 @@ if player.dead or GetGame().isOver then return end
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
 		end
-	elseif heroType == 2 then --tank
+	elseif heroType == 2 then --ADtank
 		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
 		end
-	elseif heroType == 3 then --tank
+		
+		
+	elseif heroType == 3 then --APTank
 		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
 		else if underT.e == true then
 			myHero:MoveTo(mdraw.x,mdraw.z)
 		end
 		end
+		
 	elseif heroType == 4 then --Fighter
 		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
@@ -1237,7 +1240,7 @@ function NormalMode()
 							myHero:MoveTo(mdraw.x-60,mdraw.z-60)
 						end
 				end	
-		elseif heroType == 2 then --tank
+		elseif heroType == 2 then --adtank
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 200 then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+180,mdraw.z+180)
@@ -1245,10 +1248,10 @@ function NormalMode()
 							myHero:MoveTo(mdraw.x-180,mdraw.z-180)
 						end
 				end	
-		elseif heroType == 3 then --tank
-				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
+		elseif heroType == 3 then --aptank
+				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 200 then
 						if myHero.team == TEAM_BLUE then
-							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
+							myHero:MoveTo(mdraw.x+90,mdraw.z+90)
 						else
 							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
@@ -1612,6 +1615,11 @@ function Menu()
 		iARAM:addSubMenu("Item Settings", "item")
 			iARAM.item:addParam("enableautozhonya", "Auto Zhonya", SCRIPT_PARAM_ONOFF, true)
 			iARAM.item:addParam("autozhonya", "Zhonya if Health under -> %", SCRIPT_PARAM_SLICE, 10, 0, 100, 0)
+			
+		--[[ Sprite menu ]]--
+		iARAM:addSubMenu("Sprite Settings", "SpriteMenu")
+			iARAM.SpriteMenu:addParam("SpriteShower", "Show Sprites", SCRIPT_PARAM_ONOFF, true)
+			iARAM.SpriteMenu:addParam("UpdateSprites", "Reload sprites", SCRIPT_PARAM_ONOFF, true)	
 		
 		--[[ Misc menu ]]--
 		iARAM:addSubMenu("Miscelaneus Settings", "misc")
@@ -1623,7 +1631,10 @@ function Menu()
 			iARAM.misc:addParam("useAutoPots", "Auto Potions", SCRIPT_PARAM_ONOFF, true)
 			--Ignite
 			ignite = IgniteCheck()
-
+		
+		
+			
+			
 		----[[ Main Script menu ]]--
 		iARAM:addParam("follow", "Enable bot (F4)", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
 		
@@ -1698,7 +1709,7 @@ SetupDrawX = 0.1
 tempSetupDrawY = SetupDrawY
 MenuTextSize = 18
 	if iARAM.misc.misc2 then 
-		DrawText(""..myHero.charName.." Bot", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
+		DrawText("Champion: "..myHero.charName.."", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
 		tempSetupDrawY = tempSetupDrawY + 0.03
 		DrawText("Logged as: ".. GetUser() .." ", MenuTextSize , (WINDOW_W - WINDOW_X) * SetupDrawX, (WINDOW_H - WINDOW_Y) * tempSetupDrawY , 0xffffff00) 
 		tempSetupDrawY = tempSetupDrawY + 0.07
@@ -3315,6 +3326,7 @@ if player.dead or GetGame().isOver then return end
 		JannaTF()
 		KayleTF()
 		TaricTF()
+		TaricDefensive()
 		--RyzeDefensive()
 		KindredDefensive()
 	end
@@ -3473,6 +3485,7 @@ function KeyDownFix()
 end
 
 
+--[[ Sprite Drawing and Downloader Function ]]--
 
 local FolderOfSprites = { }
 local updated = false
@@ -3494,24 +3507,26 @@ function DrawLogo:__init(cfg)
     _G.givenConfig = cfg
     _G.DrawLogoLoaded = true
     _Tech:LoadSprites()
-    _Tech:LoadMenu()
+
     AddMsgCallback( function(a, b) self:WndMsg(a, b) end)
     AddDrawCallback( function() self:Draw() end)
     AddUnloadCallback( function() self:Unload() end)
 end
 
 function DrawLogo:Draw()
-    if not _Tech.Conf then return end
+    if not iARAM then return end
     if updated == false then return end
 		_Tech:Draw() --drawing
 end
 
 function DrawLogo:WndMsg(a, b)
-    if not _Tech.Conf then return end
-    if _Tech.Conf.SpriteSettings.UpdateSprites and updated == true then
-		_AutoupdaterMsg("Loaded sprites.")
+    if not iARAM then return end
+    if iARAM.SpriteMenuUpdateSprites and updated == true then
+		if iARAM.misc.misc2 then
+			_AutoupdaterMsg("Loaded sprites") --Doesn´t work. :S
+		end
         _Tech:ReloadSprites()
-        _Tech.Conf.SpriteSettings.UpdateSprites = false
+        iARAM.SpriteMenuUpdateSprites = false
     end
 end
 
@@ -3523,12 +3538,6 @@ end
 
 
 Class("_Tech")
-function _Tech:LoadMenu()
-    self.Conf = givenConfig or scriptConfig("iARAM", "iARAMMenu")
-    self.Conf:addSubMenu("> Sprites", "SpriteSettings")
-    self.Conf.SpriteSettings:addParam("UpdateSprites", "Reload sprites", SCRIPT_PARAM_ONOFF, false)
-end
-
 
 function _Tech:LoadSprites()
     updated = false
@@ -3567,6 +3576,8 @@ function _Tech:ReloadSprites()
 end
 
 function _Tech:Draw()
-	FolderOfSprites[1]:Draw(900, 700, 255)
+	if iARAM.SpriteMenu.SpriteShower then
+		FolderOfSprites[1]:Draw(900, 700, 255)
+	end
 end
 
