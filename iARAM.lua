@@ -15,7 +15,7 @@
 ]]--
 
 --[[
-		Credits & Mentions:
+		CREDITS & MENTIONS:
 			-Barasia
 			-One
 			-Husky
@@ -26,19 +26,18 @@
 ]]--
 
 --[[
-	   SOON:
-		-Remake Menu Function.
-		-Auto Barrier, health and clarity.
-		-TowerClose
+		SOON:
+			-Remake Menu Function.
+			-Auto Barrier, health and clarity.
+			-TowerClose
 ]]--
 --[[
-	   Issues:
-	   It dies undertower >.<
-	   Pairs withs Relics
-	   Ryze problems with target
-	   SummonerRift is in Beta
-		──|> AutoLevel with ROff doesnt work.
-		Error send it when you use left click.
+	   ISSUES:
+			-It dies undertower >.<
+			-Pairs withs Relics
+			-Ryze problems with target
+			-SummonerRift is in Beta
+			-AutoLevel with ROff doesnt work.
 ]]--
 
 --[[ SETTINGS ]]--
@@ -47,7 +46,9 @@ local AUTOUPDATE = true  --|>Change to false to disable auto update.
 local SummonerName = myHero.charName --|>Change myHero.charName for other name that you want.
 
 
+-----[[ Print Function ]]------
 function _AutoupdaterMsg(msg) print("<font color=\"#9bbcfe\"><b>i<font color=\"#6699ff\">ARAM:</b></font> <font color=\"#FFFFFF\">"..msg..".</font>") end
+
 
 -----[[ Auto Update Function ]]------
 class "ScriptUpdate"
@@ -244,8 +245,8 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 8.22
-ToUpdate.Update_Change_Log = "Fixed a bug when champion dies"
+ToUpdate.Version = 8.23
+ToUpdate.Update_Change_Log = "Added Gankplank, Ziggs, FiddleSticks and TwistedFate Functions"
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
 ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
@@ -258,10 +259,7 @@ ToUpdate.CallbackError = function(NewVersion) _AutoupdaterMsg("Error while Downl
 ScriptUpdate(ToUpdate.Version,ToUpdate.UseHttps, ToUpdate.Host, ToUpdate.VersionPath, ToUpdate.ScriptPath, ToUpdate.SavePath, ToUpdate.CallbackUpdate,ToUpdate.CallbackNoUpdate, ToUpdate.CallbackNewVersion,ToUpdate.CallbackError)
 
 
-
 -----[[ Auto Download Required LIBS ]]------
-
---if not FileExist(LIB_PATH.."VPrediction.lua") then return _AutoupdaterMsg("Please download VPrediction before running this script, thank you. Make sure it is in your common folder.") end
 function CheckLib()
 local SOURCELIB_URL = "https://raw.githubusercontent.com/SidaBoL/Scripts/master/Common/VPrediction.lua"
 local SOURCELIB_PATH = LIB_PATH.."VPrediction.lua"
@@ -277,6 +275,7 @@ local DownloadSourceLib = false
 		_AutoupdaterMsg("Downloading required libraries, please wait...") return end
 end
 
+
 --[[ GLOBALS [Do Not Change] ]]--
 
 -----[[ Delay ]]------
@@ -289,15 +288,16 @@ local lastAttack, lastWindUpTime, lastAttackCD = 0, 0, 0
 local range = myHero.range
 local ts = TargetSelector(TARGET_LESS_CAST_PRIORITY, range, DAMAGE_PHYSICAL, false)
 
------[[ Chat Global ]]------
+-----[[ OnWndMsg Global ]]------
 local switcher = true
 
 -----[[ Poro Shouter Global ]]------
 local lastCast = 0
 require 'VPrediction'
 lastsend = 0
------[[ Buyer Globals ]]------
 
+-----[[ Buyer Globals ]]------
+--Globals so fucked >.<
 
 -----[[ Auto ward Globals ]]------
 local drawWardSpots = false
@@ -492,25 +492,25 @@ end
 
 --[[ On Draw Function ]]--
 function OnDraw()
-		AirText()
-		RangeCircles()
-		--|>Autoward
-		AutoWarderDraw()
-		DebugCursorPos()
-		--|>NameDrawer
-		DrawFakeNames()
-		DrawTowerRange()
-		ChampionesDraw()
-		_MyHeroText()
-		DrawNotificationLib()
+	AirText()
+	RangeCircles()
+	--|>Autoward
+	AutoWarderDraw()
+	DebugCursorPos()
+	--|>NameDrawer
+	DrawFakeNames()
+	DrawTowerRange()
+	ChampionesDraw()
+	_MyHeroText()
+	DrawNotificationLib()
 end
 
 
 --[[ On Load Function ]]--
- function _OnLoad()
-startingTime = GetTickCount()
-CheckLoLVersion()
-Menu()
+function _OnLoad()
+	startingTime = GetTickCount()
+	CheckLoLVersion()
+	Menu()
 	if LoLVersionWorking then
 		NotificationLib:AddTile("Welcome to iARAM", ""..ToUpdate.Update_Change_Log.." Version: "..ToUpdate.Version.."", 10)
 		gete()
@@ -623,7 +623,7 @@ function CheckStatus()
 	eTurret = GetCloseTower(player, TEAM_ENEMY)
 	aTurret = GetCloseTower(player, player.team)
 	AllyNotAFK = followHero()
-	TimeToStart = 20
+	TimeToStart = 20 --0:10
 if TimeToStart > os.clock() then return end
 	if iARAM.follow then
 		if safe == false then
@@ -649,19 +649,19 @@ if TimeToStart > os.clock() then return end
 		elseif Allies() >= 2 and myHero.x >= 2880 and myHero.z >= 2880 and myHero.team == TEAM_BLUE then
 			status = "TF Mode"
 			TFMode()
-		elseif Allies() >= 2 and myHero.x <= 12880 and myHero.z >= 12880 and myHero.team == TEAM_RED then
+		elseif Allies() >= 2 and myHero.x <= 12880 and myHero.z <= 12880 and myHero.team == TEAM_RED then
 			status = "TF Mode"
 			TFMode()	
 			
 		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and howlingAbyssMap then
 			status = "Moving"
-			DelayAction(function() MoveModeHA() end, 2)
+			MoveModeHA()
 		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and summonersRiftMap then
 			status = "Moving"
-			DelayAction(function() MoveModeSR() end, 2)
+			MoveModeSR() 
 		elseif GetDistance(eTurret, player) > 1800 and #allyMinion.objects <= 1 and #enemyMinion.objects <= 1 and twistedTreeLineMap then
 			status = "Moving"
-			DelayAction(function() MoveModeTT() end, 2)
+			 MoveModeTT() 
 			
 			
 		elseif #allyMinion.objects <= 1 and GetDistance(aTurret, player) >= 800 and summonersRiftMap then -- Alone
@@ -683,7 +683,7 @@ end
 function Fight()
 local champ = player.charName
 	if ts.target then
-	if champ == "Aatrox" then           harass(ts.target)
+	if champ == "Aatrox" then							harass(ts.target)
 		elseif champ == "Ahri" then         AhriCombo() harass(ts.target)
 		elseif champ == "Akali" then        AkaliCombo() harass(ts.target)
 		elseif champ == "Alistar" then      ComboFull() harass(ts.target)
@@ -708,11 +708,11 @@ local champ = player.charName
 		elseif champ == "Elise" then        ComboFull() harass(ts.target)
 		elseif champ == "Evelynn" then      ComboFull() harass(ts.target)
 		elseif champ == "Ezreal" then       ComboFull() harass(ts.target)
-		elseif champ == "FiddleSticks" then ComboFull() harass(ts.target)
+		elseif champ == "FiddleSticks" then FiddleSticksCombo() harass(ts.target)
 		elseif champ == "Fiora" then        ComboFull() harass(ts.target)
 		elseif champ == "Fizz" then         ComboFull() harass(ts.target)
 		elseif champ == "Galio" then        ComboFull() harass(ts.target)
-		elseif champ == "Gangplank" then    ComboFull() harass(ts.target)
+		elseif champ == "Gangplank" then    GangplankCombo() harass(ts.target)
 		elseif champ == "Garen" then        ComboFull()
 		elseif champ == "Gragas" then       GragasCombo() harass(ts.target)
 		elseif champ == "Graves" then       ComboFull() harass(ts.target)
@@ -789,7 +789,7 @@ local champ = player.charName
 		elseif champ == "Tristana" then     ComboFull() harass(ts.target)
 		elseif champ == "Trundle" then      ComboFull() harass(ts.target)
 		elseif champ == "Tryndamere" then   ComboFull() harass(ts.target)
-		elseif champ == "TwistedFate" then  ComboFull() harass(ts.target)
+		elseif champ == "TwistedFate" then  TwistedFateCombo() harass(ts.target)
 		elseif champ == "Twitch" then       ComboFull() harass(ts.target)
 		elseif champ == "Udyr" then         ComboFull() harass(ts.target)
 		elseif champ == "Urgot" then        ComboFull() harass(ts.target)
@@ -808,7 +808,7 @@ local champ = player.charName
 		elseif champ == "Yasuo" then        ComboFull() harass(ts.target)
 		elseif champ == "Zac" then          ComboFull() harass(ts.target)
 		elseif champ == "Zed" then          ComboFull() harass(ts.target)
-		elseif champ == "Ziggs" then        ComboFull() harass(ts.target)
+		elseif champ == "Ziggs" then        ZiggsFarm() harass(ts.target)
 		elseif champ == "Zilean" then       ComboFull() harass(ts.target)
 		elseif champ == "Zyra" then         ComboFull() harass(ts.target)
 		else harass(ts.target)
@@ -858,7 +858,7 @@ if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if Ene
     elseif champ == "Fiora" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Fizz" then         eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Galio" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Gangplank" then    eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
+    elseif champ == "Gangplank" then    eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1050) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(900, myHero) end 
     elseif champ == "Garen" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Gragas" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(750, myHero) else tabclosed = GetEnemiesInRange(400, myHero) end 
     elseif champ == "Graves" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
@@ -877,7 +877,7 @@ if champ == "Aatrox" then           eTab = GetEnemiesInRange(800, myHero) if Ene
     elseif champ == "Karthus" then      eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Kassadin" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
     elseif champ == "Katarina" then     eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
-    elseif champ == "Kayle" then        eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
+    elseif champ == "Kayle" then        eTab = GetEnemiesInRange(10050, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
     elseif champ == "Kennen" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
 	elseif champ == "Kindred" then      eTab = GetEnemiesInRange(1250, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1000, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end
     elseif champ == "Khazix" then       eTab = GetEnemiesInRange(800, myHero) if EnemyCount(myHero, 1150) == 2 then tabclosed = GetEnemiesInRange(1150, myHero) else tabclosed = GetEnemiesInRange(500, myHero) end 
@@ -1005,7 +1005,7 @@ end
 function lowHP()
 	local myTurret = GetCloseTower(player, player.team)
 	if underT.AllyTower and myHero:GetDistance(myTurret) < 300 then
-		--CastSpell(RECALL)
+		--CastSpell(RECALL) --Function Crashed
 		if myHero.x >= 400 and myHero.x >= 182 then
 			onbase = true
 		elseif myHero.x >= 14260 and myHero.x >= 14382 then
@@ -1067,9 +1067,7 @@ function MoveModeSR()
 			else
 				myHero:MoveTo(8600, myHero.z-8600)
 			end
-		
 	end
-
 end
 
 function MoveModeTT()
@@ -1103,7 +1101,6 @@ end
 function AloneModeHA()
 	local myTurret = GetCloseTower(player, player.team)
 	local EnemyTurret = GetCloseTower(player, TEAM_ENEMY)
-	
 	if myHero.team == TEAM_BLUE then
 		myHero:MoveTo(myHero.x-800, myHero.z-800)
 	else
@@ -1115,12 +1112,13 @@ end
 function FarmMode()
 if player.dead or GetGame().isOver then return end
 
-
 	AhriFarm()
 	AkaliFarm()
 	AnnieFarm()
 	AsheFarm()
 	CaitlynFarm()
+	FiddleSticksFarm()
+	GangplankFarm()
 	GragasFarm()
 	JannaFarm()
 	KarmaFarm()
@@ -1133,7 +1131,10 @@ if player.dead or GetGame().isOver then return end
 	NidaleeFarm()
 	--RyzeFarm()
 	TaricFarm()
+	TwistedFateFarm()
 	WarwickFarm()
+	ZiggsFarm()
+	
 	if heroType == 1 then --adc
 		if(GetDistance(Vector(mdraw.x, mdraw.z), player) > 400) then
 			myHero:MoveTo(mdraw.x+100,mdraw.z+100) 
@@ -1201,29 +1202,30 @@ if player.dead or GetGame().isOver then return end
 		end
 		end
 	end
+	
 	-- Farm AA
-		range = myHero.range + myHero.boundingRadius - 3
-		ts.range = range
-		ts:update()
-		enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
-		enemyMinions:update()
-		local player = GetMyHero()
-		local ticking = 0
-		local delaying = 400
-		local myTarget = ts.target
-		if not iARAM.misc.farm then return end
-			for index, minion in pairs(enemyMinions.objects) do
-			  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > ticking + delaying then
-				local dmg = getDmg("AD", minion, myHero)
-					if dmg > minion.health and timeToShoot() then
-					  myHero:Attack(minion)
-					  DelayAction(function() myHero:MoveTo(mdraw.x+3,mdraw.z+3) end, 1.5)	
-					  ticking = GetTickCount()
-					  else if heroCanMove() then
-					end
+	range = myHero.range + myHero.boundingRadius - 3
+	ts.range = range
+	ts:update()
+	enemyMinions = minionManager(MINION_ENEMY, 600, player, MINION_SORT_HEALTH_ASC)
+	enemyMinions:update()
+	local player = GetMyHero()
+	local ticking = 0
+	local delaying = 400
+	local myTarget = ts.target
+	if not iARAM.misc.farm then return end
+		for index, minion in pairs(enemyMinions.objects) do
+		  if GetDistance(minion, myHero) <= (myHero.range + 75) and GetTickCount() > ticking + delaying then
+			local dmg = getDmg("AD", minion, myHero)
+				if dmg > minion.health and timeToShoot() then
+				  myHero:Attack(minion)
+				  DelayAction(function() myHero:MoveTo(mdraw.x+3,mdraw.z+3) end, 1.5)	
+				  ticking = GetTickCount()
+				  else if heroCanMove() then
 				end
 			end
 		end
+	end
 end
 
 
@@ -1261,7 +1263,7 @@ function NormalMode()
 							myHero:MoveTo(mdraw.x-400,mdraw.z-400)
 						end
 				end	
-		elseif heroType==5 then
+		elseif heroType==5 then --
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
@@ -1269,7 +1271,7 @@ function NormalMode()
 							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
-		elseif heroType == 6 then 
+		elseif heroType == 6 then --
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
@@ -1291,7 +1293,7 @@ function NormalMode()
 				--			myHero:MoveTo(edraw.x+190,edraw.z+190)
 				--		end		
 				end	
-		elseif heroType == 8 then 
+		elseif heroType == 8 then --
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
@@ -1299,7 +1301,7 @@ function NormalMode()
 							myHero:MoveTo(mdraw.x-80,mdraw.z-80)
 						end
 				end	
-		elseif heroType == 9 then --fighter
+		elseif heroType == 9 or heroType == 10 then --fighter
 				if GetDistance(Vector(mdraw.x, mdraw.z), player) >= 100 then
 						if myHero.team == TEAM_BLUE then
 							myHero:MoveTo(mdraw.x+80,mdraw.z+80)
@@ -1507,28 +1509,13 @@ function findLowHp()
 	end
 end
 
---[[
-function EnemyCount() 
-	for i = 1, heroManager.iCount do
-		local MyEnemy = heroManager:getHero(i)	
-		if MyEnemy.team ~= myHero.team and not MyEnemy.dead and MyEnemy.visible and GetDistance(MyEnemy, myHero) < 1250 then
-			enemiescount = true
-			if iARAM.misc.misc2 then _AutoupdaterMsg("2 enemies") end
-			--print(MyEnemy.name)
-		else if GetDistance(MyEnemy, myHero) > 1250 then
-			if iARAM.misc.misc2 then _AutoupdaterMsg("1 enemies") end
-				enemiescount = false
-			end
-		end
-	end
-end
-]]--
+--[[ EnemyCount Function ]]--
 function EnemyCount(unit, range)
 local sEnemies = GetEnemyHeroes()
 	local count = 0
 	for i, enemy in pairs(sEnemies) do
 		if not enemy.dead and enemy.visible then
-			--if  GetDistanceSqr(unit, enemy) < range * range  then 
+			--if  GetDistanceSqr(unit, enemy) < range  then 
 				count = count + 1 
 			--end
 		end
@@ -1540,7 +1527,7 @@ function Allies()
     local allycount = 0
     for i=1, heroManager.iCount do
         hero = heroManager:GetHero(i)
-        if hero.team == myHero.team and not hero.dead and GetDistance(hero) < 450 then
+        if hero.team == myHero.team and not hero.dead and GetDistance(hero) < 550 then --original "< 450"
 			allycount = allycount + 1
 		end
     end
@@ -1580,7 +1567,7 @@ end
 
 --[[ AutoBuyItems ]]--
 function AutoBuy()
-	BuyItem(1001)
+	--BuyItem(1001)
 end
 
 
@@ -1610,7 +1597,7 @@ function Menu()
 			iARAM.PoroShot:addTS(TargetSelector)
 		--[[ ItemSettings menu ]]--	
 		iARAM:addSubMenu("Item Settings", "item")
-			iARAM.item:addParam("enableautozhonya", "Auto Zhonya", SCRIPT_PARAM_ONOFF, true)
+			iARAM.item:addParam("enableautozhonya", "Auto Zhonya (Broken)", SCRIPT_PARAM_ONOFF, true)
 			iARAM.item:addParam("autozhonya", "Zhonya if Health under -> %", SCRIPT_PARAM_SLICE, 10, 0, 100, 0)
 			
 		--[[ Sprite menu ]]--
@@ -1627,10 +1614,7 @@ function Menu()
 			iARAM.misc:addParam("autobuy", "Auto Buy Items (Broken)", SCRIPT_PARAM_ONOFF, true)
 			iARAM.misc:addParam("useAutoPots", "Auto Potions", SCRIPT_PARAM_ONOFF, true)
 			--Ignite
-			ignite = IgniteCheck()
-		
-		
-			
+			ignite = IgniteCheck()		
 			
 		----[[ Main Script menu ]]--
 		iARAM:addParam("follow", "Enable bot (F4)", SCRIPT_PARAM_ONKEYTOGGLE, true, HotKey)
@@ -1643,8 +1627,7 @@ function Menu()
 
 		-----------------------------------------------------------------------------------------------------
 		iARAM:addParam("info", "edited by ", SCRIPT_PARAM_INFO, "Husmeador12") 
-		iARAM:addParam("info2", "iARAM Version : ", SCRIPT_PARAM_INFO, ToUpdate.Version)
-		
+		iARAM:addParam("info2", "iARAM Version : ", SCRIPT_PARAM_INFO, ToUpdate.Version)	
 end
 
 
@@ -1991,6 +1974,7 @@ function DebugCursorPos()
 	end
 end
 
+
 ---------[[ Auto Zhonya ]]---------
 function FunctionAutoZhonya()
   if iARAM.item.enableautozhonya then
@@ -1998,6 +1982,7 @@ function FunctionAutoZhonya()
     --end
   end
 end
+
 
 ---------[[ Auto Ignite ]]---------
 function FunctionAutoIgnite()
@@ -2406,6 +2391,7 @@ function AutoLevel:LevelSpell(id)
 	end
 end
 
+
 --[[ PrintFloatText Function ]]--
 function _MyHeroText() 
 	if iARAM.follow and not myHero.dead then
@@ -2457,7 +2443,15 @@ function GetAbilityFramePos(unit)
 end
 
 
---[[ Print Function ]]--
+--[[ PrinterDelay Function ]]--
+local lastPrint2 = ""
+function CastW(str)
+   if str ~= lastPrint2 then
+    _AutoupdaterMsg("CastSpell W")
+      lastPrint2 = str
+   end
+end
+
 local lastPrint1 = ""
 function howling1(str)
    if str ~= lastPrint1 then
@@ -2497,16 +2491,6 @@ function GetPlayer(team, includeDead, includeSelf, distanceTo, distanceAmount, r
 		end
 	end
 	return target
-end
-
-
---[[ PrinterDelay Function ]]--
-local lastPrint2 = ""
-function CastW(str)
-   if str ~= lastPrint2 then
-    _AutoupdaterMsg("CastSpell W")
-      lastPrint2 = str
-   end
 end
 
 
@@ -2551,7 +2535,6 @@ function TFMode()
 	LuxTF()
 	TaricTF()
 	WarwickTF()
-	
 	
 	champ = player.charName
 	allytofollow = followHero()
@@ -2763,6 +2746,68 @@ function CaitlynCombo()
 end
 
 
+---[[FiddleSticks]]---
+function FiddleSticksFarm()
+local champ = player.charName
+	if champ == "FiddleSticks" then
+		-- Farm E 
+		for index,minion in pairs(enemyMinion.objects) do
+			myHero:Attack(minion)
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+				myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("E", minion, myHero) then
+					if myHero:CanUseSpell(_E) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_E, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function FiddleSticksCombo()
+	SkillR = { range = 440, delay = 1.0 }
+	rDmg = getDmg("R", ts.target, myHero)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_W, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end		
+		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= SkillR.range then CastSpell(_R, ts.target.x, ts.target.z) end
+	end
+end
+
+
+---[[Gangplank]]---
+function GangplankFarm()
+local champ = player.charName
+	if champ == "Gangplank" then
+		-- Farm Q
+		for index,minion in pairs(enemyMinion.objects) do
+			myHero:Attack(minion)
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function GangplankCombo()
+	SkillR = { range = 1040, delay = 1.0 }
+	rDmg = getDmg("R", ts.target, myHero)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY and myHero.Health < myHero.Health * (50 / 100) then CastSpell(_W) end
+		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= SkillR.range then CastSpell(_R, ts.target.x, ts.target.z) end
+	end
+end
+
+
 ---[[Gragas]]---
 function GragasFarm()
 local champ = player.charName
@@ -2844,6 +2889,7 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 		end
 	end
 end
+
 
 ---[[Karma]]---
 function KarmaFarm()
@@ -3175,6 +3221,7 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
+
 --[[ Ryze
 function RyzeFarm()
 local champ = player.charName
@@ -3211,6 +3258,7 @@ local champ = player.charName
 	end
 end
 ]]---
+
 
 ---[[Taric]]---
 function TaricFarm()
@@ -3267,6 +3315,53 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 	end
 end
 
+
+---[[TwistedFate]]---
+function TwistedFateFarm()
+local champ = player.charName
+	if champ == "TwistedFate" then
+		-- Farm Q 
+		if myHero:CanUseSpell(_W) == READY then
+					--myHero:HoldPosition()
+					CastSpell(_W)
+				end
+		for index,minion in pairs(enemyMinion.objects) do
+			myHero:Attack(minion)
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+				if myHero:CanUseSpell(_Q) == READY then
+					--myHero:HoldPosition()
+					CastSpell(_Q, minion)
+				end
+			end
+		end
+	end
+end
+
+function TwistedFateCombo()
+	SkillR = { name = "Final Spark", range = 3340, delay = 1.0, speed = math.huge, width = 190, ready = false }
+	rDmg = getDmg("R", ts.target, myHero)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY then CastSpell(_W) end
+		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= SkillR.range then CastSpell(_R, ts.target.x, ts.target.z) end
+	end
+end
+
+function TwistedFateTF()
+local champ = player.charName
+local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
+	if champ == "Lux" then
+		if ally ~= nil and ally.health <= ally.maxHealth * (50 / 100) then
+			if myHero:CanUseSpell(_E) == READY then			
+				if iARAM.misc.misc2 then _AutoupdaterMsg("Casting E to Ally") end
+				CastSpell(_E, ally)
+			end
+		end
+	end
+end
+
+
 ---[[Nunu]]---
 function NunuCombo()
 	if myHero:CanUseSpell(_W) == READY then		
@@ -3274,20 +3369,19 @@ function NunuCombo()
 	end
 end
 
+
 ---[[Warwick]]---
 function WarwickFarm()
 local champ = player.charName
 	if champ == "Warwick" then
 		-- Farm Q 
 		for index,minion in pairs(enemyMinion.objects) do
-
-				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
-					if myHero:CanUseSpell(_Q) == READY then
-						--myHero:HoldPosition()
-						CastSpell(_Q, minion)
-					end
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+				if myHero:CanUseSpell(_Q) == READY then
+					--myHero:HoldPosition()
+					CastSpell(_Q, minion)
 				end
-
+			end
 		end	
 	end
 end
@@ -3316,6 +3410,37 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 end
 
 
+---[[Ziggs]]---
+function ZiggsFarm()
+local champ = player.charName
+	if champ == "Ziggs" then
+		-- Farm Q 
+		for index,minion in pairs(enemyMinion.objects) do
+			if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible then
+				myHero:Attack(minion)
+				if minion ~= nil and minion.valid and minion.team ~= myHero.team and not minion.dead and minion.visible and minion.health <= getDmg("Q", minion, myHero) then
+					if myHero:CanUseSpell(_Q) == READY then
+						--myHero:HoldPosition()
+						CastSpell(_Q, minion)
+					end
+				end
+			end
+		end	
+	end
+end
+
+function ZiggsCombo()
+	SkillR = { name = "BoooMb!", range = 3340, delay = 1.0, speed = math.huge, width = 190, ready = false }
+	rDmg = getDmg("R", ts.target, myHero)
+	if ts.target.visible == true then
+		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_Q) == READY then CastSpell(_Q, ts.target.x, ts.target.z) end
+		if myHero:CanUseSpell(_W) == READY and myHero.Health < myHero.Health * (50 / 100) then CastSpell(_W) end
+		if myHero:CanUseSpell(_R) == READY	and ts.target.health < rDmg and GetDistance(ts.target) <= SkillR.range then CastSpell(_R, ts.target.x, ts.target.z) end
+	end
+end
+
+
 --[[ DefensiveMode Function ]]--
 function DefensiveMode()
 if player.dead or GetGame().isOver then return end
@@ -3328,6 +3453,7 @@ if player.dead or GetGame().isOver then return end
 		KindredDefensive()
 	end
 end
+
 
 --[[ NotificationLib Function ]]--
 class "NotificationLib"
@@ -3482,11 +3608,9 @@ function KeyDownFix()
 end
 
 
---[[ Sprite Drawing and Downloader Function ]]--
-
+------[[ Sprite Drawing and Downloader Function ]]------
 local FolderOfSprites = { }
 local updated = false
-
 
 -- Made by Nebelwolfi to make classes local and not global
 function Class(name)
@@ -3535,7 +3659,6 @@ end
 
 
 Class("_Tech")
-
 function _Tech:LoadSprites()
     updated = false
 	--Which folder we want to create.
@@ -3577,4 +3700,3 @@ function _Tech:Draw()
 		FolderOfSprites[1]:Draw(900, 700, 255)
 	end
 end
-
