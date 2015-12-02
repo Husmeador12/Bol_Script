@@ -245,8 +245,8 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 8.23
-ToUpdate.Update_Change_Log = "Added Gankplank, Ziggs, FiddleSticks and TwistedFate Functions"
+ToUpdate.Version = 8.24
+ToUpdate.Update_Change_Log = "Updated to 5.23 MiniPatch"
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
 ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
@@ -336,7 +336,7 @@ local range = myHero.range
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
 		--_AutoupdaterMsg(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.23.0.239") then
+	if string.match(LoLVersion, "5.23.0.247") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
@@ -2379,7 +2379,7 @@ function AutoLevel:LevelSpell(id)
 		[_R] = 0xC1,
 	  }
 	  local p = CLoLPacket(0x0033)
-	  p.vTable = 0xE556E8
+	  p.vTable = 0xEECE14
 	  p:EncodeF(myHero.networkID)
 	  p:Encode1(0x73)
 	  for i = 1, 4 do p:Encode1(0xF9) end
