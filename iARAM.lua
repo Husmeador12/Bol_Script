@@ -35,7 +35,6 @@
 	   ISSUES:
 			-It dies undertower >.<
 			-Pairs withs Relics
-			-Ryze problems with target
 			-SummonerRift is in Beta
 			-AutoLevel with ROff doesnt work.
 ]]--
@@ -245,8 +244,8 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 8.24
-ToUpdate.Update_Change_Log = "Updated to 5.23 MiniPatch"
+ToUpdate.Version = 8.24.2
+ToUpdate.Update_Change_Log = "Fixed Ryze function."
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
 ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
@@ -768,7 +767,7 @@ local champ = player.charName
 		elseif champ == "Rengar" then       ComboFull() harass(ts.target)
 		elseif champ == "Riven" then        ComboFull() harass(ts.target)
 		elseif champ == "Rumble" then       ComboFull() harass(ts.target)
-		elseif champ == "Ryze" then         --RyzeCombo() harass(ts.target)
+		elseif champ == "Ryze" then         RyzeCombo() harass(ts.target)
 		elseif champ == "Sejuani" then      ComboFull() harass(ts.target)
 		elseif champ == "Shaco" then        ComboFull() harass(ts.target)
 		elseif champ == "Shen" then         ComboFull() harass(ts.target)
@@ -3222,7 +3221,7 @@ local ally = GetPlayer(myHero.team, false, false, myHero, 450, "health")
 end
 
 
---[[ Ryze
+
 function RyzeFarm()
 local champ = player.charName
 local QRange = 800
@@ -3240,7 +3239,7 @@ end
 function RyzeCombo()
 	if ts.target.visible == true and Target ~= nil then
 		if myHero:CanUseSpell(_Q) == READY and GetDistance(ts.target) < 700  then 
-			CastSpell(_Q, ts.target, ts.target)
+			CastSpell(_Q, ts.target.x, ts.target.z)
 		end
 		if myHero:CanUseSpell(_E) == READY then CastSpell(_E, ts.target) end
 		if myHero:CanUseSpell(_W) == READY and GetDistance(ts.target) < 600 and myHero.mana / myHero.maxMana < 50 then CastSpell(_W, ts.target) end
@@ -3257,7 +3256,7 @@ local champ = player.charName
 		end
 	end
 end
-]]---
+
 
 
 ---[[Taric]]---
@@ -3449,7 +3448,7 @@ if player.dead or GetGame().isOver then return end
 		KayleTF()
 		TaricTF()
 		TaricDefensive()
-		--RyzeDefensive()
+		RyzeDefensive()
 		KindredDefensive()
 	end
 end
