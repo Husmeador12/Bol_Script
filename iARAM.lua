@@ -244,7 +244,7 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 8.24.2
+ToUpdate.Version = 8.25
 ToUpdate.Update_Change_Log = "Fixed Ryze function."
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
