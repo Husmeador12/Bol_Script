@@ -244,14 +244,14 @@ end
 
 -----[[ Auto Update Globals ]]------
 local ToUpdate = {}
-ToUpdate.Version = 8.25
-ToUpdate.Update_Change_Log = "Fixed Ryze function."
+ToUpdate.Version = 8.26
+ToUpdate.Update_Change_Log = "Update to 5.24"
 ToUpdate.UseHttps = true
 ToUpdate.Host = "raw.githubusercontent.com"
 ToUpdate.VersionPath = "/Husmeador12/Bol_Script/master/version/iARAM.version"
 ToUpdate.ScriptPath =  "/Husmeador12/Bol_Script/master/iARAM.lua"
 ToUpdate.SavePath = SCRIPT_PATH.._ENV.FILE_NAME
-ToUpdate.CallbackUpdate = function(NewVersion,OldVersion) _AutoupdaterMsg("Updated to "..NewVersion..". ") end
+ToUpdate.CallbackUpdate = function(NewVersion,OldVersion) _AutoupdaterMsg("Updated to "..NewVersion..". Press F9 to reload") end
 ToUpdate.CallbackNoUpdate = function(OldVersion) _AutoupdaterMsg("Notes: "..ToUpdate.Update_Change_Log.."") end
 ToUpdate.CallbackNewVersion = function(NewVersion) _AutoupdaterMsg("New Version found ("..NewVersion.."). Please wait until its downloaded") end
 ToUpdate.CallbackError = function(NewVersion) _AutoupdaterMsg("Error while Downloading. Please try again.") end
@@ -270,7 +270,7 @@ local DownloadSourceLib = false
 		DownloadFile(SOURCELIB_URL, SOURCELIB_PATH, function() _AutoupdaterMsg("VPrediction downloaded, please reload (F9)")	 end)
 	end
 	if DownloadSourceLib then
-		--NotificationLib:AddTile("VPrediction", "Downloading required libraries, please wait...", 10)	
+		NotificationLib:AddTile("VPrediction", "Downloading required libraries, please wait...", 10)	
 		_AutoupdaterMsg("Downloading required libraries, please wait...") return end
 end
 
@@ -335,7 +335,7 @@ local range = myHero.range
 function CheckLoLVersion()
 	LoLVersion = GetGameVersion()
 		--_AutoupdaterMsg(""..GetGameVersion().."")
-	if string.match(LoLVersion, "5.23.0.247") then
+	if string.match(LoLVersion, "5.24.0.249") then
 		LoLVersionWorking = true
 		 --_AutoupdaterMsg("Script Updated for this LoL version")
 	else
@@ -2371,22 +2371,22 @@ end
 
 function AutoLevel:LevelSpell(id)
 	if LoLVersionWorking then
-	  local offsets = { 
-		[_Q] = 0x61,
-		[_W] = 0x81,
-		[_E] = 0xA1,
-		[_R] = 0xC1,
-	  }
-	  local p = CLoLPacket(0x0033)
-	  p.vTable = 0xEECE14
-	  p:EncodeF(myHero.networkID)
-	  p:Encode1(0x73)
-	  for i = 1, 4 do p:Encode1(0xF9) end
-	  for i = 1, 4 do p:Encode1(0x1E) end
-	  p:Encode1(offsets[id])
-	  for i = 1, 4 do p:Encode1(0x99) end
-	  for i = 1, 4 do p:Encode1(0x00) end
-	  SendPacket(p)
+	    local offsets = { 
+			[_Q] = 0x1E,
+			[_W] = 0xD3,
+			[_E] = 0x3A,
+			[_R] = 0xA8,
+		  }
+		  local p = CLoLPacket(0x00B6)
+		  p.vTable = 0xFE3124
+		  p:EncodeF(myHero.networkID)
+		  p:Encode1(0xC1)
+		  p:Encode1(offsets[id])
+		  for i = 1, 4 do p:Encode1(0x63) end
+		  for i = 1, 4 do p:Encode1(0xC5) end
+		  for i = 1, 4 do p:Encode1(0x6A) end
+		  for i = 1, 4 do p:Encode1(0x00) end
+		  SendPacket(p)
 	end
 end
 
